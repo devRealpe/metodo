@@ -1,0 +1,551 @@
+<p-toast key="registro-externos" position="top-right" [preventOpenDuplicates]="true"></p-toast>
+
+<div class="w-full overflow-x-hidden">
+  <div class="w-full max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
+
+    <!-- Encabezado -->
+    <div class="text-center py-4">
+      <h2 class="text-xl sm:text-2xl font-bold mb-1" [style]="{ color: 'var(--p-text-color)' }">Registro de Externos
+      </h2>
+      <p class="text-sm sm:text-base" [style]="{ color: 'var(--p-text-muted-color)' }">Reserva de aula e ingreso de
+        visitas externas</p>
+    </div>
+
+    <!-- Selector de modo -->
+    <div class="flex gap-2 justify-center mb-4">
+      <button type="button" class="px-5 py-2 rounded-full text-sm font-semibold transition-all"
+        [class.bg-blue-600]="modo === 'reserva'" [class.text-white]="modo === 'reserva'"
+        [class.bg-gray-100]="modo !== 'reserva'" [class.text-gray-700]="modo !== 'reserva'"
+        (click)="cambiarModo('reserva')">
+        <i class="pi pi-calendar-plus mr-2"></i>Nueva Reserva
+      </button>
+      <button type="button" class="px-5 py-2 rounded-full text-sm font-semibold transition-all"
+        [class.bg-green-600]="modo === 'ingreso'" [class.text-white]="modo === 'ingreso'"
+        [class.bg-gray-100]="modo !== 'ingreso'" [class.text-gray-700]="modo !== 'ingreso'"
+        (click)="cambiarModo('ingreso')">
+        <i class="pi pi-sign-in mr-2"></i>Registrar Ingreso
+      </button>
+    </div>
+
+    <!-- ════════════════════════════ MODO RESERVA ════════════════════════════ -->
+    <div *ngIf="modo === 'reserva'" class="card pb-6">
+      <p-stepper [(value)]="step" class="w-full">
+        <p-step-list>
+          <p-step [value]="1">Empresa</p-step>
+          <p-step [value]="2">Asistentes</p-step>
+          <p-step [value]="3">Reserva de Aula</p-step>
+        </p-step-list>
+
+        <p-step-panels>
+
+          <!-- ── PASO 1: EMPRESA ── -->
+          <p-step-panel [value]="1">
+            <ng-template pTemplate="content">
+              <form [formGroup]="formEmpresa" class="grid gap-4 mt-2">
+
+                <!-- Buscador NIT -->
+                <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-end">
+                  <div>
+                    <app-input-component label="NIT de la Empresa" id="nitEmpresa" formControlName="nitEmpresa"
+                      placeholder="Ej: 900123456-1" [maxlength]="30"
+                      [ngClass]="{ 'p-invalid': invalidEmpresa('nitEmpresa') }">
+                    </app-input-component>
+                    <small *ngIf="invalidEmpresa('nitEmpresa')" class="text-red-500 text-xs mt-1 block">El NIT es
+                      requerido</small>
+                  </div>
+                  <div class="flex gap-2">
+                    <p-button label="Buscar" icon="pi pi-search" [loading]="cargando"
+                      (onClick)="buscarEmpresa()"></p-button>
+                    <p-button *ngIf="empresaEncontrada || esEmpresaNueva" icon="pi pi-times" severity="secondary"
+                      (onClick)="limpiarEmpresa()"></p-button>
+                  </div>
+                </div>
+
+                <!-- Empresa encontrada - badge -->
+                <div *ngIf="empresaEncontrada && !esEmpresaNueva"
+                  class="bg-green-50 border border-green-200 px-4 py-2 rounded-lg flex items-center gap-2">
+                  <i class="pi pi-building text-green-600"></i>
+                  <span class="font-semibold text-green-800">{{ empresaEncontrada.nombre }}</span>
+                  <span class="text-green-600 text-sm ml-auto">NIT: {{ empresaEncontrada.nitEmpresa }}</span>
+                </div>
+
+                <!-- Empresa nueva - banner -->
+                <div *ngIf="esEmpresaNueva"
+                  class="bg-blue-50 border border-blue-200 px-4 py-2 rounded-lg flex items-center gap-2">
+                  <i class="pi pi-info-circle text-blue-600"></i>
+                  <span class="text-blue-700 text-sm">Empresa no encontrada. Complete los datos para registrarla.</span>
+                </div>
+
+                <!-- Campos datos de empresa (nuevo o mostrar existente) -->
+                <div *ngIf="empresaEncontrada || esEmpresaNueva" class="grid gap-4">
+                  <p-divider></p-divider>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <app-input-component label="Nombre / Razón Social" id="nombre" formControlName="nombre"
+                      [readonly]="!!empresaEncontrada" placeholder="Nombre de la empresa"
+                      [ngClass]="{ 'p-invalid': invalidEmpresa('nombre') }">
+                    </app-input-component>
+                    <app-input-component label="Teléfono" id="telefono" formControlName="telefono"
+                      [readonly]="!!empresaEncontrada" placeholder="Teléfono de contacto">
+                    </app-input-component>
+                  </div>
+                  <app-input-component label="Dirección" id="direccion" formControlName="direccion"
+                    [readonly]="!!empresaEncontrada" placeholder="Dirección de la empresa">
+                  </app-input-component>
+                  <app-input-component label="Correo" id="correo" formControlName="correo"
+                    [readonly]="!!empresaEncontrada" placeholder="correo@empresa.com"
+                    [ngClass]="{ 'p-invalid': invalidEmpresa('correo') }">
+                  </app-input-component>
+                  <small *ngIf="invalidEmpresa('correo')" class="text-red-500 text-xs -mt-2 block">Formato de correo
+                    inválido</small>
+                </div>
+
+                <!-- Acciones paso 1 -->
+                <div *ngIf="empresaEncontrada || esEmpresaNueva" class="flex justify-end mt-2">
+                  <p-button [label]="esEmpresaNueva ? 'Registrar y Continuar' : 'Continuar'"
+                    [icon]="esEmpresaNueva ? 'pi pi-user-plus' : 'pi pi-arrow-right'" iconPos="right"
+                    [loading]="cargando" (onClick)="procederPaso2()">
+                  </p-button>
+                </div>
+
+              </form>
+            </ng-template>
+          </p-step-panel>
+
+          <!-- ── PASO 2: ASISTENTES ── -->
+          <p-step-panel [value]="2">
+            <ng-template pTemplate="content">
+              <div class="grid gap-4 mt-2">
+
+                <!-- Badge empresa -->
+                <div class="bg-blue-50 border border-blue-200 px-4 py-2 rounded-lg flex items-center gap-2">
+                  <i class="pi pi-building text-blue-600"></i>
+                  <span class="font-medium text-blue-800">{{ empresaEncontrada?.nombre }}</span>
+                  <span class="text-blue-500 text-sm ml-auto">{{ numAsistentes }} asistente(s)</span>
+                </div>
+
+                <!-- Lista de usuarios -->
+                <div class="flex items-center justify-between">
+                  <h3 class="font-semibold text-base" [style]="{ color: 'var(--p-text-color)' }">Personal de la empresa
+                  </h3>
+                  <p-button label="Agregar persona" icon="pi pi-plus" size="small" severity="secondary"
+                    (onClick)="mostrarAgregarPersona()">
+                  </p-button>
+                </div>
+
+                <!-- Loading -->
+                <div *ngIf="cargandoUsuarios" class="text-center py-6">
+                  <i class="pi pi-spinner pi-spin text-2xl text-blue-500"></i>
+                  <p class="text-sm mt-2" [style]="{ color: 'var(--p-text-muted-color)' }">Cargando usuarios...</p>
+                </div>
+
+                <!-- Sin usuarios -->
+                <div *ngIf="!cargandoUsuarios && usuariosEmpresa.length === 0"
+                  class="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                  <i class="pi pi-users text-3xl text-gray-400 mb-2"></i>
+                  <p class="text-gray-500 text-sm">No hay usuarios registrados para esta empresa.</p>
+                  <p class="text-gray-400 text-xs mt-1">Use "Agregar persona" para añadir asistentes.</p>
+                </div>
+
+                <!-- Grid de usuarios -->
+                <div *ngIf="!cargandoUsuarios && usuariosEmpresa.length > 0"
+                  class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div *ngFor="let u of usuariosEmpresa; index as i"
+                    class="border border-gray-200 rounded-lg px-4 py-3 flex items-start justify-between gap-2 bg-white">
+                    <div>
+                      <p class="font-medium text-sm" [style]="{ color: 'var(--p-text-color)' }">{{ u.nombre }}</p>
+                      <p class="text-xs text-gray-500">ID: {{ u.identificacion }}</p>
+                      <div class="flex gap-1 mt-1">
+                        <p-tag *ngIf="u.cargo" [value]="u.cargo" severity="info" [style]="{ fontSize: '10px' }"></p-tag>
+                        <p-tag *ngIf="u.tipoUsuario" [value]="u.tipoUsuario" severity="secondary"
+                          [style]="{ fontSize: '10px' }"></p-tag>
+                        <p-tag *ngIf="u.genero" [value]="u.genero" [style]="{ fontSize: '10px' }"></p-tag>
+                      </div>
+                    </div>
+                    <button type="button" class="text-red-400 hover:text-red-600 transition-colors mt-1"
+                      (click)="eliminarUsuario(u, i)">
+                      <i class="pi pi-trash text-sm"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Form agregar persona -->
+                <div *ngIf="mostrarFormPersona" class="border border-blue-200 bg-blue-50 rounded-lg p-4 grid gap-3">
+                  <h4 class="font-semibold text-sm text-blue-800 flex items-center gap-2">
+                    <i class="pi pi-user-plus"></i> Nueva persona
+                  </h4>
+                  <form [formGroup]="formPersona" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <app-input-component label="Nombre completo" id="p_nombre" formControlName="nombre"
+                      placeholder="Nombre del asistente" [ngClass]="{ 'p-invalid': invalidPersona('nombre') }">
+                    </app-input-component>
+                    <app-input-component label="Identificación" id="p_identificacion" formControlName="identificacion"
+                      placeholder="Cédula o pasaporte" [ngClass]="{ 'p-invalid': invalidPersona('identificacion') }">
+                    </app-input-component>
+                    <app-input-component label="Cargo" id="p_cargo" formControlName="cargo"
+                      placeholder="Cargo (opcional)">
+                    </app-input-component>
+                    <app-select-component label="Género" id="p_genero" formControlName="genero" [options]="generos"
+                      optionLabel="label" optionValue="value" placeholder="Seleccione" [showClear]="true">
+                    </app-select-component>
+                    <div class="sm:col-span-2">
+                      <app-select-component label="Tipo de usuario" id="p_tipoUsuario" formControlName="tipoUsuario"
+                        [options]="tiposUsuario" optionLabel="label" optionValue="value" placeholder="Seleccione tipo"
+                        [ngClass]="{ 'p-invalid': invalidPersona('tipoUsuario') }">
+                      </app-select-component>
+                    </div>
+                  </form>
+                  <div class="flex gap-2 justify-end">
+                    <p-button label="Cancelar" severity="secondary" size="small"
+                      (onClick)="cancelarAgregarPersona()"></p-button>
+                    <p-button label="Agregar" icon="pi pi-check" size="small" [loading]="cargando"
+                      (onClick)="agregarPersona()"></p-button>
+                  </div>
+                </div>
+
+                <!-- Acciones paso 2 -->
+                <div class="flex justify-between mt-2">
+                  <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" (onClick)="step = 1"></p-button>
+                  <p-button label="Continuar" icon="pi pi-arrow-right" iconPos="right"
+                    [disabled]="usuariosEmpresa.length === 0" (onClick)="procederPaso3()">
+                  </p-button>
+                </div>
+              </div>
+            </ng-template>
+          </p-step-panel>
+
+          <!-- ── PASO 3: RESERVA ── -->
+          <p-step-panel [value]="3">
+            <ng-template pTemplate="content">
+              <form [formGroup]="formReserva" class="grid gap-4 mt-2">
+
+                <!-- Resumen empresa + asistentes -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div class="bg-blue-50 border border-blue-200 px-4 py-3 rounded-lg">
+                    <p class="text-xs text-blue-500 font-medium uppercase mb-1">Empresa</p>
+                    <p class="font-semibold text-blue-800">{{ empresaEncontrada?.nombre }}</p>
+                    <p class="text-xs text-blue-600">NIT: {{ empresaEncontrada?.nitEmpresa }}</p>
+                  </div>
+                  <div class="bg-indigo-50 border border-indigo-200 px-4 py-3 rounded-lg">
+                    <p class="text-xs text-indigo-500 font-medium uppercase mb-1">Asistentes</p>
+                    <p class="font-semibold text-indigo-800 text-xl">{{ numAsistentes }}</p>
+                    <p class="text-xs mt-1" [class.text-green-600]="capacidadOk" [class.text-red-600]="!capacidadOk">
+                      <i class="pi" [class.pi-check-circle]="capacidadOk"
+                        [class.pi-exclamation-circle]="!capacidadOk"></i>
+                      Cap. aula: {{ capacidadAula || '—' }}
+                    </p>
+                  </div>
+                </div>
+
+                <p-divider></p-divider>
+
+                <!-- Tipo de práctica -->
+                <div>
+                  <app-select-component
+                    label="Tipo de práctica"
+                    id="ext_tipoPractica"
+                    [formControl]="tipoPracticaCtrl"
+                    [options]="tipoPracticaOpciones"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Seleccione tipo de práctica"
+                    [disabled]="cargandoTipoPractica"
+                    [ngClass]="{ 'p-invalid': tipoPracticaCtrl.invalid && tipoPracticaCtrl.touched }">
+                  </app-select-component>
+                  <small *ngIf="cargandoTipoPractica" class="text-blue-500 text-xs mt-1 block">
+                    <i class="pi pi-spinner pi-spin mr-1"></i>Cargando tipos...
+                  </small>
+                  <small *ngIf="tipoPracticaCtrl.invalid && tipoPracticaCtrl.touched" class="text-red-500 text-xs mt-1 block">Seleccione un tipo de práctica</small>
+                </div>
+
+                <!-- Selector de aula -->
+                <div>
+                  <app-select-component label="Aula / Laboratorio" id="laboratorioId" formControlName="laboratorioId"
+                    [options]="aulasOptions" optionLabel="label" optionValue="value" [disabled]="cargandoAulas"
+                    placeholder="Seleccione el aula" [filter]="true" [ngClass]="{ 'p-invalid': invalidReserva('laboratorioId') }"
+                    (selectionChange)="onAulaChange($event)">
+                  </app-select-component>
+                  <small *ngIf="cargandoAulas" class="text-blue-500 text-xs mt-1 block">
+                    <i class="pi pi-spinner pi-spin mr-1"></i>Cargando aulas...
+                  </small>
+                  <small *ngIf="invalidReserva('laboratorioId')" class="text-red-500 text-xs mt-1 block">Seleccione un
+                    aula</small>
+                  <small *ngIf="!capacidadOk && aulaSeleccionada" class="text-red-600 text-xs mt-1 block font-semibold">
+                    <i class="pi pi-exclamation-triangle mr-1"></i>
+                    Los {{ numAsistentes }} asistentes superan la capacidad de {{ capacidadAula }} del aula
+                  </small>
+                </div>
+
+                <!-- Fecha y Horas -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <app-datepicker-component label="Fecha" id="fecha" formControlName="fecha"
+                      placeholder="Seleccione fecha" [minDate]="hoy" [ngClass]="{ 'p-invalid': invalidReserva('fecha') }"
+                      (dateChange)="verificarDisponibilidad()">
+                    </app-datepicker-component>
+                    <small *ngIf="invalidReserva('fecha')" class="text-red-500 text-xs mt-1 block">Fecha
+                      requerida</small>
+                  </div>
+                  <div>
+                    <app-datepicker-component label="Hora inicio" id="horaInicio" formControlName="horaInicio"
+                      placeholder="hh:mm AM/PM" [timeOnly]="true" [showIcon]="false" [hourFormat]="'12'"
+                      [disabled]="!formReserva.get('laboratorioId')?.value" [ngClass]="{ 'p-invalid': invalidReserva('horaInicio') }"
+                      (dateChange)="verificarDisponibilidad()">
+                    </app-datepicker-component>
+                    <small *ngIf="!formReserva.get('laboratorioId')?.value" class="text-gray-500 text-xs mt-1 block">Seleccione aula primero</small>
+                    <small *ngIf="formReserva.get('laboratorioId')?.value && invalidReserva('horaInicio')" class="text-red-500 text-xs mt-1 block">Hora inicio requerida</small>
+                  </div>
+                  <div>
+                    <app-datepicker-component label="Hora fin" id="horaFin" formControlName="horaFin"
+                      placeholder="hh:mm AM/PM" [timeOnly]="true" [showIcon]="false" [hourFormat]="'12'"
+                      [disabled]="!formReserva.get('laboratorioId')?.value" [ngClass]="{ 'p-invalid': invalidReserva('horaFin') }"
+                      (dateChange)="verificarDisponibilidad()">
+                    </app-datepicker-component>
+                    <small *ngIf="!formReserva.get('laboratorioId')?.value" class="text-gray-500 text-xs mt-1 block">Seleccione aula primero</small>
+                    <small *ngIf="formReserva.get('laboratorioId')?.value && invalidReserva('horaFin')" class="text-red-500 text-xs mt-1 block">Hora fin requerida</small>
+                  </div>
+                </div>
+
+                <!-- Alerta conflicto -->
+                <div *ngIf="conflictoHorario"
+                  class="bg-red-50 border border-red-300 px-4 py-3 rounded-lg flex items-start gap-2">
+                  <i class="pi pi-exclamation-triangle text-red-500 mt-0.5"></i>
+                  <div>
+                    <p class="text-red-700 font-semibold text-sm">Conflicto de horario detectado</p>
+                    <p class="text-red-600 text-xs mt-1">{{ mensajeConflicto }}</p>
+                    <p class="text-red-500 text-xs mt-1">El aula tiene una clase programada en ese horario. Seleccione
+                      otro horario.</p>
+                  </div>
+                </div>
+
+                <!-- Disponible OK -->
+                <div
+                  *ngIf="formReserva.get('laboratorioId')?.value && !conflictoHorario && formReserva.get('horaInicio')?.value && formReserva.get('horaFin')?.value"
+                  class="bg-green-50 border border-green-200 px-4 py-2 rounded-lg flex items-center gap-2">
+                  <i class="pi pi-check-circle text-green-600"></i>
+                  <span class="text-green-700 text-sm font-medium">Horario disponible — sin clases programadas en este
+                    bloque</span>
+                </div>
+
+                <!-- ═══ EQUIPOS DEL LABORATORIO ═══ -->
+                <div *ngIf="formReserva.get('laboratorioId')?.value">
+                  <p-divider></p-divider>
+                  <h4 class="font-semibold text-sm mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                    <i class="pi pi-desktop mr-2 text-blue-500"></i>Equipos disponibles en el laboratorio
+                    <span class="text-xs font-normal text-gray-500 ml-1">(opcional)</span>
+                  </h4>
+
+                  <div *ngIf="cargandoInventario" class="text-center py-3">
+                    <i class="pi pi-spinner pi-spin text-blue-500"></i>
+                    <span class="text-sm ml-2 text-gray-500">Cargando inventario...</span>
+                  </div>
+
+                  <div *ngIf="!cargandoInventario && equiposLab.length === 0"
+                    class="text-center py-3 text-gray-400 text-sm">
+                    <i class="pi pi-info-circle mr-1"></i>No hay equipos disponibles en este laboratorio
+                  </div>
+
+                  <div *ngIf="!cargandoInventario && equiposLab.length > 0" class="grid gap-2">
+                    <div *ngFor="let eq of equiposLab"
+                      class="border rounded-lg px-3 py-2 flex items-center gap-3 cursor-pointer transition-all"
+                      [class.border-blue-400]="isEquipoSelected(eq)"
+                      [class.bg-blue-50]="isEquipoSelected(eq)"
+                      [class.border-gray-200]="!isEquipoSelected(eq)"
+                      (click)="toggleEquipo(eq)">
+                      <input type="checkbox" [checked]="isEquipoSelected(eq)" class="accent-blue-600" (click)="$event.stopPropagation()">
+                      <div class="flex-1 min-w-0">
+                        <p class="font-medium text-sm truncate" [style]="{ color: 'var(--p-text-color)' }">{{ eq.equipoAlmacen.nombre }}</p>
+                        <p class="text-xs text-gray-500">{{ eq.equipoAlmacen.tipo }} · {{ eq.equipoAlmacen.marca || 'Sin marca' }}</p>
+                      </div>
+                      <div class="text-right shrink-0">
+                        <p class="text-xs text-gray-500">Disponible: <strong>{{ eq.cantidadDisponible }}</strong></p>
+                        <div *ngIf="isEquipoSelected(eq)" class="flex items-center gap-1 mt-1" (click)="$event.stopPropagation()">
+                          <button type="button" class="w-6 h-6 bg-gray-200 rounded text-sm font-bold" (click)="setEquipoCantidad(eq, getEquipoCantidad(eq) - 1)">−</button>
+                          <span class="w-8 text-center text-sm font-semibold">{{ getEquipoCantidad(eq) }}</span>
+                          <button type="button" class="w-6 h-6 bg-gray-200 rounded text-sm font-bold" (click)="setEquipoCantidad(eq, getEquipoCantidad(eq) + 1)">+</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ═══ SUMINISTROS DEL LABORATORIO ═══ -->
+                <div *ngIf="formReserva.get('laboratorioId')?.value">
+                  <h4 class="font-semibold text-sm mb-2 mt-3" [style]="{ color: 'var(--p-text-color)' }">
+                    <i class="pi pi-box mr-2 text-orange-500"></i>Suministros disponibles en el laboratorio
+                    <span class="text-xs font-normal text-gray-500 ml-1">(opcional)</span>
+                  </h4>
+
+                  <div *ngIf="!cargandoInventario && suministrosLab.length === 0"
+                    class="text-center py-3 text-gray-400 text-sm">
+                    <i class="pi pi-info-circle mr-1"></i>No hay suministros disponibles en este laboratorio
+                  </div>
+
+                  <div *ngIf="!cargandoInventario && suministrosLab.length > 0" class="grid gap-2">
+                    <div *ngFor="let su of suministrosLab"
+                      class="border rounded-lg px-3 py-2 flex items-center gap-3 cursor-pointer transition-all"
+                      [class.border-orange-400]="isSuministroSelected(su)"
+                      [class.bg-orange-50]="isSuministroSelected(su)"
+                      [class.border-gray-200]="!isSuministroSelected(su)"
+                      (click)="toggleSuministro(su)">
+                      <input type="checkbox" [checked]="isSuministroSelected(su)" class="accent-orange-600" (click)="$event.stopPropagation()">
+                      <div class="flex-1 min-w-0">
+                        <p class="font-medium text-sm truncate" [style]="{ color: 'var(--p-text-color)' }">{{ su.suministroAlmacen.nombre }}</p>
+                        <p class="text-xs text-gray-500">{{ su.suministroAlmacen.categoria }} · {{ su.suministroAlmacen.undMedida }}</p>
+                      </div>
+                      <div class="text-right shrink-0">
+                        <p class="text-xs text-gray-500">Disponible: <strong>{{ su.cantidadDisponible }}</strong></p>
+                        <div *ngIf="isSuministroSelected(su)" class="flex items-center gap-1 mt-1" (click)="$event.stopPropagation()">
+                          <button type="button" class="w-6 h-6 bg-gray-200 rounded text-sm font-bold" (click)="setSuministroCantidad(su, getSuministroCantidad(su) - 1)">−</button>
+                          <span class="w-8 text-center text-sm font-semibold">{{ getSuministroCantidad(su) }}</span>
+                          <button type="button" class="w-6 h-6 bg-gray-200 rounded text-sm font-bold" (click)="setSuministroCantidad(su, getSuministroCantidad(su) + 1)">+</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Resumen selección -->
+                <div *ngIf="equiposSeleccionados.length > 0 || suministrosSeleccionados.length > 0"
+                  class="bg-indigo-50 border border-indigo-200 px-4 py-3 rounded-lg mt-2">
+                  <p class="text-xs text-indigo-500 font-medium uppercase mb-1">Resumen de recursos reservados</p>
+                  <div *ngIf="equiposSeleccionados.length > 0" class="text-sm text-indigo-800">
+                    <i class="pi pi-desktop mr-1"></i> Equipos: {{ equiposSeleccionados.length }} tipo(s),
+                    <span *ngFor="let e of equiposSeleccionados; let last = last">
+                      {{ e.equipoAula.equipoAlmacen.nombre }} (×{{ e.cantidad }}){{ last ? '' : ', ' }}
+                    </span>
+                  </div>
+                  <div *ngIf="suministrosSeleccionados.length > 0" class="text-sm text-indigo-800 mt-1">
+                    <i class="pi pi-box mr-1"></i> Suministros: {{ suministrosSeleccionados.length }} tipo(s),
+                    <span *ngFor="let s of suministrosSeleccionados; let last = last">
+                      {{ s.suministroAula.suministroAlmacen.nombre }} (×{{ s.cantidad }}){{ last ? '' : ', ' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="flex justify-between mt-2">
+                  <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" (onClick)="step = 2"></p-button>
+                  <p-button label="Crear Reserva" icon="pi pi-calendar-plus" severity="success" [loading]="cargando"
+                    [disabled]="conflictoHorario || !capacidadOk || formReserva.invalid || tipoPracticaCtrl.invalid" (onClick)="crearReserva()">
+                  </p-button>
+                </div>
+              </form>
+            </ng-template>
+          </p-step-panel>
+
+        </p-step-panels>
+      </p-stepper>
+    </div>
+
+    <!-- ════════════════════════════ MODO INGRESO ════════════════════════════ -->
+    <div *ngIf="modo === 'ingreso'" class="card pb-6">
+      <div class="grid gap-5">
+
+        <!-- Buscador -->
+        <div>
+          <h3 class="font-semibold text-base mb-3" [style]="{ color: 'var(--p-text-color)' }">
+            <i class="pi pi-id-card mr-2 text-green-600"></i>Identificación del visitante
+          </h3>
+          <form [formGroup]="formIngreso">
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-end">
+              <div>
+                <app-input-component label="Número de identificación" id="ing_identificacion"
+                  formControlName="identificacion" placeholder="Cédula o pasaporte" [maxlength]="50"
+                  [ngClass]="{ 'p-invalid': invalidIngreso('identificacion') }">
+                </app-input-component>
+                <small *ngIf="invalidIngreso('identificacion')" class="text-red-500 text-xs mt-1 block">Mínimo 3
+                  caracteres</small>
+              </div>
+              <p-button label="Buscar" icon="pi pi-search" [loading]="cargandoIngreso"
+                (onClick)="buscarIngresoIdentificacion()">
+              </p-button>
+            </div>
+          </form>
+        </div>
+
+        <p-divider *ngIf="usuarioIngreso"></p-divider>
+
+        <!-- Resultado -->
+        <div *ngIf="usuarioIngreso" class="grid gap-4">
+
+          <!-- Datos persona -->
+          <div class="bg-green-50 border border-green-200 px-4 py-3 rounded-lg">
+            <p class="text-xs text-green-600 font-medium uppercase mb-1">Visitante</p>
+            <p class="font-bold text-green-800 text-lg">{{ usuarioIngreso.nombre }}</p>
+            <div class="flex flex-wrap gap-2 mt-1">
+              <p-tag [value]="usuarioIngreso.tipoUsuario" severity="success"></p-tag>
+              <p-tag *ngIf="usuarioIngreso.cargo" [value]="usuarioIngreso.cargo" severity="info"></p-tag>
+              <p-tag *ngIf="usuarioIngreso.genero" [value]="usuarioIngreso.genero" severity="secondary"></p-tag>
+            </div>
+          </div>
+
+          <!-- Sin reserva -->
+          <div *ngIf="reservasHoy.length === 0"
+            class="bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-lg flex items-center gap-2">
+            <i class="pi pi-exclamation-triangle text-yellow-600"></i>
+            <div>
+              <p class="text-yellow-800 font-semibold text-sm">Sin reserva activa hoy</p>
+              <p class="text-yellow-600 text-xs">La empresa de este visitante no tiene ninguna reserva de aula para el
+                día de hoy.</p>
+            </div>
+          </div>
+
+          <!-- Reserva encontrada -->
+          <div *ngIf="reservaSeleccionada" class="bg-blue-50 border border-blue-200 px-4 py-3 rounded-lg">
+            <p class="text-xs text-blue-500 font-medium uppercase mb-1">Reserva de hoy</p>
+            <p class="font-semibold text-blue-800">Aula: {{ reservaSeleccionada.laboratorio.nomAula || reservaSeleccionada.laboratorio.codAula || reservaSeleccionada.laboratorio.id }}</p>
+            <p class="text-sm text-blue-700 mt-1">
+              <i class="pi pi-clock mr-1"></i>
+              {{ reservaSeleccionada.horaInicio }} — {{ reservaSeleccionada.horaFin }}
+            </p>
+            <p class="text-xs text-blue-500 mt-1">{{ reservaSeleccionada.cantidadAsistentes }} asistente(s) en la reserva</p>
+
+            <!-- Equipos reservados -->
+            <div *ngIf="reservaSeleccionada.equipos && reservaSeleccionada.equipos.length > 0" class="mt-2 border-t border-blue-200 pt-2">
+              <p class="text-xs text-blue-600 font-semibold mb-1"><i class="pi pi-desktop mr-1"></i>Equipos reservados:</p>
+              <div class="flex flex-wrap gap-1">
+                <span *ngFor="let eq of reservaSeleccionada.equipos"
+                  class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
+                  {{ eq.equipoAula.equipoAlmacen?.nombre || eq.equipoAula.id }} × {{ eq.cantidad }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Suministros reservados -->
+            <div *ngIf="reservaSeleccionada.suministros && reservaSeleccionada.suministros.length > 0" class="mt-2 border-t border-blue-200 pt-2">
+              <p class="text-xs text-blue-600 font-semibold mb-1"><i class="pi pi-box mr-1"></i>Suministros reservados:</p>
+              <div class="flex flex-wrap gap-1">
+                <span *ngFor="let su of reservaSeleccionada.suministros"
+                  class="px-2 py-0.5 rounded text-xs"
+                  [ngClass]="su.suministroAula.consumible ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'">
+                  {{ su.suministroAula.suministroAlmacen?.nombre || su.suministroAula.id }} × {{ su.cantidad }}
+                  <span *ngIf="su.suministroAula?.consumible" class="ml-0.5 font-medium">(consumible)</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entrada ya marcada -->
+          <div *ngIf="entradaMarcada"
+            class="bg-green-100 border border-green-300 px-4 py-2 rounded-lg flex items-center gap-2">
+            <i class="pi pi-check-circle text-green-600"></i>
+            <span class="text-green-700 text-sm font-semibold">Entrada registrada correctamente</span>
+          </div>
+
+          <!-- Botones acción -->
+          <div *ngIf="reservaSeleccionada" class="flex flex-wrap gap-3 justify-end">
+            <p-button *ngIf="!entradaMarcada" label="Marcar Entrada" icon="pi pi-sign-in" severity="success"
+              (onClick)="marcarEntradaIngreso()">
+            </p-button>
+            <p-button *ngIf="entradaMarcada" label="Marcar Salida" icon="pi pi-sign-out" severity="danger"
+              (onClick)="marcarSalidaIngreso()">
+            </p-button>
+            <p-button label="Nuevo registro" icon="pi pi-refresh" severity="secondary" (onClick)="reiniciarIngreso()">
+            </p-button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

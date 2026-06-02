@@ -1,0 +1,82 @@
+::ng-deep {
+  .p-paginator {
+    background: linear-gradient(to bottom, var(--neutral-white), var(--neutral-gray-50)) !important;
+    border: none !important;
+    border-top: 2px solid var(--primary-blue) !important;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
+    padding: 1rem !important;
+    box-shadow: var(--shadow-md) !important;
+    
+    .p-paginator-first,
+    .p-paginator-prev,
+    .p-paginator-next,
+    .p-paginator-last,
+    .p-paginator-page {
+      min-width: 2.25rem;
+      height: 2.25rem;
+      border-radius: var(--radius-full) !important;
+      border: none !important;
+      margin: 0 0.125rem;
+      font-weight: 600;
+      transition: all var(--transition-fast) !important;
+    }
+    
+    .p-paginator-pages .p-paginator-page {
+      background: transparent !important;
+      color: var(--neutral-gray-600) !important;
+      
+      &:hover:not(.p-disabled) {
+        background: var(--primary-blue-light) !important;
+        color: var(--neutral-white) !important;
+        transform: scale(1.1);
+      }
+      
+      &.p-highlight {
+        background: var(--gradient-primary) !important;
+        color: var(--neutral-white) !important;
+        box-shadow: var(--shadow-md) !important;
+        transform: scale(1.05);
+      }
+    }
+    
+    .p-paginator-first,
+    .p-paginator-prev,
+    .p-paginator-next,
+    .p-paginator-last {
+      background: var(--neutral-white) !important;
+      color: var(--primary-blue) !important;
+      box-shadow: var(--shadow-sm) !important;
+      
+      &:hover:not(.p-disabled) {
+        background: var(--gradient-primary) !important;
+        color: var(--neutral-white) !important;
+        box-shadow: var(--shadow-md) !important;
+        transform: scale(1.1);
+      }
+      
+      &.p-disabled {
+        opacity: 0.3;
+        background: var(--neutral-gray-100) !important;
+      }
+    }
+    
+    .p-dropdown {
+      border-radius: var(--radius-lg) !important;
+      border: 2px solid var(--neutral-gray-200) !important;
+      transition: all var(--transition-fast) !important;
+      
+      &:hover {
+        border-color: var(--primary-blue) !important;
+        box-shadow: var(--shadow-sm) !important;
+      }
+    }
+
+    .p-paginator-current {
+      color: var(--neutral-gray-600) !important;
+      font-weight: 600;
+      background: var(--neutral-gray-100);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-lg);
+    }
+  }
+}

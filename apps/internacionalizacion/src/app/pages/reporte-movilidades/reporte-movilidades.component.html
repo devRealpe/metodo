@@ -1,0 +1,582 @@
+<div class="min-h-screen bg-surface-50 dark:bg-surface-900 max-w-7xl mx-auto px-4 py-6 space-y-10">
+  <div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+    <!-- Toast -->
+    <p-toast></p-toast>
+
+    <!-- Header Section -->
+    <div class="bg-surface-50 dark:bg-surface-900 rounded-lg shadow-md p-8 mb-8 transition-shadow duration-200">
+      <div class="flex items-center space-x-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+          <i class="pi pi-chart-line text-white text-base"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-primary">Reporte de Movilidades</h1>
+          <p class="text-sm text-surface-800 dark:text-surface-200 mt-1">Análisis completo de movilidades con información relacionada</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navegación por pestañas -->
+    <p-tabs class="mt-6">
+      <p-tablist>
+        <p-tab value="0">Dashboard</p-tab>
+        <p-tab value="1">Flujo de Autorizaciones</p-tab>
+
+        <p-tab value="4">Vista de Datos</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="0">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Total Movilidades -->
+      <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl shadow-lg ring-2 ring-blue-600/25 dark:ring-blue-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer dashboard-card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-1">Total Movilidades</p>
+            <p class="text-4xl font-bold text-blue-900 dark:text-blue-100">{{ estadisticas().total }}</p>
+            <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">Movilidades registradas</p>
+          </div>
+          <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+            <i class="pi pi-list text-white text-2xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tasa de Ejecución -->
+      <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl shadow-lg ring-2 ring-green-600/25 dark:ring-green-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer dashboard-card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-green-700 dark:text-green-300 mb-1">Tasa de Ejecución</p>
+            <p class="text-4xl font-bold text-green-900 dark:text-green-100">{{ estadisticas().tasaEjecucion }}%</p>
+            <p class="text-xs text-green-600 dark:text-green-400 mt-1">{{ estadisticas().activas }} movilidades activas</p>
+          </div>
+          <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+            <i class="pi pi-chart-line text-white text-2xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estudiantes Beneficiados -->
+      <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl shadow-lg ring-2 ring-purple-600/25 dark:ring-purple-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer dashboard-card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-1">Estudiantes</p>
+            <p class="text-4xl font-bold text-purple-900 dark:text-purple-100">{{ estadisticas().estudiantesTotales }}</p>
+            <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">Beneficiados totales</p>
+          </div>
+          <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center shadow-lg">
+            <i class="pi pi-users text-white text-2xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Presupuesto Total -->
+      <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-xl shadow-lg ring-2 ring-orange-600/25 dark:ring-orange-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer dashboard-card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-orange-700 dark:text-orange-300 mb-1">Presupuesto</p>
+            <p class="text-3xl font-bold text-orange-900 dark:text-orange-100">${{ estadisticas().presupuestoTotal | number:'1.0-0' }}</p>
+            <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">{{ estadisticas().apoyosTotales }} apoyos asignados</p>
+          </div>
+          <div class="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
+            <i class="pi pi-dollar text-white text-2xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Métricas Secundarias -->
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+      <!-- Nacional -->
+      <div class="bg-surface-0 dark:bg-surface-900 rounded-lg shadow-md p-4 text-center transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+          <i class="pi pi-map-marker text-orange-600 dark:text-orange-400 text-lg"></i>
+        </div>
+        <p class="text-2xl font-bold text-surface-900 dark:text-surface-100">{{ estadisticas().nacional }}</p>
+        <p class="text-xs text-surface-600 dark:text-surface-400">Nacional</p>
+      </div>
+
+      <!-- Internacional -->
+      <div class="bg-surface-0 dark:bg-surface-900 rounded-lg shadow-md p-4 text-center transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+          <i class="pi pi-globe text-blue-600 dark:text-blue-400 text-lg"></i>
+        </div>
+        <p class="text-2xl font-bold text-surface-900 dark:text-surface-100">{{ estadisticas().internacional }}</p>
+        <p class="text-xs text-surface-600 dark:text-surface-400">Internacional</p>
+      </div>
+
+      <!-- Estudiantil -->
+      <div class="bg-surface-0 dark:bg-surface-900 rounded-lg shadow-md p-4 text-center transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+          <i class="pi pi-graduation-cap text-green-600 dark:text-green-400 text-lg"></i>
+        </div>
+        <p class="text-2xl font-bold text-surface-900 dark:text-surface-100">{{ estadisticas().estudiantil }}</p>
+        <p class="text-xs text-surface-600 dark:text-surface-400">Estudiantil</p>
+      </div>
+
+      <!-- Profesoral -->
+      <div class="bg-surface-0 dark:bg-surface-900 rounded-lg shadow-md p-4 text-center transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+          <i class="pi pi-briefcase text-indigo-600 dark:text-indigo-400 text-lg"></i>
+        </div>
+        <p class="text-2xl font-bold text-surface-900 dark:text-surface-100">{{ estadisticas().profesoral }}</p>
+        <p class="text-xs text-surface-600 dark:text-surface-400">Profesoral</p>
+      </div>
+
+      <!-- Países -->
+      <div class="bg-surface-0 dark:bg-surface-900 rounded-lg shadow-md p-4 text-center transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div class="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+          <i class="pi pi-flag text-teal-600 dark:text-teal-400 text-lg"></i>
+        </div>
+        <p class="text-2xl font-bold text-surface-900 dark:text-surface-100">{{ estadisticas().paisesDistintos }}</p>
+        <p class="text-xs text-surface-600 dark:text-surface-400">Países</p>
+      </div>
+
+      <!-- Convenios -->
+      <div class="bg-surface-0 dark:bg-surface-900 rounded-lg shadow-md p-4 text-center transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div class="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+          <i class="pi pi-file text-pink-600 dark:text-pink-400 text-lg"></i>
+        </div>
+        <p class="text-2xl font-bold text-surface-900 dark:text-surface-100">{{ estadisticas().conveniosActivos }}</p>
+        <p class="text-xs text-surface-600 dark:text-surface-400">Convenios</p>
+      </div>
+    </div>
+
+    <!-- Gráficos y Visualizaciones -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Gráfico de Cobertura -->
+      <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-surface-900 dark:text-surface-100">Cobertura Geográfica</h3>
+          <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+            <i class="pi pi-chart-pie text-orange-600 dark:text-orange-400"></i>
+          </div>
+        </div>
+        <div class="h-64">
+          <p-chart type="doughnut" [data]="chartDataCobertura" [options]="chartOptions"></p-chart>
+        </div>
+      </div>
+
+      <!-- Gráfico de Tipo de Movilidad -->
+      <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-surface-900 dark:text-surface-100">Tipo de Movilidad</h3>
+          <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+            <i class="pi pi-graduation-cap text-green-600 dark:text-green-400"></i>
+          </div>
+        </div>
+        <div class="h-64">
+          <p-chart type="doughnut" [data]="chartDataTipo" [options]="chartOptions"></p-chart>
+        </div>
+      </div>
+
+      <!-- Gráfico de Estado -->
+      <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-surface-900 dark:text-surface-100">Estado de Movilidades</h3>
+          <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-blue-600 dark:text-blue-400"></i>
+          </div>
+        </div>
+        <div class="h-64">
+          <p-chart type="doughnut" [data]="chartDataEstado" [options]="chartOptions"></p-chart>
+        </div>
+      </div>
+    </div>
+        </p-tabpanel>
+
+        <!-- Reporte de Autorizaciones -->
+        <p-tabpanel value="1">
+        <div class="space-y-6">
+          <!-- KPIs de Autorizaciones -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-xl shadow-lg ring-2 ring-yellow-600/25 dark:ring-yellow-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-yellow-700 dark:text-yellow-300 mb-1">Pendientes</p>
+                  <p class="text-4xl font-bold text-yellow-900 dark:text-yellow-100">{{ estadisticas().autorizacionesPendientes }}</p>
+                  <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Requieren atención</p>
+                </div>
+                <div class="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-clock text-white text-2xl"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl shadow-lg ring-2 ring-green-600/25 dark:ring-green-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-green-700 dark:text-green-300 mb-1">Aprobadas</p>
+                  <p class="text-4xl font-bold text-green-900 dark:text-green-100">{{ estadisticas().autorizacionesAprobadas }}</p>
+                  <p class="text-xs text-green-600 dark:text-green-400 mt-1">Completadas</p>
+                </div>
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-2xl"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-xl shadow-lg ring-2 ring-red-600/25 dark:ring-red-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-red-700 dark:text-red-300 mb-1">Rechazadas</p>
+                  <p class="text-4xl font-bold text-red-900 dark:text-red-100">{{ estadisticas().autorizacionesRechazadas }}</p>
+                  <p class="text-xs text-red-600 dark:text-red-400 mt-1">Requieren revisión</p>
+                </div>
+                <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-times text-white text-2xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gráfico de Estado de Autorizaciones -->
+          <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-surface-900 dark:text-surface-100">Estado de Autorizaciones</h3>
+              <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <i class="pi pi-chart-pie text-purple-600 dark:text-purple-400"></i>
+              </div>
+            </div>
+            <div class="h-80">
+              <p-chart type="doughnut" [data]="chartDataAutorizaciones" [options]="chartOptions"></p-chart>
+            </div>
+          </div>
+
+          <!-- Tiempo Promedio de Aprobación -->
+          <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-surface-900 dark:text-surface-100">Eficiencia del Proceso</h3>
+              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <i class="pi pi-clock text-blue-600 dark:text-blue-400"></i>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
+                <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">Tiempo Promedio de Aprobación</p>
+                <p class="text-3xl font-bold text-blue-900 dark:text-blue-100">{{ estadisticas().tiempoPromedioAprobacion }} días</p>
+              </div>
+              <div class="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
+                <p class="text-sm text-green-700 dark:text-green-300 mb-2">Tasa de Aprobación</p>
+                <p class="text-3xl font-bold text-green-900 dark:text-green-100">
+                  {{ calcularTasaAprobacion() }}%
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        </p-tabpanel>
+
+
+
+        <!-- Vista de Datos -->
+        <p-tabpanel value="4">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-lg shadow-md p-6 transition-shadow duration-200">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-3">
+          <i class="pi pi-filter text-surface-600 dark:text-surface-400 text-xl cursor-pointer hover:text-blue-600 transition-all duration-200"
+             [class.rotate-180]="mostrarFiltros"
+             (click)="mostrarFiltros = !mostrarFiltros"></i>
+          <span class="text-lg font-medium text-surface-700 dark:text-surface-300">Filtros de Búsqueda</span>
+        </div>
+      </div>
+      <div *ngIf="mostrarFiltros" class="transition-all duration-300 ease-in-out">
+        <form [formGroup]="filtroForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <app-input-component
+            [control]="filtroForm.get('texto')"
+            label="Buscar"
+            placeholder="Movilidad, estudiante, programa...">
+          </app-input-component>
+
+          <app-select-component
+            [control]="filtroForm.get('tipo')"
+            [options]="opcionesTipo"
+            optionLabel="nombre"
+            label="Tipo Movilidad"
+            placeholder="Seleccionar tipo">
+          </app-select-component>
+
+          <app-select-component
+            [control]="filtroForm.get('modalidad')"
+            [options]="opcionesModalidad"
+            optionLabel="nombre"
+            label="Modalidad"
+            placeholder="Seleccionar modalidad">
+          </app-select-component>
+
+          <app-select-component
+            [control]="filtroForm.get('estado')"
+            [options]="opcionesEstado"
+            optionLabel="label"
+            optionValue="value"
+            label="Estado"
+            placeholder="Seleccionar estado">
+          </app-select-component>
+
+          <app-select-component
+            [control]="filtroForm.get('cobertura')"
+            [options]="opcionesCobertura"
+            optionLabel="label"
+            optionValue="value"
+            label="Cobertura"
+            placeholder="Seleccionar cobertura">
+          </app-select-component>
+
+          <app-select-component
+            [control]="filtroForm.get('pais')"
+            [options]="paises"
+            optionLabel="label"
+            optionValue="value"
+            label="País"
+            placeholder="Seleccionar país">
+          </app-select-component>
+
+          <app-select-component
+            [control]="filtroForm.get('programa')"
+            [options]="programas"
+            optionLabel="label"
+            optionValue="value"
+            label="Programa"
+            placeholder="Seleccionar programa">
+          </app-select-component>
+
+          <app-select-component
+            [control]="filtroForm.get('convenio')"
+            [options]="convenios"
+            optionLabel="label"
+            optionValue="value"
+            label="Convenio"
+            placeholder="Seleccionar convenio">
+          </app-select-component>
+
+          <div class="flex items-end md:col-span-2 lg:col-span-3 xl:col-span-4">
+            <p-button
+              label="Limpiar Filtros"
+              icon="pi pi-times"
+              severity="secondary"
+              (onClick)="limpiarFiltros()"
+              class="mr-2">
+            </p-button>
+            <p-button
+              label="Actualizar Datos"
+              icon="pi pi-refresh"
+              severity="info"
+              (onClick)="cargarDatos()"
+              [loading]="cargando()">
+            </p-button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tabla de Resultados -->
+    <div class="rounded-2xl shadow-lg ring-2 ring-blue-600/25 dark:ring-blue-800/25 overflow-hidden hover:shadow-xl transition-all duration-300">
+      <div class="bg-gradient-to-br from-[#0071bc] to-[#005a8a] px-6 py-5 border-l-4 border-primary">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+              <i class="pi pi-table text-white"></i>
+            </div>
+            <div>
+              <span class="font-medium text-white">Movilidades ({{ movilidadesFiltradas().length }})</span>
+              <p class="text-xs text-white/80 mt-1">Vista detallada con filtros aplicados</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <p-button
+              label="CSV"
+              icon="pi pi-download"
+              severity="success"
+              size="small"
+              (onClick)="exportarCSV()"
+              [disabled]="cargando()"
+              pTooltip="Exportar a CSV">
+            </p-button>
+            <p-button
+              label="Excel"
+              icon="pi pi-file-excel"
+              severity="success"
+              size="small"
+              (onClick)="exportarExcel()"
+              [disabled]="cargando()"
+              pTooltip="Exportar a Excel">
+            </p-button>
+            <p-button
+              label="PDF"
+              icon="pi pi-file-pdf"
+              severity="danger"
+              size="small"
+              (onClick)="exportarPDF()"
+              [loading]="cargando()"
+              pTooltip="Exportar PDFs (se descargan como ZIP)">
+            </p-button>
+            <p-button
+              label="Convenios Excel"
+              icon="pi pi-file-excel"
+              severity="info"
+              size="small"
+              (onClick)="exportarConveniosExcel()"
+              pTooltip="Exportar convenios completos">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen de Resultados Filtrados -->
+      <div class="bg-surface-50 dark:bg-surface-800 px-6 py-4 border-b border-surface-200 dark:border-surface-700">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div>
+            <p class="text-sm text-surface-600 dark:text-surface-400">Mostrando</p>
+            <p class="text-xl font-bold text-surface-900 dark:text-surface-100">{{ movilidadesFiltradas().length }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-surface-600 dark:text-surface-400">Activas</p>
+            <p class="text-xl font-bold text-green-600">{{ movilidadesFiltradasActivas }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-surface-600 dark:text-surface-400">Estudiantes</p>
+            <p class="text-xl font-bold text-purple-600">{{ totalEstudiantesFiltrados }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-surface-600 dark:text-surface-400">Apoyos</p>
+            <p class="text-xl font-bold text-orange-600">{{ totalApoyosFiltrados }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <p-table
+          [value]="movilidadesFiltradas()"
+          [loading]="cargando()"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[5, 10, 25, 50]"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+          [globalFilterFields]="['movilidad.nombreMovilidad', 'estudiantes', 'programa.nombre', 'convenio.objeto']"
+          responsiveLayout="scroll">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="movilidad.nombreMovilidad">Movilidad <p-sortIcon field="movilidad.nombreMovilidad"></p-sortIcon></th>
+              <th pSortableColumn="estudiantes">Estudiantes <p-sortIcon field="estudiantes"></p-sortIcon></th>
+              <th pSortableColumn="programa.nombre">Programa <p-sortIcon field="programa.nombre"></p-sortIcon></th>
+              <th pSortableColumn="convenio.objeto">Convenio <p-sortIcon field="convenio.objeto"></p-sortIcon></th>
+              <th pSortableColumn="movilidad.pais">País <p-sortIcon field="movilidad.pais"></p-sortIcon></th>
+              <th pSortableColumn="movilidad.tipoMovilidad">Tipo <p-sortIcon field="movilidad.tipoMovilidad"></p-sortIcon></th>
+              <th pSortableColumn="movilidad.modalidad">Modalidad <p-sortIcon field="movilidad.modalidad"></p-sortIcon></th>
+              <th pSortableColumn="movilidad.cobertura">Cobertura <p-sortIcon field="movilidad.cobertura"></p-sortIcon></th>
+              <th pSortableColumn="movilidad.fechaInicio">Fecha Inicio <p-sortIcon field="movilidad.fechaInicio"></p-sortIcon></th>
+              <th pSortableColumn="movilidad.estado">Estado <p-sortIcon field="movilidad.estado"></p-sortIcon></th>
+              <th>Apoyos</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-movilidadCompleta>
+            <tr>
+              <td>
+                <div class="font-medium text-surface-900 dark:text-surface-100">
+                  {{ movilidadCompleta.movilidad.nombreMovilidad }}
+                </div>
+              </td>
+              <td>
+                <div *ngIf="movilidadCompleta.estudiantes.length > 0; else noEstudiantes">
+                  <div *ngFor="let estudiante of movilidadCompleta.estudiantes; let i = index" class="mb-1">
+                    <div class="font-medium">{{ estudiante.nombre }}</div>
+                    <div class="text-sm text-surface-600 dark:text-surface-400">
+                      {{ estudiante.idEstudiante }}
+                    </div>
+                    <div *ngIf="i < movilidadCompleta.estudiantes.length - 1" class="border-t border-surface-200 dark:border-surface-700 mt-1"></div>
+                  </div>
+                </div>
+                <ng-template #noEstudiantes>
+                  <span class="text-surface-500">Sin estudiantes asignados</span>
+                </ng-template>
+              </td>
+              <td>
+                <div *ngIf="movilidadCompleta.programa; else noPrograma">
+                  <div class="font-medium">{{ movilidadCompleta.programa.nombre }}</div>
+                  <div class="text-sm text-surface-600 dark:text-surface-400">
+                    {{ movilidadCompleta.programa.facultad }}
+                  </div>
+                </div>
+                <ng-template #noPrograma>
+                  <span class="text-surface-500">Sin asignar</span>
+                </ng-template>
+              </td>
+              <td>
+                <div *ngIf="movilidadCompleta.convenio; else noConvenio">
+                  <div class="font-medium">{{ movilidadCompleta.convenio.codigo }}</div>
+                  <div class="text-sm text-surface-600 dark:text-surface-400">
+                    {{ movilidadCompleta.convenio.institucionDestino }}
+                  </div>
+                </div>
+                <ng-template #noConvenio>
+                  <span class="text-surface-500">Sin asignar</span>
+                </ng-template>
+              </td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">{{ movilidadCompleta.movilidad.pais }}</span>
+                  <p-tag
+                    [severity]="obtenerSeveridadCobertura(movilidadCompleta.movilidad.cobertura)"
+                    [value]="movilidadCompleta.movilidad.cobertura">
+                  </p-tag>
+                </div>
+              </td>
+              <td>
+                <p-tag [value]="movilidadCompleta.movilidad.tipoMovilidad"></p-tag>
+              </td>
+              <td>
+                <p-tag [value]="movilidadCompleta.movilidad.modalidad" severity="info"></p-tag>
+              </td>
+              <td>
+                <p-tag
+                  [severity]="obtenerSeveridadCobertura(movilidadCompleta.movilidad.cobertura)"
+                  [value]="movilidadCompleta.movilidad.cobertura">
+                </p-tag>
+              </td>
+              <td>
+                <div *ngIf="movilidadCompleta.movilidad.fechaInicio; else noFecha">
+                  {{ movilidadCompleta.movilidad.fechaInicio | date:'dd/MM/yyyy' }}
+                </div>
+                <ng-template #noFecha>
+                  <span class="text-surface-500">-</span>
+                </ng-template>
+              </td>
+              <td>
+                <p-tag
+                  [severity]="obtenerSeveridadEstado(movilidadCompleta.movilidad.estado)"
+                  [value]="movilidadCompleta.movilidad.estado">
+                </p-tag>
+              </td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <p-tag [value]="movilidadCompleta.apoyosEconomicos.length + ' apoyos'" severity="success"></p-tag>
+                  <div *ngIf="movilidadCompleta.apoyosEconomicos.length > 0" class="text-xs text-surface-600">
+                    {{ contarApoyosConPresupuesto(movilidadCompleta.apoyosEconomicos) }} con presupuesto
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="11" class="text-center py-8">
+                <div class="flex flex-col items-center gap-2">
+                  <i class="pi pi-info-circle text-4xl text-surface-400"></i>
+                  <span class="text-surface-600 dark:text-surface-400">No se encontraron movilidades con los filtros aplicados</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+
+  </div>
+</div>

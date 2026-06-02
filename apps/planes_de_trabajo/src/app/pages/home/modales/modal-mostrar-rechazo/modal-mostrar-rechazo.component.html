@@ -1,0 +1,34 @@
+<p-dialog [(visible)]="visible" [modal]="true" [closable]="true" [dismissableMask]="true" [closeOnEscape]="true"
+          styleClass="rejection-modal"
+          [style]="{ width: '90%', 'max-width': '600px' }" 
+          header="Motivo de Rechazo"
+          (onHide)="onClose()">
+
+  <div class="rejection-content">
+    <div class="rejection-header flex align-items-start gap-4">
+      <div class="rejection-icon">
+        <i class="pi pi-exclamation-triangle text-xl"></i>
+      </div>
+      <div class="flex-1">
+        <h3 class="rejection-title">
+          {{ titulo }}
+        </h3>
+        <p class="rejection-subtitle">
+          Motivo del rechazo:
+        </p>
+      </div>
+    </div>
+
+    <div class="rejection-message">
+      <p class="message-text">
+        {{ motivo || 'Cargando motivo de rechazo...' }}
+      </p>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end">
+      <p-button label="Cerrar" icon="pi pi-times" severity="secondary" (onClick)="onClose()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

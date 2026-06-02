@@ -1,0 +1,82 @@
+.cv-viewer-container {
+  max-width: 100%;
+  
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    
+    label {
+      display: block;
+    }
+    
+    p {
+      margin: 0;
+    }
+  }
+}
+
+// Estilos adaptables al tema
+.cv-title {
+  color: var(--p-text-color) !important;
+}
+
+.cv-subtitle {
+  color: var(--p-text-muted-color) !important;
+}
+
+.cv-text {
+  color: var(--p-text-color) !important;
+}
+
+.cv-label {
+  color: var(--p-text-muted-color) !important;
+}
+
+.cv-info-box {
+  background: var(--p-surface-50) !important;
+  border: 1px solid var(--p-surface-200) !important;
+  color: var(--p-text-color) !important;
+}
+
+.cv-divider {
+  border-color: var(--p-surface-200) !important;
+}
+
+.cv-icon-primary {
+  color: var(--p-primary-color) !important;
+}
+
+.cv-badge {
+  background: var(--p-primary-50) !important;
+  color: var(--p-primary-700) !important;
+}
+
+.cv-badge-number {
+  background: var(--p-primary-100) !important;
+  color: var(--p-primary-600) !important;
+}
+
+// Estilos mínimos para ajustes específicos
+:host ::ng-deep {
+  .p-fieldset {
+    margin-bottom: 1rem;
+    
+    .p-fieldset-legend {
+      font-weight: 600;
+      font-size: 1.125rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+    }
+    
+    .p-fieldset-content {
+      padding: 1.5rem;
+    }
+  }
+  
+  // Estilos para badges numerados
+  .w-10.h-10 {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+  }
+}

@@ -1,0 +1,132 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="flex flex-col gap-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-[var(--p-text-color)]">Gestión de Periodos</h2>
+    <p-button label="Crear Periodo" icon="pi pi-plus" (onClick)="abrirCrear()"></p-button>
+  </div>
+
+  <!-- Cargando -->
+  @if (cargando()) {
+    <p-card>
+      @for (i of [1,2,3]; track i) {
+        <p-skeleton width="100%" height="40px" styleClass="mb-2"></p-skeleton>
+      }
+    </p-card>
+  }
+
+  <!-- Tabla -->
+  @if (!cargando()) {
+    <p-card styleClass="sedu-card">
+      @if (periodos().length === 0) {
+        <div class="text-center py-12 text-[var(--p-text-secondary-color)]">
+          <i class="pi pi-calendar text-5xl mb-4"></i>
+          <p class="text-lg">No hay periodos creados</p>
+          <p-button label="Crear primer periodo" icon="pi pi-plus" severity="secondary" class="mt-4"
+            (onClick)="abrirCrear()"></p-button>
+        </div>
+      } @else {
+        <p-table [value]="periodos()" [paginator]="true" [rows]="10"
+          styleClass="p-datatable-sm p-datatable-striped" [rowHover]="true">
+          <ng-template #header>
+            <tr>
+              <th>Nombre</th>
+              <th>Formato</th>
+              <th>Fecha Inicio</th>
+              <th>Fecha Fin</th>
+              <th class="text-center">Estado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-p>
+            <tr>
+              <td>{{ p.nombre }}</td>
+              <td>{{ p.formatoNombre }}</td>
+              <td>{{ p.fechaInicio | date:'dd/MM/yyyy' }}</td>
+              <td>{{ p.fechaFin | date:'dd/MM/yyyy' }}</td>
+              <td class="text-center">
+                <p-tag [value]="p.estado" [severity]="getEstadoSeverity(p.estado)"></p-tag>
+              </td>
+              <td class="text-center">
+                <div class="flex gap-1 justify-center">
+                  <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
+                    pTooltip="Ver detalle" (onClick)="verDetalle(p)"></p-button>
+                  @if (p.estado === 'BORRADOR') {
+                    <p-button icon="pi pi-pencil" severity="secondary" [text]="true" [rounded]="true"
+                      pTooltip="Editar" (onClick)="abrirEditar(p)"></p-button>
+                    <p-button icon="pi pi-check-circle" severity="success" [text]="true" [rounded]="true"
+                      pTooltip="Activar" (onClick)="activar(p)"></p-button>
+                  }
+                  @if (p.estado === 'ACTIVO') {
+                    <p-button icon="pi pi-lock" severity="danger" [text]="true" [rounded]="true"
+                      pTooltip="Cerrar" (onClick)="cerrar(p)"></p-button>
+                  }
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </p-card>
+  }
+</div>
+
+<!-- Modal Crear/Editar -->
+<p-dialog
+  [header]="modoEdicion() ? 'Editar Periodo' : 'Crear Periodo'"
+  [(visible)]="mostrarModal"
+  [modal]="true"
+  [style]="{ width: '700px', height: 'auto' }"
+  [closable]="true"
+>
+  <form [formGroup]="formulario" (ngSubmit)="guardar()" class="flex flex-col gap-4 pt-2">
+    <div class="flex flex-col gap-1.5">
+      <label for="nombre" class="text-sm font-semibold">Nombre *</label>
+      <input pInputText id="nombre" formControlName="nombre" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="formatoId" class="text-sm font-semibold">Formato *</label>
+      <p-select
+        id="formatoId"
+        formControlName="formatoId"
+        [options]="formatos()"
+        optionLabel="nombre"
+        optionValue="id"
+        placeholder="Seleccione un formato"
+        styleClass="w-full"
+        [disabled]="modoEdicion()"
+        [appendTo]="'body'"
+      ></p-select>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label for="fechaInicio" class="text-sm font-semibold">Fecha Inicio *</label>
+        <p-datepicker id="fechaInicio" formControlName="fechaInicio" dateFormat="dd/mm/yy" styleClass="w-full" [appendTo]="'body'"></p-datepicker>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label for="fechaFin" class="text-sm font-semibold">Fecha Fin *</label>
+        <p-datepicker id="fechaFin" formControlName="fechaFin" dateFormat="dd/mm/yy" styleClass="w-full" [appendTo]="'body'"></p-datepicker>
+      </div>
+    </div>
+    <div class="flex justify-end gap-2 pt-4 border-t border-[var(--p-content-border-color)]">
+      <p-button label="Cancelar" severity="secondary" (onClick)="mostrarModal.set(false)"></p-button>
+      <p-button label="Guardar" icon="pi pi-check" type="submit" [disabled]="formulario.invalid"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Modal Detalle -->
+<p-dialog header="Detalle del Periodo" [(visible)]="mostrarDetalle" [modal]="true" [style]="{ width: '500px' }">
+  @if (periodoDetalle()) {
+    <div class="flex flex-col gap-3 pt-2">
+      <div><span class="font-medium text-[var(--p-text-secondary-color)]">Nombre:</span> {{ periodoDetalle()!.nombre }}</div>
+      <div><span class="font-medium text-[var(--p-text-secondary-color)]">Formato:</span> {{ periodoDetalle()!.formatoNombre }}</div>
+      <div><span class="font-medium text-[var(--p-text-secondary-color)]">Fecha Inicio:</span> {{ periodoDetalle()!.fechaInicio | date:'dd/MM/yyyy' }}</div>
+      <div><span class="font-medium text-[var(--p-text-secondary-color)]">Fecha Fin:</span> {{ periodoDetalle()!.fechaFin | date:'dd/MM/yyyy' }}</div>
+      <div><span class="font-medium text-[var(--p-text-secondary-color)]">Estado:</span>
+        <p-tag [value]="periodoDetalle()!.estado" [severity]="getEstadoSeverity(periodoDetalle()!.estado)" class="ml-2"></p-tag>
+      </div>
+    </div>
+  }
+</p-dialog>

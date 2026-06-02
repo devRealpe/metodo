@@ -1,0 +1,940 @@
+<div class="min-h-screen bg-surface-50 dark:bg-surface-900 max-w-7xl mx-auto px-4 py-6 space-y-10">
+  <!-- Header Section -->
+  <div class="text-center mb-8">
+    <h1 class="text-3xl md:text-4xl font-bold text-surface-900 dark:text-surface-0">Gestión de Autorizaciones</h1>
+    <hr class="w-24 mx-auto mt-2 border-blue-300">
+    <p class="text-base text-surface-500 dark:text-surface-400 mt-4">Sistema de Aprobaciones Escaladas</p>
+  </div>
+
+<p-toast></p-toast>
+<p-confirmDialog key="autorizacion-confirm" appendTo="body"></p-confirmDialog>
+
+
+  <!-- Estadísticas Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Movilidades (limpia filtros) -->
+    <div role="button" tabindex="0" (click)="clearFilters()" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg ring-2 ring-blue-600/25 dark:ring-blue-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+         [style.boxShadow]="filtroForm.value.estado === '' ? '0 10px 30px rgba(2,132,199,0.12)' : null">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Total Movilidades</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.total }}</p>
+          <p class="text-xs font-normal text-surface-600 dark:text-surface-400 mt-1">{{ getFilteredTotal() }} en vista actual</p>
+        </div>
+        <div class="w-16 h-16 bg-blue-200 dark:bg-blue-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-send text-blue-600 dark:text-blue-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Movilidades Aprobadas (filtrar por estado = 'aprobado') -->
+    <div role="button" tabindex="0" (click)="toggleEstadoFilter('aprobado')" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg ring-2 ring-green-600/25 dark:ring-green-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+         [style.boxShadow]="filtroForm.value.estado === 'aprobado' ? '0 10px 30px rgba(16,185,129,0.12)' : null">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Aprobadas Completas</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.aprobadas }}</p>
+          <p class="text-xs font-normal text-surface-600 dark:text-surface-400 mt-1">{{ estadisticas.porcentajeAprobadas.toFixed(1) }}% del total</p>
+        </div>
+        <div class="w-16 h-16 bg-green-200 dark:bg-green-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-check-circle text-green-600 dark:text-green-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Movilidades Parciales (filtrar por estado = 'parcial') -->
+    <div role="button" tabindex="0" (click)="toggleEstadoFilter('parcial')" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg ring-2 ring-orange-600/25 dark:ring-orange-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+         [style.boxShadow]="filtroForm.value.estado === 'parcial' ? '0 10px 30px rgba(249,115,22,0.12)' : null">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Aprobadas Parciales</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.parciales }}</p>
+          <p class="text-xs font-normal text-surface-600 dark:text-surface-400 mt-1">{{ estadisticas.porcentajeParciales.toFixed(1) }}% del total</p>
+        </div>
+        <div class="w-16 h-16 bg-orange-200 dark:bg-orange-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-clock text-orange-600 dark:text-orange-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Movilidades Pendientes (filtrar por estado = 'pendiente') -->
+    <div role="button" tabindex="0" (click)="toggleEstadoFilter('pendiente')" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg ring-2 ring-purple-600/25 dark:ring-purple-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+         [style.boxShadow]="filtroForm.value.estado === 'pendiente' ? '0 10px 30px rgba(139,92,246,0.12)' : null">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Pendientes</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.pendientes }}</p>
+          <p class="text-xs font-normal text-surface-600 dark:text-surface-400 mt-1">{{ estadisticas.porcentajePendientes.toFixed(1) }}% del total</p>
+        </div>
+        <div class="w-16 h-16 bg-purple-200 dark:bg-purple-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-hourglass text-purple-600 dark:text-purple-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros Principales -->
+  <div [formGroup]="filtroForm">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div>
+          <app-select-component
+            id="texto-dropdown"
+            label="Búsqueda General"
+            [control]="filtroForm.get('texto')"
+            [options]="opcionesMovilidades"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccionar movilidad..."
+            [filter]="true"
+            [showClear]="true"
+            appendTo="body"
+            (onChange)="aplicarFiltros()"
+            (onShow)="onDropdownShow()">
+          </app-select-component>
+        </div>
+
+        <div>
+          <app-select-component
+            id="estado-select"
+            label="Estado"
+            [control]="filtroForm.get('estado')"
+            [options]="opcionesEstado"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Todos los estados"
+            [showClear]="true"
+            appendTo="body">
+          </app-select-component>
+        </div>
+
+        <div>
+          <app-select-component
+            id="nivel-select"
+            label="Nivel por aprobar"
+            [control]="filtroForm.get('nivel')"
+            [options]="opcionesNivel"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Todos los niveles"
+            [showClear]="true"
+            appendTo="body">
+          </app-select-component>
+        </div>
+      </div>
+    </div>
+
+  <!-- Tabs principales -->
+  <p-tabs [(value)]="activeTab">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+      <!-- Tab: Dashboard -->
+      <div role="button" tabindex="0" (click)="activeTab.set('0')"
+        class="bg-surface-0 dark:bg-surface-900 rounded-xl p-5 transition-all duration-300 hover:scale-105 cursor-pointer">
+        <p class="text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">Autorizaciones</p>
+        <p class="text-xs text-surface-500 dark:text-surface-400">Tabla de movilidades</p>
+      </div>
+      <!-- Tab: Flujo de Autorizaciones -->
+      <div role="button" tabindex="0" (click)="activeTab.set('1')"
+        class="bg-surface-0 dark:bg-surface-900 rounded-xl p-5 transition-all duration-300 hover:scale-105 cursor-pointer">
+        <p class="text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">Movilidades</p>
+        <p class="text-xs text-surface-500 dark:text-surface-400">Detalles de la movilidad</p>
+      </div>
+      <!-- Tab: Vista de Datos -->
+      <div role="button" tabindex="0" (click)="activeTab.set('2')"
+        class="bg-surface-0 dark:bg-surface-900 rounded-xl p-5 transition-all duration-300 hover:scale-105 cursor-pointer">
+        <p class="text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">Autorizaciones</p>
+        <p class="text-xs text-surface-500 dark:text-surface-400">Niveles de autorización</p>
+      </div>
+    </div>
+
+      <p-tabpanels class="mt-6">
+
+        <!-- TAB 0: Tabla de Movilidades -->
+        <p-tabpanel value="0">
+          <lib-info-table
+            [data]="datosActuales"
+            [columns]="columnasActuales"
+            [actions]="accionesActuales"
+            [loading]="cargando()"
+          >
+            <ng-template #customCell let-row let-column="column">
+              <ng-container *ngIf="column.field === 'nombreMovilidad'">
+                <span [attr.id]="row.movilidadId">{{ row.nombreMovilidad }}</span>
+              </ng-container>
+              <ng-container *ngIf="column.field === 'progreso'">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1">
+                    <p-progressBar
+                      [value]="(row.nivelesAprobados / row.totalNiveles) * 100"
+                      [showValue]="false"
+                      [style]="{ 'height': '8px', 'background': 'var(--p-surface-200)' }"
+                    ></p-progressBar>
+                  </div>
+                  <span class="text-sm font-medium whitespace-nowrap">
+                    {{ row.nivelesAprobados }}/{{ row.totalNiveles }}
+                  </span>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="column.field === 'aprobado'">
+                <p-tag
+                  [severity]="obtenerSeveridadEstado(row.aprobado)"
+                  [value]="obtenerTextoEstado(row.aprobado)">
+                </p-tag>
+              </ng-container>
+            </ng-template>
+          </lib-info-table>
+        </p-tabpanel>
+
+        <!-- TAB 1: Detalles de la movilidad -->
+        <p-tabpanel value="1">
+          <div class="rounded-2xl shadow-lg ring-2 ring-blue-600/25 dark:ring-blue-800/25 hover:shadow-xl transition-all duration-300 w-full max-w-full mx-auto mb-4">
+    <div class="bg-gradient-to-br from-[#0071bc] to-[#005a8a] px-6 py-5 rounded-t-2xl">
+      <h3 class="text-xl lg:text-2xl font-bold text-white flex items-center gap-3 m-0">
+        <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+          <i class="pi pi-info-circle text-white text-base"></i>
+        </div>
+        Detalles de la movilidad
+      </h3>
+      @if (movilidadSeleccionada()?.nombreMovilidad) {
+        <p class="text-blue-100 text-sm mt-2 ml-1 flex items-center gap-2 m-0">
+          <i class="pi pi-file text-blue-200 text-xs"></i>
+          {{ movilidadSeleccionada()!.nombreMovilidad }}
+        </p>
+      }
+    </div>
+    <div class="p-6 lg:p-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Nombre Movilidad</label>
+          <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.nombreMovilidad || ''" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Cobertura</label>
+          <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.cobertura?.nombre || movilidadSeleccionada()?.movilidad?.coberturaNombre || ''" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Tipo de Movilidad</label>
+          <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.tipoMovilidad?.nombre || ''" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Tipo de Actividad</label>
+          <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.tipoActividad || ''" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Modalidad</label>
+          <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.modalidad?.nombre || ''" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Estado</label>
+          <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.estado || ''" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Facultad</label>
+          <input pInputText class="w-full" [value]="getFacultadNombre(movilidadSeleccionada()?.movilidad?.facultad)" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Semestre</label>
+          <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.periodoNombre || movilidadSeleccionada()?.movilidad?.periodo || ''" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Programa</label>
+          <input pInputText class="w-full" [value]="getProgramaNombre(movilidadSeleccionada()?.movilidad?.programa)" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Línea Estratégica</label>
+          <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.lineaEstrategica?.nombre || ''" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Código SNIES</label>
+          <input pInputText class="w-full" [value]="getSniesNombre(movilidadSeleccionada()?.movilidad?.codigoSnies)" readonly />
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <h4 class="text-lg font-bold uppercase tracking-wide text-surface-900 dark:text-surface-100 mb-3">FECHAS Y UBICACIÓN</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Fecha Inicio</label>
+            <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.fechaInicio || ''" readonly />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Fecha Fin</label>
+            <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.fechaFin || ''" readonly />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">País</label>
+            <input pInputText class="w-full" [value]="getPaisNombre(movilidadSeleccionada()?.movilidad?.pais)" readonly />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Departamento</label>
+            <input pInputText class="w-full" [value]="getUbicacionNombre(movilidadSeleccionada()?.movilidad?.departamento)" readonly />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Ciudad</label>
+            <input pInputText class="w-full" [value]="getUbicacionNombre(movilidadSeleccionada()?.movilidad?.ciudad)" readonly />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Lugar Destino</label>
+            <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.lugarDestino || ''" readonly />
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <h4 class="text-lg font-bold uppercase tracking-wide text-surface-900 dark:text-surface-100 mb-3">FINANCIACIÓN</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Valor Financiación Nacional</label>
+            <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.valorFinanciacionNacional ?? ''" readonly />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Valor Financiación Internacional</label>
+            <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.valorFinanciacionInternacional ?? ''" readonly />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Total Financiación</label>
+            <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.totalFinanciacion ?? ''" readonly />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Entidad Nacional</label>
+            <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.entidadNacional || ''" readonly />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Entidad Internacional</label>
+            <input pInputText class="w-full" [value]="getEntidadInternacionalNombre(movilidadSeleccionada()?.movilidad?.entidadInternacional)" readonly />
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Objeto</label>
+          <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.objeto || ''" readonly />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Línea Estratégica</label>
+          <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.lineaEstrategica?.nombre || ''" readonly />
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <h4 class="text-lg font-bold uppercase tracking-wide text-surface-900 dark:text-surface-100 mb-3">CONVENIO</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-surface-900 dark:text-surface-100">Convenio</label>
+            <input pInputText class="w-full" [value]="movilidadSeleccionada()?.movilidad?.codigoConvenio || ''" readonly />
+          </div>
+        </div>
+      </div>
+
+      @if (movilidadCompleta()?.apoyosEconomicos?.length) {
+      <div class="mt-6">
+        <h4 class="text-lg font-bold uppercase tracking-wide text-surface-900 dark:text-surface-100 mb-3">APOYOS ECONÓMICOS</h4>
+        <div class="rounded-xl overflow-hidden bg-surface-0 dark:bg-surface-900 border border-gray-200 dark:border-gray-700 [&_th]:dark:bg-gray-800 [&_th]:dark:text-gray-100 [&_th]:dark:border-gray-700 [&_td]:dark:bg-surface-900 [&_td]:dark:border-gray-700 [&_tr:hover_td]:dark:bg-gray-800">
+        <p-table
+                 [value]="movilidadCompleta()?.apoyosEconomicos || []"
+                 responsiveLayout="scroll"
+                 styleClass="p-datatable-sm p-datatable-gridlines">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width:20%">Tipo de Apoyo</th>
+              <th style="width:25%">Descripción</th>
+              <th style="width:15%">Centro de Costos</th>
+              <th style="width:15%">Presupuesto disponible del programa</th>
+              <th style="width:12%" class="text-center">Aprobación Rector(a)</th>
+              <th style="width:13%" class="text-center">Vicerrectoría Financiera</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-ap>
+            <tr>
+              <td><input pInputText class="w-full" [value]="ap.tipoApoyoEconomico?.nombre || '-'" readonly /></td>
+              <td><input pInputText class="w-full" [value]="ap.descripcion || '-'" readonly /></td>
+              <td><input pInputText class="w-full" [value]="ap.centroCostos || '-'" readonly /></td>
+              <!-- mostrar el monto disponible que viene desde el backend (montoDisponible) -->
+              <td><input pInputText class="w-full" [value]="(ap.montoDisponible != null ? (ap.montoDisponible | currency:'COP':'symbol':'1.0-0') : '')" readonly /></td>
+              <td class="text-center">
+                @if (ap.aprobadoNivel6 === true) {
+                  <p-tag value="Aprobado" severity="info"></p-tag>
+                } @else if (ap.aprobadoNivel6 === false) {
+                  <p-tag value="Rechazado" severity="danger"></p-tag>
+                } @else {
+                  <span class="text-gray-400 text-xs">—</span>
+                }
+              </td>
+              <td class="text-center">
+                @if (ap.aprobadoNivel7 === true) {
+                  <p-tag value="Aprobado" severity="info"></p-tag>
+                } @else if (ap.aprobadoNivel7 === false) {
+                  <p-tag value="Rechazado" severity="danger"></p-tag>
+                } @else {
+                  <span class="text-gray-400 text-xs">—</span>
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        </div>
+      </div>
+      }
+
+      <!-- detalle de rubros precargados como tabla -->
+      @if (movilidadCompleta()?.rubrosPresupuestales?.length) {
+      <div class="mt-6">
+        <h4 class="text-lg font-bold uppercase tracking-wide text-surface-900 dark:text-surface-100 mb-3">RUBROS PRESUPUESTALES</h4>
+        <div class="rounded-xl overflow-hidden bg-surface-0 dark:bg-surface-900 border border-gray-200 dark:border-gray-700 [&_th]:dark:bg-gray-800 [&_th]:dark:text-gray-100 [&_th]:dark:border-gray-700 [&_td]:dark:bg-surface-900 [&_td]:dark:border-gray-700 [&_tr:hover_td]:dark:bg-gray-800">
+        <p-table
+                 [value]="movilidadCompleta()?.rubrosPresupuestales || []"
+                 responsiveLayout="scroll"
+                 styleClass="p-datatable-sm p-datatable-gridlines">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width:25%">Tipo de Rubro</th>
+              <th style="width:25%">Número</th>
+              <th style="width:25%"></th>
+              <th style="width:25%"></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-r>
+            <tr>
+              <td><input pInputText class="w-full" [value]="r.tipoRubro?.nombre || r.descripcion || '-'" readonly /></td>
+              <td><input pInputText class="w-full" [value]="r.numero || '-'" readonly /></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </ng-template>
+        </p-table>
+        </div>
+      </div>
+      }
+
+      <!-- detalle de actividades como tabla -->
+      @if (movilidadCompleta()?.actividadesAsignadas?.length) {
+      <div class="mt-6">
+        <h4 class="text-lg font-bold uppercase tracking-wide text-surface-900 dark:text-surface-100 mb-3">ACTIVIDADES ASIGNADAS</h4>
+        <div class="rounded-xl overflow-hidden bg-surface-0 dark:bg-surface-900 border border-gray-200 dark:border-gray-700 [&_th]:dark:bg-gray-800 [&_th]:dark:text-gray-100 [&_th]:dark:border-gray-700 [&_td]:dark:bg-surface-900 [&_td]:dark:border-gray-700 [&_tr:hover_td]:dark:bg-gray-800">
+        <p-table
+                 [value]="movilidadCompleta()?.actividadesAsignadas || []"
+                 responsiveLayout="scroll"
+                 styleClass="p-datatable-sm p-datatable-gridlines">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width:25%">Labores Sustantivas</th>
+              <th style="width:25%">Compromiso</th>
+              <th style="width:20%">Verificación de Cumplimiento</th>
+              <th style="width:15%">Estado</th>
+              <th style="width:20%">Observaciones</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-act>
+            <tr>
+              <td><input pInputText class="w-full" [value]="act.descripcion || act.nombre || '-'" readonly /></td>
+              <td><input pInputText class="w-full" [value]="act.compromiso || '-'" readonly /></td>
+              <td><input pInputText class="w-full" [value]="act.verificacion || '-'" readonly /></td>
+              <td class="text-center">
+                <p-tag [value]="act.estado || '-'" [severity]="obtenerSeveridadEstado(act.estado)"></p-tag>
+              </td>
+              <td style="width:30%"><input pInputText class="w-full" [value]="act.observaciones || '-'" readonly /></td>
+            </tr>
+          </ng-template>
+        </p-table>
+        </div>
+      </div>
+      }
+
+      <!-- detalle de productos/compromisos como tabla -->
+      @if (movilidadCompleta()?.productosCompromisos?.length) {
+      <div class="mt-6">
+        <h4 class="text-lg font-bold uppercase tracking-wide text-surface-900 dark:text-surface-100 mb-3">PRODUCTOS / COMPROMISOS</h4>
+        <div class="rounded-xl overflow-hidden bg-surface-0 dark:bg-surface-900 border border-gray-200 dark:border-gray-700 [&_th]:dark:bg-gray-800 [&_th]:dark:text-gray-100 [&_th]:dark:border-gray-700 [&_td]:dark:bg-surface-900 [&_td]:dark:border-gray-700 [&_tr:hover_td]:dark:bg-gray-800">
+        <p-table
+                 [value]="movilidadCompleta()?.productosCompromisos || []"
+                 responsiveLayout="scroll"
+                 styleClass="p-datatable-sm p-datatable-gridlines">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width:25%">Compromisos</th>
+              <th style="width:25%">Fecha de entrega de producto o actividad</th>
+              <th style="width:25%">Observaciones</th>
+              <th style="width:25%">Verificación de cumplimiento</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-prod>
+            <tr>
+              <!-- la entidad ProductosCompromisos tiene la propiedad 'compromiso' en lugar de descripcion/nombre -->
+              <td><input pInputText class="w-full" [value]="prod.compromiso || '-'" readonly /></td>
+              <td><input pInputText class="w-full" [value]="prod.fechaEntrega ? (prod.fechaEntrega | date:'dd/MM/yyyy') : '-'" readonly /></td>
+              <td><input pInputText class="w-full" [value]="prod.observaciones || '-'" readonly /></td>
+              <!-- 'verificacion' no existe, mostramos el estado de cumplimiento -->
+              <td><input pInputText class="w-full" [value]="prod.estado || '-'" readonly /></td>
+            </tr>
+          </ng-template>
+        </p-table>
+        </div>
+      </div>
+      }
+
+    </div>
+          </div>
+        </p-tabpanel>
+
+        <!-- TAB 2: Niveles de Autorización -->
+        <p-tabpanel value="2">
+          @if (movilidadSeleccionada()) {
+          <div id="panel-autorizacion" class="animate-fade-in">
+      
+      <!-- Card Principal -->
+      <div class="rounded-2xl shadow-lg ring-2 ring-blue-600/25 dark:ring-blue-800/25 hover:shadow-xl transition-all duration-300 w-full max-w-full mx-auto mb-4">
+        
+        <!-- Header Institucional -->
+        <div class="bg-gradient-to-br from-[#0071bc] to-[#005a8a] px-6 py-5 rounded-t-2xl">
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="text-xl lg:text-2xl font-bold text-white flex items-center gap-3 m-0">
+                <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <i class="pi pi-verified text-white text-base"></i>
+                </div>
+                Panel de Autorización
+              </h3>
+              @if (movilidadSeleccionada()?.nombreMovilidad) {
+                <p class="text-blue-100 text-sm mt-2 ml-1 flex items-center gap-2 m-0">
+                  <i class="pi pi-file text-blue-200 text-xs"></i>
+                  {{ movilidadSeleccionada()!.nombreMovilidad }}
+                </p>
+              }
+            </div>
+            <button 
+              pButton 
+              type="button" 
+              icon="pi pi-times" 
+              class="p-button-rounded p-button-outlined flex-shrink-0 shadow-lg"
+              style="background: rgba(255,255,255,0.2); border-color: white; color: white; backdrop-filter: blur(10px);"
+              (click)="cerrarDetalle()"
+              pTooltip="Cerrar panel"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Barra de Progreso Visual -->
+        <div class="px-4 py-4 bg-gradient-to-r from-surface-50 to-surface-100 dark:from-surface-800 dark:to-surface-700 border-b border-gray-200 dark:border-gray-600">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                <i class="pi pi-chart-line text-blue-600 dark:text-blue-400 text-sm"></i>
+              </div>
+              <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Progreso de Aprobación</span>
+            </div>
+            <div class="text-right">
+              <span class="text-lg font-bold text-blue-600 dark:text-blue-400">
+                {{ movilidadSeleccionada()!.nivelesAprobados }}/{{ movilidadSeleccionada()!.totalNiveles }}
+              </span>
+              <p class="text-xs text-gray-500 dark:text-gray-400 m-0">completados</p>
+            </div>
+          </div>
+          <div class="relative">
+            <div class="w-full h-3 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden shadow-inner">
+              <div 
+                class="h-full rounded-full transition-all duration-700 ease-out shadow-sm"
+                [style.width.%]="(movilidadSeleccionada()!.nivelesAprobados / movilidadSeleccionada()!.totalNiveles) * 100"
+                [style.background]="movilidadSeleccionada()!.nivelesAprobados === movilidadSeleccionada()!.totalNiveles ? 'linear-gradient(90deg, #10b981, #059669)' : movilidadSeleccionada()!.nivelesAprobados > 0 ? 'linear-gradient(90deg, #3b82f6, #1d4ed8)' : '#d1d5db'"
+              ></div>
+            </div>
+            <div class="flex justify-between mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <span>0</span>
+              <span>{{ movilidadSeleccionada()!.totalNiveles }}</span>
+            </div>
+          </div>
+          
+          <!-- Info Cards Resumidas -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+            <div class="group flex items-center gap-2 p-3 bg-white dark:bg-surface-700 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-600">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe);">
+                <i class="pi pi-calendar text-blue-600 text-sm"></i>
+              </div>
+              <div class="overflow-hidden min-w-0 flex-1">
+                <p class="text-gray-500 dark:text-gray-400 m-0 text-xs font-medium uppercase tracking-wide">Fecha Inicio</p>
+                <p class="font-semibold text-gray-800 dark:text-gray-200 m-0 text-xs truncate">{{ movilidadSeleccionada()!.movilidad.fechaInicio || '-' }}</p>
+                <p class="text-gray-500 dark:text-gray-400 m-0 text-xs font-medium uppercase tracking-wide mt-1">Fecha Fin</p>
+                <p class="font-semibold text-gray-800 dark:text-gray-200 m-0 text-xs truncate">{{ movilidadSeleccionada()!.movilidad.fechaFin || '-' }}</p>
+              </div>
+            </div>
+            <div class="group flex items-center gap-2 p-3 bg-white dark:bg-surface-700 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-600 hover:border-green-200 dark:hover:border-green-600">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0);">
+                <i class="pi pi-tag text-green-600 text-sm"></i>
+              </div>
+              <div class="overflow-hidden min-w-0 flex-1">
+                <p class="text-gray-500 dark:text-gray-400 m-0 text-xs font-medium uppercase tracking-wide">Tipo</p>
+                <p class="font-semibold text-gray-800 dark:text-gray-200 m-0 text-xs truncate">{{ movilidadSeleccionada()!.movilidad.tipoMovilidad.nombre || movilidadSeleccionada()!.movilidad.tipoMovilidad || '-' }}</p>
+              </div>
+            </div>
+            <div class="group flex items-center gap-2 p-3 bg-white dark:bg-surface-700 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-600 hover:border-purple-200 dark:hover:border-purple-600">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm" style="background: linear-gradient(135deg, #ede9fe, #ddd6fe);">
+                <i class="pi pi-briefcase text-purple-600 text-sm"></i>
+              </div>
+              <div class="overflow-hidden min-w-0 flex-1">
+                <p class="text-gray-500 dark:text-gray-400 m-0 text-xs font-medium uppercase tracking-wide">Modalidad</p>
+                <p class="font-semibold text-gray-800 dark:text-gray-200 m-0 text-xs truncate">{{ movilidadSeleccionada()!.movilidad.modalidad.nombre || movilidadSeleccionada()!.movilidad.modalidad || '-' }}</p>
+              </div>
+            </div>
+            <div class="group flex items-center gap-2 p-3 bg-white dark:bg-surface-700 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-600"
+              [style.border-color]="movilidadSeleccionada()!.estadoGeneral === 'aprobado' ? '#0ea5e9' : movilidadSeleccionada()!.estadoGeneral === 'rechazado' ? '#f59e0b' : movilidadSeleccionada()!.estadoGeneral === 'pendiente' ? '#f59e0b' : '#6b7280'"
+            >
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
+                [style.background]="movilidadSeleccionada()!.estadoGeneral === 'aprobado' ? 'linear-gradient(135deg, #e0f2fe, #bae6fd)' : movilidadSeleccionada()!.estadoGeneral === 'rechazado' ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : movilidadSeleccionada()!.estadoGeneral === 'pendiente' ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'linear-gradient(135deg, #f3f4f6, #e5e7eb)'"
+              >
+                <i class="text-sm"
+                  [class]="movilidadSeleccionada()!.estadoGeneral === 'aprobado' ? 'pi pi-check-circle text-blue-600' : movilidadSeleccionada()!.estadoGeneral === 'rechazado' ? 'pi pi-times-circle text-yellow-600' : movilidadSeleccionada()!.estadoGeneral === 'pendiente' ? 'pi pi-clock text-yellow-600' : 'pi pi-exclamation-circle text-gray-600'"
+                ></i>
+              </div>
+              <div class="overflow-hidden min-w-0 flex-1">
+                <p class="text-gray-500 dark:text-gray-400 m-0 text-xs font-medium uppercase tracking-wide">Estado</p>
+                <p class="font-semibold m-0 text-xs truncate"
+                  [style.color]="movilidadSeleccionada()!.estadoGeneral === 'aprobado' ? '#0284c7' : movilidadSeleccionada()!.estadoGeneral === 'rechazado' ? '#d97706' : movilidadSeleccionada()!.estadoGeneral === 'pendiente' ? '#d97706' : '#374151'"
+                >{{ movilidadSeleccionada()!.estadoGeneral | titlecase }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Título de Niveles -->
+        <div class="px-4 pt-6 pb-3">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0" style="background: linear-gradient(135deg, #1e3a5f, #2c5282);">
+              <i class="pi pi-sitemap text-white text-lg"></i>
+            </div>
+            <div class="overflow-hidden min-w-0 flex-1">
+              <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100 m-0">Niveles de Autorización</h4>
+              <p class="text-gray-500 dark:text-gray-400 m-0 mt-1 text-xs">{{ movilidadSeleccionada()!.aprobaciones.length }} niveles requeridos</p>
+            </div>
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <i class="pi pi-info-circle text-blue-600 dark:text-blue-400 text-sm"></i>
+              <span class="text-xs font-medium text-blue-700 dark:text-blue-300">Escalonada</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid de Tarjetas de Niveles -->
+        <div class="px-3 pb-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            @for (aprobacion of movilidadSeleccionada()!.aprobaciones; track aprobacion.id) {
+              <div 
+                class="relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-2xl group min-h-64 border border-gray-200"
+                [style.box-shadow]="aprobacion.estado === 'pendiente' ? '0 0 20px rgba(59, 130, 246, 0.15)' : 'none'"
+              >
+                <!-- Número de Nivel Badge -->
+                <div 
+                  class="absolute -top-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg border-2 border-white group-hover:scale-105 transition-transform duration-300"
+                  [style.background]="aprobacion.estado === 'aprobado' ? 'linear-gradient(135deg, #0284c7, #0ea5e9)' : aprobacion.estado === 'rechazado' ? 'linear-gradient(135deg, #d97706, #f59e0b)' : 'linear-gradient(135deg, #1e3a5f, #3b82f6)'"
+                >
+                  <span class="drop-shadow-sm text-base">{{ aprobacion.nivel }}</span>
+                </div>
+
+                <div class="px-2 py-1">
+                  <!-- Icono de Estado -->
+                  <div class="flex items-center gap-1.5 mb-1">
+                    <div 
+                      class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm border"
+                      [style.background]="aprobacion.estado === 'aprobado' ? 'linear-gradient(135deg, #e0f2fe, #bae6fd)' : aprobacion.estado === 'rechazado' ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'linear-gradient(135deg, #dbeafe, #bfdbfe)'"
+                      [style.border-color]="aprobacion.estado === 'aprobado' ? '#0ea5e9' : aprobacion.estado === 'rechazado' ? '#f59e0b' : '#3b82f6'"
+                    >
+                      <i 
+                        class="text-xs drop-shadow-sm"
+                        [class]="aprobacion.estado === 'aprobado' ? 'pi pi-check' : aprobacion.estado === 'rechazado' ? 'pi pi-times' : 'pi pi-clock'"
+                        [style.color]="aprobacion.estado === 'aprobado' ? '#0284c7' : aprobacion.estado === 'rechazado' ? '#d97706' : '#1e3a5f'"
+                      ></i>
+                    </div>
+                    <div class="overflow-hidden min-w-0 flex-1">
+                      <p class="font-bold text-gray-800 dark:text-gray-100 m-0 text-xs">Nivel {{ aprobacion.nivel }}</p>
+                      <p 
+                        class="text-xs font-medium m-0 uppercase tracking-wide"
+                        [style.color]="aprobacion.estado === 'aprobado' ? '#0284c7' : aprobacion.estado === 'rechazado' ? '#d97706' : '#1e3a5f'"
+                      >{{ obtenerTextoEstado(aprobacion.estado) }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Información en Campos -->
+                  <div class="mt-2 space-y-1.5">
+
+
+                    <!-- Compacto: mostrar rol y quién aprobó EN UN SOLO CAMPO -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-1.5 border border-gray-200 dark:border-gray-600">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                          <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-0">Rol:</label>
+                          <div class="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                            {{ obtenerNombreNivel(aprobacion.nivel) }}
+                            <div *ngIf="aprobacion.estado === 'aprobado' && getRolMostrado(aprobacion)" class="text-xs text-gray-500">Rol: {{ getRolMostrado(aprobacion) }}</div>
+                            <span *ngIf="aprobacion.aprobadorNombre || aprobacion.aprobadorEmail || aprobacion.aprobadorIdentificacion"> — <small class="text-sm font-normal text-gray-600 dark:text-gray-400">Aprobado por: {{ getAprobadorDisplay(aprobacion) }}</small></span>
+                            <div *ngIf="isConfiguracionError(aprobacion)" class="text-xs text-red-500 mt-1">No accionable — falta configuración de aprobadores</div>
+                          </div>
+                          <div *ngIf="aprobacion.comentario" class="text-xs text-gray-600 dark:text-gray-400 mt-1">Comentario: {{ aprobacion.comentario }}</div>
+                        </div>
+                        <div class="text-right text-xs text-gray-500 dark:text-gray-400">
+                          <div *ngIf="aprobacion.fechaAprobacion">{{ aprobacion.fechaAprobacion | date:'dd/MM/yyyy' }}</div>
+                          <div *ngIf="aprobacion.fechaAprobacion">{{ aprobacion.fechaAprobacion | date:'HH:mm' }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Botones de Acción -->
+                  @if (aprobacion.estado === 'pendiente') {
+                    <div class="flex gap-1.5 mt-2 pt-2 border-t" style="border-color: rgba(59, 130, 246, 0.3);">
+                      <button
+                        type="button"
+                        tooltipposition="top"
+                        class="flex-1 p-ripple p-button p-component rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md text-xs"
+                        [style]="{
+                          'background': 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                          'border': 'none',
+                          'color': 'white'
+                        }"
+                        [pTooltip]="isConfiguracionError(aprobacion) ? 'No accionable — falta configuración de aprobadores' : 'Aprobar nivel'"
+                        [disabled]="isConfiguracionError(aprobacion)"
+                        (click)="aprobarNivel(movilidadSeleccionada()!.movilidadId, aprobacion.nivel)"
+                      >
+                        <i class="pi pi-check mr-1"></i>
+                        Aprobar
+                      </button>
+                      <button
+                        type="button"
+                        tooltipposition="top"
+                        class="flex-1 p-ripple p-button p-component rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md text-xs"
+                        [style]="{
+                          'background': 'linear-gradient(135deg, #ef4444, #dc2626)',
+                          'border': 'none',
+                          'color': 'white'
+                        }"
+                        [pTooltip]="isConfiguracionError(aprobacion) ? 'No accionable — falta configuración de aprobadores' : 'Rechazar nivel'"
+                        [disabled]="isConfiguracionError(aprobacion)"
+                        (click)="rechazarNivel(movilidadSeleccionada()!.movilidadId, aprobacion.nivel)"
+                      >
+                        <i class="pi pi-times mr-1"></i>
+                        Rechazar
+                      </button>
+                    </div>
+                  }
+
+                  <!-- Badge de Estado Final -->
+                  @if (aprobacion.estado === 'aprobado') {
+                    <div class="mt-2 pt-2 border-t text-center" style="border-color: rgba(14, 165, 233, 0.4);">
+                      <div class="inline-flex items-center gap-1 px-3 py-1 text-white text-xs font-bold rounded-full shadow animate-pulse" style="background: linear-gradient(135deg, #0284c7, #0ea5e9);">
+                        <i class="pi pi-check-circle text-sm"></i>
+                        <span>APROBADO</span>
+                      </div>
+                    </div>
+                  }
+
+                  @if (aprobacion.estado === 'rechazado') {
+                    <div class="mt-2 pt-2 border-t text-center" style="border-color: rgba(245, 158, 11, 0.4);">
+                      <div class="inline-flex items-center gap-1 px-3 py-1 text-white text-xs font-bold rounded-full shadow" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
+                        <i class="pi pi-times-circle text-sm"></i>
+                        <span>RECHAZADO</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+          }
+        </p-tabpanel>
+
+      </p-tabpanels>
+    </p-tabs>
+
+
+<!-- PANEL DE APROBAR/RECHAZAR -->
+<div *ngIf="mostrarDialogoAprobarRechazar" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg ring-2 ring-gray-600/25 dark:ring-gray-800/25 p-6 transition-all duration-300 mt-6">
+  <div class="flex items-center justify-between mb-6 pb-4 border-b border-surface-200 dark:border-surface-700">
+    <div class="flex items-center space-x-3">
+      <div class="w-12 h-12 rounded-lg flex items-center justify-center" [style]="{ background: accionDialog === 'aprobar' ? 'var(--green-100)' : 'var(--red-100)' }">
+        <i class="pi pi-exclamation-triangle text-3xl" [style]="{ color: accionDialog === 'aprobar' ? 'var(--green-500)' : 'var(--red-500)' }"></i>
+      </div>
+      <div>
+        <h3 class="text-2xl font-bold text-surface-900 dark:text-surface-0">
+          {{ accionDialog === 'aprobar' ? 'Aprobar' : 'Rechazar' }} Nivel de Aprobación
+        </h3>
+        <p class="text-sm text-surface-600 dark:text-surface-400">
+          Nivel {{ aprobacionSeleccionada?.nivel }} - {{ obtenerNombreNivel(aprobacionSeleccionada?.nivel || 0) }}
+        </p>
+      </div>
+    </div>
+    <p-button
+      icon="pi pi-times"
+      severity="secondary"
+      [text]="true"
+      (click)="mostrarDialogoAprobarRechazar = false"
+      pTooltip="Cerrar panel"
+      tooltipPosition="top"
+    />
+  </div>
+
+  <div class="space-y-6">
+    <div>
+      <div class="text-lg font-semibold mb-2 text-surface-900 dark:text-surface-0">
+        {{ accionDialog === 'aprobar' ? '¿Está seguro de aprobar este nivel?' : '¿Está seguro de rechazar este nivel?' }}
+      </div>
+      <div class="text-sm text-surface-600 dark:text-surface-400">
+        Esta acción {{ accionDialog === 'aprobar' ? 'aprobará' : 'rechazará' }} el nivel {{ aprobacionSeleccionada?.nivel }}
+        para la movilidad correspondiente.
+      </div>
+    </div>
+
+    <div>
+      <app-textarea-component
+        id="observaciones"
+        label="Observaciones (opcional)"
+        [(ngModel)]="observaciones"
+        [rows]="4"
+        placeholder="Ingrese observaciones o comentarios...">
+      </app-textarea-component>
+    </div>
+
+    <div class="flex justify-end space-x-3">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (click)="mostrarDialogoAprobarRechazar = false"
+      />
+      <p-button
+        [label]="accionDialog === 'aprobar' ? 'Aprobar' : 'Rechazar'"
+        [icon]="accionDialog === 'aprobar' ? 'pi pi-check' : 'pi pi-times'"
+        [severity]="accionDialog === 'aprobar' ? 'success' : 'danger'"
+        (click)="confirmarAccion()"
+      />
+    </div>
+  </div>
+</div>
+
+<p-dialog
+  [(visible)]="mostrarDialogoApoyos"
+  [modal]="true"
+  [style]="{ width: '800px', 'z-index': '1000' }"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [header]="nivelDialogoApoyos === 6 ? 'Selección de Apoyos Económicos — Aprobación Rector(a)' : 'Aprobación Final de Apoyos Económicos — Vicerrectoría Financiera'"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div class="p-4">
+    <p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
+      <span *ngIf="nivelDialogoApoyos === 6">
+        Seleccione los apoyos económicos que desea aprobar para esta movilidad. La aprobación del Rector(a) requiere la revisión de estos elementos.
+      </span>
+      <span *ngIf="nivelDialogoApoyos === 7">
+        Seleccione los apoyos que aprueba definitivamente. Solo los marcados quedarán guardados como <strong>apoyos económicos aprobados</strong> para esta movilidad.
+      </span>
+    </p>
+
+    <div *ngIf="!tieneApoyos()" class="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+      <i class="pi pi-info-circle text-yellow-600 dark:text-yellow-400 text-2xl mb-2"></i>
+      <p class="text-yellow-800 dark:text-yellow-200 font-medium">Esta movilidad no tiene apoyos económicos.</p>
+    </div>
+
+    <p-table
+      *ngIf="tieneApoyos()"
+      [value]="apoyosEconomicos()"
+      [scrollable]="true"
+      scrollHeight="400px"
+      [responsiveLayout]="'scroll'"
+      styleClass="p-datatable-sm"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 50px" *ngIf="nivelDialogoApoyos === 6 || nivelDialogoApoyos === 7">
+            <p-checkbox
+              [(ngModel)]="selectAll"
+              [binary]="true"
+              (onChange)="toggleSelectAll()"
+            ></p-checkbox>
+          </th>
+          <th>Tipo de Apoyo</th>
+          <th>Monto</th>
+          <th>Estado</th>
+          <th>Descripción</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-apoyo>
+        <tr>
+          <!-- checkbox por fila para nivel 6 y nivel 7 -->
+          <td *ngIf="nivelDialogoApoyos === 6 || nivelDialogoApoyos === 7">
+            <p-checkbox
+              [(ngModel)]="apoyo.selected"
+              [binary]="true"
+              (onChange)="updateSeleccionados(apoyo)"
+            ></p-checkbox>
+          </td>
+          <td>{{ apoyo.tipoApoyoEconomico?.nombre || 'N/A' }}</td>
+          <td>{{ apoyo.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+          <td>
+            <p-tag
+              [value]="apoyo.estado"
+              [severity]="apoyo.estado === 'APROBADO' ? 'success' : apoyo.estado === 'RECHAZADO' ? 'danger' : apoyo.estado === 'PENDIENTE' ? 'warn' : 'info'"
+            ></p-tag>
+          </td>
+          <td>{{ apoyo.descripcion || 'Sin descripción' }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <div class="mt-4 p-3 bg-surface-100 dark:bg-surface-800 rounded-lg" *ngIf="(nivelDialogoApoyos === 6 || nivelDialogoApoyos === 7) && tieneApoyos()">
+      <p class="text-sm font-medium text-surface-700 dark:text-surface-300">
+        Apoyos seleccionados: {{ apoyosSeleccionados().length }} de {{ apoyosEconomicos().length }}
+      </p>
+    </div>
+
+    <!-- Observaciones para aprobación con apoyos -->
+    <div class="mt-4">
+      <app-textarea-component
+        id="observaciones-apoyos"
+        label="Observaciones (opcional)"
+        [(ngModel)]="observaciones"
+        [rows]="3"
+        [autoResize]="true"
+        [maxlength]="1000"
+        helperText="Opcional">
+      </app-textarea-component>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        [severity]="'secondary'"
+        [outlined]="true"
+        (click)="cancelarDialogoApoyos()"
+        [style]="{ 'min-width': '120px' }"
+      />
+      <p-button
+        [label]="tieneApoyos() ? 'Aprobar Seleccionados' : 'Aprobar sin Apoyos'"
+        icon="pi pi-check"
+        [severity]="'success'"
+        (click)="movilidadYAprobacionActual && confirmarAprobacionConApoyos(movilidadYAprobacionActual.movilidad, movilidadYAprobacionActual.aprobacion)"
+        [disabled]="tieneApoyos() && apoyosSeleccionados().length === 0"
+        [style]="{ 'min-width': '180px' }"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Botón Atrás -->
+<div class="bg-surface-0 dark:bg-surface-900 rounded-lg shadow-md p-6 transition-shadow duration-200 mt-6">
+  <div class="flex justify-between">
+    <p-button
+      type="button"
+      label="Atrás"
+      icon="pi pi-arrow-left"
+      severity="primary"
+      (click)="goBack()"
+      styleClass="w-full sm:w-auto h-10">
+    </p-button>
+  </div>
+</div>
+

@@ -1,0 +1,430 @@
+<p-toast></p-toast>
+
+<p-card class="unimar-card-main" [style]="{
+  'background': 'var(--p-surface-50)'
+}">
+  <div class="w-[90%] mx-auto rounded-2xl p-6 mb-4">
+    <div class="mb-4">
+      <!-- PrimeNG Breadcrumb -->
+      <p-breadcrumb class="custom-breadcrumb" [model]="breadcrumbItems" [home]="breadcrumbHome" 
+        [style]="{'background': 'transparent !important', 'border': 'none !important'}"></p-breadcrumb>
+
+      <!-- Header con botones de acción -->
+      <div class="flex items-center gap-4">
+        <div class="flex-1">
+          <h1 class="text-4xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+            Candidatos Seleccionados para Entrevista
+          </h1>
+          <p class="mt-2" [style]="{'color': 'var(--p-text-muted)'}" *ngIf="oferta">
+            {{ oferta.cargoRequerido }} - {{ oferta.numeroConvocatoria }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado de la oferta -->
+  <div *ngIf="oferta" class="w-[90%] mx-auto mb-6">
+    <p-card [style]="{'background': 'var(--p-red-50)', 'border-color': 'var(--p-red-200)'}">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-circle-fill" [style]="{'color': 'var(--p-red-600)', 'font-size': '1rem'}"></i>
+          <div>
+            <span class="font-semibold" [style]="{'color': 'var(--p-red-700)'}">Estado: CERRADA</span>
+            <div class="text-sm mt-1" [style]="{'color': 'var(--p-red-600)'}">
+              Puede aplicar formularios de entrevista a los seleccionados
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="flex justify-center items-center py-8">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Mensaje si no hay seleccionados -->
+  <div *ngIf="!loading && seleccionados.length === 0" class="w-[90%] mx-auto">
+    <p-card class="text-center p-8">
+      <i class="pi pi-inbox" [style]="{'color': 'var(--p-text-secondary)', 'font-size': '4rem'}"></i>
+      <p class="text-xl mt-4" [style]="{'color': 'var(--p-text-color)'}">No hay aspirantes seleccionados para esta oferta</p>
+      <p [style]="{'color': 'var(--p-text-muted)'}">Vuelve a la Evaluación y Ranking para seleccionar candidatos</p>
+    </p-card>
+  </div>
+
+  <!-- Botones de Acción Masiva -->
+   <div *ngIf="!loading && seleccionados.length > 0" class="w-[90%] mx-auto mb-4 flex gap-2 flex-wrap">
+    <p-button *ngIf="!modoEntrevistasMasivas" 
+              label="Aplicar Entrevistas Masivas" 
+              icon="pi pi-file-edit"
+              severity="success" 
+              (onClick)="toggleModoEntrevistasMasivas()">
+    </p-button>
+
+    <p-button *ngIf="modoEntrevistasMasivas" 
+              label="Iniciar Entrevistas" 
+              icon="pi pi-check" 
+              severity="success"
+              [disabled]="postulacionesParaEntrevista.size === 0" 
+              (onClick)="iniciarEntrevistasMasivas()"
+              [badge]="postulacionesParaEntrevista.size.toString()">
+    </p-button>
+
+    <p-button *ngIf="modoEntrevistasMasivas" 
+              label="Cancelar" 
+              icon="pi pi-times" 
+              severity="secondary"
+              [outlined]="true" 
+              (onClick)="toggleModoEntrevistasMasivas()">
+    </p-button>
+
+    <p-button *ngIf="!modoEntrevistasMasivas"
+              label="Notificar Seleccionados" 
+              icon="pi pi-send"
+              severity="info"
+              [outlined]="true"
+              (onClick)="abrirDialogNotificacion()"
+              pTooltip="Enviar notificación de selección (correo + notificación interna) a candidatos elegidos">
+    </p-button>
+  </div>
+
+  <!-- Tabla de candidatos seleccionados con lib-info-table -->
+  <div *ngIf="!loading && seleccionados.length > 0" class="w-[90%] mx-auto">
+    <lib-info-table [data]="seleccionadosMapeados" [columns]="columns" [actions]="actions">
+      <ng-template #customCell let-row="row" let-column="column">
+        <ng-container [ngSwitch]="column.field">
+          <!-- Checkbox para selección masiva -->
+          <ng-container *ngSwitchCase="'seleccion'">
+            <p-checkbox 
+              [binary]="true"
+              [ngModel]="postulacionesParaEntrevista.has(row.id)"
+              (ngModelChange)="toggleSeleccionEntrevista(row.id)">
+            </p-checkbox>
+          </ng-container>
+          <ng-container *ngSwitchCase="'candidato'">
+            <div class="flex items-center gap-3">
+              <lib-image-viewer
+                [imageUrl]="getFotoUrl(row)"
+                [alt]="'Foto de ' + row.candidato"
+                width="40px"
+                height="40px"
+                [rounded]="true"
+                [initials]="getInitials(row.candidato)"
+                [dialogTitle]="'Foto de ' + row.candidato"
+                placeholderText="" />
+              <div>
+                <div class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">
+                  {{ row.candidato }}
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-template>
+    </lib-info-table>
+  </div>
+
+</p-card>
+
+<!-- Modal: Detalle de Selección -->
+<p-dialog [(visible)]="mostrarDetalleSeleccion" 
+          [modal]="true"
+          [closable]="false" 
+          [style]="{
+            width: '700px',
+            'background': 'var(--p-surface-0)',
+            'border': '1px solid var(--p-border)'
+          }" 
+          [draggable]="false" 
+          [resizable]="false">
+  <ng-template pTemplate="header">
+    <div class="flex justify-between items-center w-full">
+      <span class="text-xl font-bold">Información de Selección del Candidato</span>
+      <button 
+        type="button" 
+        pButton 
+        pRipple 
+        icon="pi pi-times" 
+        (click)="mostrarDetalleSeleccion = false" 
+        class="p-dialog-header-close [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible hover:[&_.pi]:!opacity-100 hover:[&_i]:!opacity-100">
+      </button>
+    </div>
+  </ng-template>
+
+  <div *ngIf="seleccionadoActual" class="space-y-4">
+
+    <!-- Información del aspirante -->
+    <p-card class="mb-4" 
+            [style]="{'border-left': '4px solid var(--p-primary-color)', 'background': 'var(--p-surface-0)'}" 
+            *ngIf="seleccionadoActual.postulacion">
+      <ng-template pTemplate="header">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-user" [style]="{'color': 'var(--p-text-color)'}"></i>
+          <span [style]="{'color': 'var(--p-text-color)'}">{{ seleccionadoActual.postulacion.nombreCompleto || seleccionadoActual.postulacion.nombres }}</span>
+        </div>
+      </ng-template>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">Tipo Documento:</span>
+          <div [style]="{'color': 'var(--p-text-color)'}">{{ seleccionadoActual.postulacion.tipoDocumento || 'N/A' }}</div>
+        </div>
+        <div>
+          <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">Número Documento:</span>
+          <div [style]="{'color': 'var(--p-text-color)', 'font-family': 'monospace'}">{{ seleccionadoActual.postulacion.identificacion || seleccionadoActual.postulacion.numeroDocumento || 'N/A' }}</div>
+        </div>
+        <div>
+          <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">Puntaje Final:</span>
+          <div [style]="{'color': 'var(--p-text-color)', 'font-weight': 'bold'}">
+            {{ seleccionadoActual.postulacion.puntajeFinal != null ? (seleccionadoActual.postulacion.puntajeFinal | number:'1.1-1') : '-' }}
+          </div>
+        </div>
+        <div>
+          <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">Estado Postulación:</span>
+          <div [style]="{'color': 'var(--p-text-color)'}">{{ seleccionadoActual.postulacion.estado || 'N/A' }}</div>
+        </div>
+      </div>
+    </p-card>
+
+    <div class="border-t pt-4" [style]="{'border-color': 'var(--p-border)'}">
+
+      <!-- Seleccionado Por -->
+      <p-card class="mb-4" [style]="{'border-left': '4px solid var(--p-green-500)', 'background': 'var(--p-surface-0)'}">
+        <ng-template pTemplate="header">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-user" [style]="{'color': 'var(--p-text-color)'}"></i>
+            <span [style]="{'color': 'var(--p-text-color)'}">Seleccionado Por</span>
+          </div>
+        </ng-template>
+        <div [style]="{'color': 'var(--p-text-color)'}">
+          {{ obtenerNombreCompleto(seleccionadoActual.seleccionadoPor) }}
+        </div>
+      </p-card>
+
+      <!-- Motivo/Comentario -->
+      <p-card *ngIf="seleccionadoActual.motivo" class="mb-4" [style]="{'border-left': '4px solid var(--p-orange-500)', 'background': 'var(--p-surface-0)'}">
+        <ng-template pTemplate="header">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-comment" [style]="{'color': 'var(--p-text-color)'}"></i>
+            <span [style]="{'color': 'var(--p-text-color)'}">Motivo/Comentario</span>
+          </div>
+        </ng-template>
+        <p [style]="{'color': 'var(--p-text-color)', 'white-space': 'pre-wrap'}">{{ seleccionadoActual.motivo }}</p>
+      </p-card>
+
+      <div *ngIf="!seleccionadoActual.motivo" class="text-sm italic" [style]="{'color': 'var(--p-text-muted)'}">
+        Sin comentarios adicionales
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Footer con botones -->
+  <div class="flex justify-end gap-2 pt-4 border-t mt-4" [style]="{'border-color': 'var(--p-border)'}">
+    <p-button label="Cerrar" 
+              icon="pi pi-times" 
+              severity="secondary" 
+              [outlined]="true"
+              (onClick)="cerrarDetalleSeleccion()">
+    </p-button>
+  </div>
+</p-dialog>
+
+<!-- Dialog personalizado para confirmar selección a Fase 3 -->
+<p-dialog 
+  [(visible)]="mostrarDialogConfirmacionFase3" 
+  [modal]="true" 
+  [closable]="false" 
+  [draggable]="false" 
+  [resizable]="false" 
+  [style]="{
+    width: '550px',
+    'background': 'var(--p-surface-0)',
+    'border': '1px solid var(--p-border)',
+    'border-radius': 'var(--p-border-radius)'
+  }">
+  <ng-template pTemplate="header">
+    <div class="flex justify-between items-center w-full">
+      <span class="text-xl font-bold">Seleccionar para Fase 3</span>
+      <button 
+        type="button" 
+        pButton 
+        pRipple 
+        icon="pi pi-times" 
+        (click)="cerrarDialogConfirmacionFase3()" 
+        class="p-dialog-header-close [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible hover:[&_.pi]:!opacity-100 hover:[&_i]:!opacity-100">
+      </button>
+    </div>
+  </ng-template>
+  
+  <div class="flex flex-col gap-4" *ngIf="seleccionadoFase3">
+    <!-- mensaje de confirmación -->
+    <p class="text-base" [style]="{'color': 'var(--p-text-color)'}">
+      ¿Está seguro de seleccionar este candidato para la fase 3, fase de contratación?
+    </p>
+    <div class="flex items-center gap-3 p-4 rounded-lg" [style]="{
+      'background': 'var(--p-primary-contrast)',
+      'border': '1px solid var(--p-primary-200)'
+    }">
+      <lib-image-viewer
+        [imageUrl]="getFotoUrl(seleccionadoFase3)"
+        [alt]="'Foto de ' + (seleccionadoFase3.postulacion.nombreCompleto || '')"
+        width="56px"
+        height="56px"
+        [rounded]="true"
+        [initials]="getInitials((seleccionadoFase3.postulacion.persona.primerNombre || '') + ' ' + (seleccionadoFase3.postulacion.persona.primerApellido || ''))"
+        placeholderText=""
+      />
+      <div class="flex-1">
+        <div class="font-semibold text-lg" [style]="{'color': 'var(--p-text-color)'}">
+          {{ seleccionadoFase3.postulacion.nombreCompleto || 'Candidato' }}
+        </div>
+        <div class="flex items-center gap-2 mt-1">
+          <i class="pi pi-star-fill text-sm" [style]="{'color': 'var(--p-primary-color)'}"></i>
+          <span class="text-sm font-medium" [style]="{'color': 'var(--p-text-color)'}">
+            Puntaje: {{ seleccionadoFase3.postulacion.puntajeFinal | number:'1.1-1' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2 pt-3" [style]="{'border-top': '1px solid var(--p-border)'}">
+      <p-button 
+        label="Cancelar" 
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="cerrarDialogConfirmacionFase3()">
+      </p-button>
+      <p-button 
+        label="Confirmar" 
+        icon="pi pi-check"
+        severity="success"
+        (onClick)="confirmarSeleccionFase3()"
+        [loading]="loading">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: Notificación Manual Fase 2 -->
+<p-dialog 
+  [(visible)]="mostrarDialogNotificacion"
+  [modal]="true"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{
+    width: '600px',
+    'background': 'var(--p-surface-0)',
+    'border': '1px solid var(--p-border)',
+    'border-radius': 'var(--p-border-radius)'
+  }">
+  <ng-template pTemplate="header">
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-2">
+        <i class="pi pi-send" [style]="{'color': 'var(--p-primary-color)'}"></i>
+        <span class="text-xl font-bold">Notificar Candidatos Seleccionados</span>
+      </div>
+      <button 
+        type="button" 
+        pButton 
+        pRipple 
+        icon="pi pi-times" 
+        (click)="cerrarDialogNotificacion()" 
+        class="p-dialog-header-close [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible hover:[&_.pi]:!opacity-100 hover:[&_i]:!opacity-100">
+      </button>
+    </div>
+  </ng-template>
+
+  <div class="space-y-4">
+    <p class="text-sm" [style]="{'color': 'var(--p-text-muted)'}">
+      Seleccione los candidatos a quienes desea enviar la notificación de selección para entrevista
+      (correo electrónico y notificación interna).
+    </p>
+
+    <!-- Seleccionar todos -->
+    <div class="flex items-center gap-2 pb-2 border-b" [style]="{'border-color': 'var(--p-border)'}">
+      <p-checkbox 
+        [binary]="true"
+        [(ngModel)]="seleccionarTodosNotificacion"
+        (ngModelChange)="toggleSeleccionarTodosNotificacion($event)"
+        inputId="notif-todos">
+      </p-checkbox>
+      <label for="notif-todos" class="font-semibold cursor-pointer" [style]="{'color': 'var(--p-text-color)'}">
+        Seleccionar todos ({{ seleccionados.length }})
+      </label>
+    </div>
+
+    <!-- Lista de candidatos -->
+    <div class="max-h-72 overflow-y-auto space-y-2 pr-1">
+      <div *ngFor="let sel of seleccionados" 
+           class="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors"
+           [style]="{'background': seleccionadosParaNotificar.has(sel.id ?? '') ? 'var(--p-primary-50)' : 'var(--p-surface-50)', 'border': '1px solid ' + (seleccionadosParaNotificar.has(sel.id ?? '') ? 'var(--p-primary-200)' : 'var(--p-border)')}"
+           (click)="toggleSeleccionNotificacion(sel.id ?? '')">
+        <p-checkbox 
+          [binary]="true"
+          [ngModel]="seleccionadosParaNotificar.has(sel.id ?? '')"
+          (ngModelChange)="toggleSeleccionNotificacion(sel.id ?? '')"
+          (click)="$event.stopPropagation()">
+        </p-checkbox>
+        <lib-image-viewer
+          [imageUrl]="getFotoUrl(sel)"
+          [alt]="'Foto de ' + (sel.postulacion.nombreCompleto || '')"
+          width="36px"
+          height="36px"
+          [rounded]="true"
+          [initials]="getInitials(sel.postulacion.nombreCompleto || '')"
+          placeholderText="">
+        </lib-image-viewer>
+        <div class="flex-1">
+          <div class="font-medium text-sm" [style]="{'color': 'var(--p-text-color)'}">
+            {{ sel.postulacion.nombreCompleto || 'Candidato' }}
+          </div>
+          <div class="text-xs" [style]="{'color': 'var(--p-text-muted)'}">
+            {{ sel.postulacion.tipoDocumento }} {{ sel.postulacion.identificacion || sel.postulacion.numeroDocumento }}
+          </div>
+        </div>
+        <i *ngIf="seleccionadosParaNotificar.has(sel.id ?? '')" 
+           class="pi pi-check-circle text-lg" 
+           [style]="{'color': 'var(--p-primary-color)'}">
+        </i>
+      </div>
+    </div>
+
+    <!-- Contador seleccionados -->
+    <div *ngIf="seleccionadosParaNotificar.size > 0" 
+         class="flex items-center gap-2 p-2 rounded-lg"
+         [style]="{'background': 'var(--p-primary-50)', 'border': '1px solid var(--p-primary-200)'}">
+      <i class="pi pi-info-circle" [style]="{'color': 'var(--p-primary-color)'}"></i>
+      <span class="text-sm font-medium" [style]="{'color': 'var(--p-primary-color)'}">
+        {{ seleccionadosParaNotificar.size }} candidato(s) seleccionado(s) para notificar
+      </span>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2 pt-3" [style]="{'border-top': '1px solid var(--p-border)'}">
+      <p-button 
+        label="Cancelar" 
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        [disabled]="enviandoNotificaciones"
+        (onClick)="cerrarDialogNotificacion()">
+      </p-button>
+      <p-button 
+        label="Enviar Notificaciones" 
+        icon="pi pi-send"
+        severity="info"
+        [disabled]="seleccionadosParaNotificar.size === 0"
+        [loading]="enviandoNotificaciones"
+        (onClick)="confirmarEnvioNotificaciones()">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>

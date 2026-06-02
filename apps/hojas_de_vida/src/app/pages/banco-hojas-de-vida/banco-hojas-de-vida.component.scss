@@ -1,0 +1,13 @@
+:host ::ng-deep {
+  // Estilos para el diálogo de visualización
+  .cv-dialog {
+    .p-dialog-content {
+      padding: 1.5rem;
+      background-color: #f9fafb;
+    }
+    
+    .cv-dialog-content {
+      padding: 0.5rem;
+    }
+  }
+}

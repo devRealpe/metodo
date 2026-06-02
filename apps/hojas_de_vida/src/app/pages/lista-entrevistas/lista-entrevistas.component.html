@@ -1,0 +1,454 @@
+<p-toast></p-toast>
+
+<p-card class="unimar-card-main">
+  <div class="w-[90%] mx-auto rounded-2xl p-6">
+
+    <!-- Header -->
+    <div class="mb-6">
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex items-center gap-2 text-sm mb-4" [style]="{'color': 'var(--p-text-muted)'}">
+        <a (click)="volver()" class="hover:text-blue-600 cursor-pointer flex items-center gap-1"
+          [style]="{'color': 'var(--p-text-muted)'}">
+          <i class="pi pi-arrow-left"></i>
+          <span>Volver a Candidatos</span>
+        </a>
+      </nav>
+
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex-1">
+          <h1 class="text-4xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+            Entrevista - {{ nombreAspirante }}
+          </h1>
+        </div>
+        
+        <div class="flex gap-2" *ngIf="entrevista">
+          <p-button 
+            label="Editar" 
+            icon="pi pi-pencil"
+            [outlined]="true"
+            severity="info"
+            (onClick)="editarEntrevista()">
+          </p-button>
+          <p-button 
+            label="Descargar PDF" 
+            icon="pi pi-download"
+            severity="primary"
+            (onClick)="descargarPdfEntrevista()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicador de carga -->
+    <div *ngIf="loading" class="text-center py-8">
+      <i class="pi pi-spin pi-spinner" [style]="{'color': 'var(--p-primary-color)', 'font-size': '3rem'}"></i>
+      <p class="mt-4 text-lg" [style]="{'color': 'var(--p-text-muted)'}">Cargando entrevista...</p>
+    </div>
+
+    <!-- Sin entrevista -->
+    <div *ngIf="!loading && entrevistaCargada && !entrevista" class="text-center py-12">
+      <i class="pi pi-file-edit" [style]="{'color': 'var(--p-text-muted)', 'font-size': '4rem'}"></i>
+      <h3 class="text-2xl font-semibold mt-4 mb-2" [style]="{'color': 'var(--p-text-color)'}">
+        Sin entrevista registrada
+      </h3>
+      <p class="text-lg mb-6" [style]="{'color': 'var(--p-text-muted)'}">
+        Este candidato aún no tiene una entrevista programada o realizada.
+      </p>
+      <p-button 
+        label="Volver" 
+        icon="pi pi-arrow-left"
+        (onClick)="volver()">
+      </p-button>
+    </div>
+
+    <!-- Detalle de la entrevista -->
+    <div *ngIf="!loading && entrevista" class="space-y-6">
+      
+      <!-- ========== INFORMACIÓN GENERAL ========== -->
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              <i class="pi pi-info-circle mr-2"></i>
+              Información General
+            </h2>
+          </div>
+        </ng-template>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Aspirante -->
+          <div>
+            <label class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-muted)'}">
+              Aspirante
+            </label>
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                [style]="{'background-color': 'var(--p-primary-color)'}">
+                {{ getInitials(entrevista.nombreAspirante) }}
+              </div>
+              <span class="text-lg font-medium" [style]="{'color': 'var(--p-text-color)'}">
+                {{ entrevista.nombreAspirante || nombreAspirante }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Estado -->
+          <div>
+            <label class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-muted)'}">
+              Estado
+            </label>
+            <p-tag 
+              [value]="getEstadoLabel(entrevista.estado)" 
+              [severity]="getEstadoSeverity(entrevista.estado)">
+            </p-tag>
+          </div>
+
+          <!-- Cargo Requerido -->
+          <div *ngIf="entrevista.cargoRequerido">
+            <label class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-muted)'}">
+              Cargo Requerido
+            </label>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-briefcase" [style]="{'color': 'var(--p-primary-color)'}"></i>
+              <span class="text-lg" [style]="{'color': 'var(--p-text-color)'}">
+                {{ entrevista.cargoRequerido }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Fecha de Entrevista -->
+          <div>
+            <label class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-muted)'}">
+              Fecha de Entrevista
+            </label>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-calendar" [style]="{'color': 'var(--p-primary-color)'}"></i>
+              <span class="text-lg" [style]="{'color': 'var(--p-text-color)'}">
+                {{ formatFecha(entrevista.fechaEntrevista) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Identificación -->
+          <div *ngIf="entrevista.identificacion">
+            <label class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-muted)'}">
+              Identificación
+            </label>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-id-card" [style]="{'color': 'var(--p-primary-color)'}"></i>
+              <span class="text-lg" [style]="{'color': 'var(--p-text-color)'}">
+                {{ entrevista.tipoDocumento ? entrevista.tipoDocumento + ' - ' : '' }}{{ entrevista.identificacion }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Correo -->
+          <div *ngIf="entrevista.correo">
+            <label class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-muted)'}">
+              Correo Electrónico
+            </label>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-envelope" [style]="{'color': 'var(--p-primary-color)'}"></i>
+              <span class="text-lg" [style]="{'color': 'var(--p-text-color)'}">
+                {{ entrevista.correo }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Celular -->
+          <div *ngIf="entrevista.celular1">
+            <label class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-muted)'}">
+              Celular
+            </label>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-phone" [style]="{'color': 'var(--p-primary-color)'}"></i>
+              <span class="text-lg" [style]="{'color': 'var(--p-text-color)'}">
+                {{ entrevista.celular1 }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Teléfono -->
+          <div *ngIf="entrevista.telefono">
+            <label class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-muted)'}">
+              Teléfono
+            </label>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-phone" [style]="{'color': 'var(--p-primary-color)'}"></i>
+              <span class="text-lg" [style]="{'color': 'var(--p-text-color)'}">
+                {{ entrevista.telefono }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Creado Por -->
+          <div>
+            <label class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-muted)'}">
+              Entrevistador
+            </label>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-user" [style]="{'color': 'var(--p-primary-color)'}"></i>
+              <span class="text-lg" [style]="{'color': 'var(--p-text-color)'}">
+                {{ getNombreCreadoPor(entrevista.creadoPor) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Modificado Por -->
+          <div *ngIf="entrevista.modificadoPor">
+            <label class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-muted)'}">
+              Última modificación por
+            </label>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-user-edit" [style]="{'color': 'var(--p-primary-color)'}"></i>
+              <span class="text-lg" [style]="{'color': 'var(--p-text-color)'}">
+                {{ getNombreCreadoPor(entrevista.modificadoPor) }}
+              </span>
+              <span class="text-sm ml-2" [style]="{'color': 'var(--p-text-muted)'}">
+                ({{ formatFecha(entrevista.fechaModificacion) }})
+              </span>
+            </div>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- ========== FORMACIÓN ACADÉMICA ========== -->
+      <p-card *ngIf="entrevista.formacionAcademica">
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              <i class="pi pi-graduation-cap mr-2"></i>
+              Formación Académica
+            </h2>
+          </div>
+        </ng-template>
+        <p class="text-base leading-relaxed p-4 rounded-lg whitespace-pre-line"
+          [style]="{'color': 'var(--p-text-color)', 'background-color': 'var(--p-surface-100)'}">
+          {{ entrevista.formacionAcademica }}
+        </p>
+      </p-card>
+
+      <!-- ========== EXPERIENCIA PROFESIONAL ========== -->
+      <p-card *ngIf="entrevista.experienciaProfesional">
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              <i class="pi pi-building mr-2"></i>
+              Experiencia Profesional
+            </h2>
+          </div>
+        </ng-template>
+        <p class="text-base leading-relaxed p-4 rounded-lg whitespace-pre-line"
+          [style]="{'color': 'var(--p-text-color)', 'background-color': 'var(--p-surface-100)'}">
+          {{ entrevista.experienciaProfesional }}
+        </p>
+      </p-card>
+
+      <!-- ========== ASPECTO FAMILIAR ========== -->
+      <p-card *ngIf="entrevista.aspectoFamiliar">
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              <i class="pi pi-users mr-2"></i>
+              Aspecto Familiar
+            </h2>
+          </div>
+        </ng-template>
+        <p class="text-base leading-relaxed p-4 rounded-lg whitespace-pre-line"
+          [style]="{'color': 'var(--p-text-color)', 'background-color': 'var(--p-surface-100)'}">
+          {{ entrevista.aspectoFamiliar }}
+        </p>
+      </p-card>
+
+      <!-- ========== ASPECTO PERSONAL ========== -->
+      <p-card *ngIf="entrevista.aspectoPersonal">
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              <i class="pi pi-user mr-2"></i>
+              Aspecto Personal
+            </h2>
+          </div>
+        </ng-template>
+        <p class="text-base leading-relaxed p-4 rounded-lg whitespace-pre-line"
+          [style]="{'color': 'var(--p-text-color)', 'background-color': 'var(--p-surface-100)'}">
+          {{ entrevista.aspectoPersonal }}
+        </p>
+      </p-card>
+
+      <!-- ========== COMPETENCIAS EVALUADAS ========== -->
+      <p-card *ngIf="getCompetenciasEvaluadas().length > 0">
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              <i class="pi pi-star-fill mr-2"></i>
+              Competencias Cardinales
+            </h2>
+          </div>
+        </ng-template>
+        
+        <div class="space-y-4">
+          <div *ngFor="let competencia of getCompetenciasEvaluadas()" 
+            class="p-4 rounded-lg border" 
+            [style]="{'border-color': 'var(--p-surface-border)', 'background-color': 'var(--p-surface-50)'}">
+            
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <h4 class="font-semibold text-lg" [style]="{'color': 'var(--p-text-color)'}">
+                  {{ competencia.nombre }}
+                </h4>
+                <p *ngIf="competencia.definicion" class="text-sm mt-1" [style]="{'color': 'var(--p-text-muted)'}">
+                  {{ competencia.definicion }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium" [style]="{'color': 'var(--p-text-muted)'}">Calificación:</span>
+                <p-tag 
+                  [value]="competencia.calificacion != null ? competencia.calificacion.toString() + '/5' : 'Sin calificar'" 
+                  [severity]="getCalificacionSeverity(competencia.calificacion)">
+                </p-tag>
+              </div>
+            </div>
+
+            <p *ngIf="competencia.observaciones" class="text-sm mt-2 p-3 rounded"
+              [style]="{'color': 'var(--p-text-color)', 'background-color': 'var(--p-surface-100)'}">
+              <strong>Observaciones:</strong> {{ competencia.observaciones }}
+            </p>
+          </div>
+
+          <!-- Promedio -->
+          <div class="flex items-center justify-end gap-3 pt-4 border-t"
+            [style]="{'border-color': 'var(--p-surface-border)'}">
+            <span class="text-lg font-semibold" [style]="{'color': 'var(--p-text-muted)'}">
+              Promedio Competencias:
+            </span>
+            <p-tag 
+              [value]="getPromedioCompetencias()" 
+              severity="info"
+              [style]="{'font-size': '1rem', 'padding': '0.5rem 1rem'}">
+            </p-tag>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- ========== ASSESSMENT CENTER ========== -->
+      <p-card *ngIf="entrevista.requiereAssessment && entrevista.analisisAssessment">
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              <i class="pi pi-clipboard mr-2"></i>
+              Assessment Center
+            </h2>
+          </div>
+        </ng-template>
+        <p class="text-base leading-relaxed p-4 rounded-lg whitespace-pre-line"
+          [style]="{'color': 'var(--p-text-color)', 'background-color': 'var(--p-surface-100)'}">
+          {{ entrevista.analisisAssessment }}
+        </p>
+      </p-card>
+
+      <!-- ========== CALIFICACIONES ========== -->
+      <p-card *ngIf="entrevista.calificacionEntrevista || entrevista.calificacionAssessment || entrevista.calificacionFinal">
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              <i class="pi pi-chart-bar mr-2"></i>
+              Calificaciones
+            </h2>
+          </div>
+        </ng-template>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Calificación Entrevista -->
+          <div *ngIf="entrevista.calificacionEntrevista" class="text-center p-6 rounded-lg border"
+            [style]="{'border-color': 'var(--p-surface-border)', 'background-color': 'var(--p-surface-50)'}">
+            <p class="text-sm font-semibold mb-3" [style]="{'color': 'var(--p-text-muted)'}">
+              Calificación Entrevista
+            </p>
+            <p class="text-4xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              {{ entrevista.calificacionEntrevista }}
+            </p>
+          </div>
+
+          <!-- Calificación Assessment -->
+          <div *ngIf="entrevista.calificacionAssessment" class="text-center p-6 rounded-lg border"
+            [style]="{'border-color': 'var(--p-surface-border)', 'background-color': 'var(--p-surface-50)'}">
+            <p class="text-sm font-semibold mb-3" [style]="{'color': 'var(--p-text-muted)'}">
+              Calificación Assessment
+            </p>
+            <p class="text-4xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              {{ entrevista.calificacionAssessment }}
+            </p>
+          </div>
+
+          <!-- Calificación Final -->
+          <div *ngIf="entrevista.calificacionFinal" class="text-center p-6 rounded-lg border"
+            [style]="{'border-color': 'var(--p-primary-color)', 'background-color': 'var(--p-blue-50, #eff6ff)'}">
+            <p class="text-sm font-semibold mb-3" [style]="{'color': 'var(--p-text-muted)'}">
+              Calificación Final
+            </p>
+            <p class="text-5xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              {{ entrevista.calificacionFinal }}
+            </p>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- ========== OBSERVACIONES FINALES ========== -->
+      <p-card *ngIf="entrevista.observacionesFinales">
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              <i class="pi pi-comment mr-2"></i>
+              Observaciones Finales
+            </h2>
+          </div>
+        </ng-template>
+        <p class="text-base leading-relaxed p-4 rounded-lg whitespace-pre-line"
+          [style]="{'color': 'var(--p-text-color)', 'background-color': 'var(--p-surface-100)'}">
+          {{ entrevista.observacionesFinales }}
+        </p>
+      </p-card>
+
+      <!-- ========== FIRMAS ========== -->
+      <p-card *ngIf="entrevista.firmas && entrevista.firmas.length > 0">
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h2 class="text-2xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+              <i class="pi pi-pencil mr-2"></i>
+              Firmas
+            </h2>
+          </div>
+        </ng-template>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let firma of entrevista.firmas" 
+            class="p-4 rounded-lg border"
+            [style]="{'border-color': 'var(--p-surface-border)', 'background-color': 'var(--p-surface-50)'}">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">
+                  {{ firma.nombreUsuario || 'Sin nombre' }}
+                </p>
+                <p class="text-sm" [style]="{'color': 'var(--p-text-muted)'}">
+                  {{ getCargoFirmaLabel(firma.cargoFirma) }}
+                </p>
+              </div>
+              <div class="text-right">
+                <p-tag value="Firmado" severity="success" *ngIf="firma.fechaFirma"></p-tag>
+                <p class="text-xs mt-1" [style]="{'color': 'var(--p-text-muted)'}" *ngIf="firma.fechaFirma">
+                  {{ formatFecha(firma.fechaFirma) }}
+                </p>
+              </div>
+            </div>
+            <p *ngIf="firma.observaciones" class="text-sm mt-2" [style]="{'color': 'var(--p-text-muted)'}">
+              {{ firma.observaciones }}
+            </p>
+          </div>
+        </div>
+      </p-card>
+
+    </div>
+
+  </div>
+</p-card>

@@ -1,0 +1,405 @@
+<p-toast position="top-right"></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="w-full max-w-8xl mx-auto" [style]="{ 'background': 'transparent', 'padding': '1.5rem' }">
+
+  <!-- Criterios de búsqueda -->
+  <div class="mb-6">
+    <div class="p-6 rounded-xl border-2 shadow-lg" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+      }">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+          Equipos de Almacén
+        </h2>
+        <p class="text-sm sm:text-base opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Listado de equipos registrados en el inventario del almacén
+        </p>
+      </div>
+
+      <div class="p-5 rounded-lg border" [style]="{
+          'background': 'var(--p-surface-0)',
+          'border-color': 'var(--p-border-color)'
+        }">
+        <div class="flex items-center justify-between mb-5">
+          <h4 class="text-lg font-semibold m-0" [style]="{ color: 'var(--p-text-color)' }">
+            Criterios de Búsqueda
+          </h4>
+          <button pButton label="Limpiar Filtros" icon="pi pi-times" severity="secondary" [outlined]="true"
+            [style]="{ 'height': '2.5rem', 'border-radius': '8px' }"
+            (click)="limpiarFiltros()"
+            [disabled]="!hayFiltrosActivos">
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Nombre -->
+          <div>
+            <p class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Nombre
+            </p>
+            <app-input-component
+              type="text"
+              [(ngModel)]="filtroNombre"
+              placeholder="Buscar por nombre"
+              class="w-full">
+            </app-input-component>
+          </div>
+
+          <!-- Tipo -->
+          <div>
+            <p class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Tipo
+            </p>
+            <app-select-component
+              [(ngModel)]="filtroTipo"
+              [options]="tiposOpciones()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Todos los tipos"
+              class="w-full"
+              [filter]="filter">
+            </app-select-component>
+          </div>
+
+          <!-- Marca -->
+          <div>
+            <p class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Marca
+            </p>
+            <app-select-component
+              [(ngModel)]="filtroMarca"
+              [options]="marcasOpciones()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Todas las marcas"
+              class="w-full"
+              [filter]="filter">
+            </app-select-component>
+          </div>
+
+          <!-- Modelo -->
+          <div>
+            <p class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Modelo
+            </p>
+            <app-select-component
+              [(ngModel)]="filtroModelo"
+              [options]="modelosOpciones()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Todos los modelos"
+              class="w-full"
+              [filter]="filter">
+            </app-select-component>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de equipos -->
+  <div class="rounded-xl border-2 shadow-lg overflow-hidden" [style]="{
+      'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+      'border-color': 'var(--p-primary-200)',
+      'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+    }">
+
+    <div class="px-6 py-4 border-b" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+        'border-color': 'var(--p-primary-300)'
+      }">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-xl font-bold text-white m-0">Equipos registrados</h3>
+          <p class="text-white/80 text-sm m-0">
+            {{ equiposFiltrados.length }} equipo(s) encontrado(s)
+          </p>
+        </div>
+        <span class="bg-white/20 px-3 py-1 rounded-full text-white text-sm font-medium">
+          Actualizado
+        </span>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div *ngIf="cargando"
+        class="absolute inset-0 flex flex-col items-center justify-center z-10"
+        [style]="{ 'background': 'rgba(255,255,255,0.95)' }">
+        <p-progressSpinner styleClass="w-12 h-12" [style]="{ 'animation-duration': '1s' }"></p-progressSpinner>
+        <p class="mt-4 text-sm font-medium opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Cargando equipos...
+        </p>
+      </div>
+
+      <div class="p-4">
+        <p-table
+          [value]="equiposFiltrados"
+          [loading]="cargando"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[10, 20, 50]"
+          [tableStyle]="{ 'min-width': '700px' }"
+          sortMode="multiple"
+          class="overflow-x-auto"
+          [style]="{
+            '--p-datatable-header-background': 'var(--p-surface-100)',
+            '--p-datatable-header-border-color': 'var(--p-border-color)',
+            '--p-datatable-row-background': 'var(--p-surface-0)',
+            '--p-datatable-row-hover-background': 'var(--p-surface-50)'
+          }">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="nombre" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Nombre</div>
+                <p-sortIcon field="nombre"></p-sortIcon>
+              </th>
+              <th pSortableColumn="tipo" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Tipo</div>
+                <p-sortIcon field="tipo"></p-sortIcon>
+              </th>
+              <th pSortableColumn="marca" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Marca</div>
+                <p-sortIcon field="marca"></p-sortIcon>
+              </th>
+              <th pSortableColumn="modelo" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Modelo</div>
+                <p-sortIcon field="modelo"></p-sortIcon>
+              </th>
+              <th pSortableColumn="stock" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Stock</div>
+                <p-sortIcon field="stock"></p-sortIcon>
+              </th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Acciones</div>
+              </th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-equipo let-rowIndex="rowIndex">
+            <tr class="transition-all duration-200 hover:shadow-sm" [style]="{
+                'background': rowIndex % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-25)',
+                'border-bottom': '1px solid var(--p-border-color)'
+              }">
+
+              <td class="py-4 px-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+                    [style]="{ 'background': 'var(--p-primary-500)' }">
+                    {{ equipo.nombre?.charAt(0) || 'E' }}
+                  </div>
+                  <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">
+                    {{ equipo.nombre }}
+                  </div>
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">{{ equipo.tipo }}</div>
+              </td>
+
+              <td class="py-4 px-3">
+                <ng-container *ngIf="equipo.marca; else sinMarca">
+                  <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">{{ equipo.marca }}</div>
+                </ng-container>
+                <ng-template #sinMarca>
+                  <span class="opacity-60 italic">No especificado</span>
+                </ng-template>
+              </td>
+
+              <td class="py-4 px-3">
+                <ng-container *ngIf="equipo.modelo; else sinModelo">
+                  <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">{{ equipo.modelo }}</div>
+                </ng-container>
+                <ng-template #sinModelo>
+                  <span class="opacity-60 italic">No especificado</span>
+                </ng-template>
+              </td>
+
+              <td class="py-4 px-3">
+                <div class="inline-flex items-center px-2 py-1 rounded-md text-sm font-semibold" [style]="{
+                    'background': equipo.stock === 0 ? 'var(--p-red-100)' : 'var(--p-green-100)',
+                    'color': equipo.stock === 0 ? 'var(--p-red-800)' : 'var(--p-green-800)'
+                  }">
+                  {{ equipo.stock }}
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <div class="flex gap-2">
+                  <button
+                    pButton
+                    type="button"
+                    icon="pi pi-pencil"
+                    class="p-button-rounded p-button-text p-button-info"
+                    pTooltip="Editar equipo"
+                    (click)="editarEquipo(equipo)">
+                  </button>
+                  <button
+                    pButton
+                    type="button"
+                    icon="pi pi-trash"
+                    class="p-button-rounded p-button-text p-button-danger"
+                    pTooltip="Eliminar equipo"
+                    (click)="confirmarEliminar(equipo)">
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="6" class="text-center py-12" [style]="{
+                  'background': 'var(--p-surface-50)',
+                  'color': 'var(--p-text-color)'
+                }">
+                <div class="flex flex-col items-center gap-4">
+                  <div class="w-16 h-16 rounded-full flex items-center justify-center"
+                    [style]="{ 'background': 'var(--p-surface-200)' }">
+                    <i class="pi pi-inbox text-2xl opacity-50"></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-semibold mb-1">No se encontraron equipos</p>
+                    <p class="text-sm opacity-80">Ajuste los filtros para obtener resultados</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog edición -->
+<p-dialog
+  header="Editar Equipo de Almacén"
+  [(visible)]="mostrarModalEdicion"
+  [modal]="true"
+  [style]="{ width: '680px', maxWidth: '95vw' }"
+  [contentStyle]="{ overflow: 'visible' }"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [blockScroll]="true"
+  [baseZIndex]="10000"
+  [breakpoints]="{ '960px': '90vw', '640px': '95vw' }">
+
+  <form [formGroup]="formularioEdicion" (ngSubmit)="guardarEdicion()" class="space-y-4 overflow-visible">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div class="col-span-2">
+        <app-input-component
+          label="Nombre del Equipo *"
+          formControlName="nombre"
+          placeholder="Nombre del equipo"
+          class="w-full">
+        </app-input-component>
+        <small *ngIf="esInvalido('nombre')" class="text-red-500 text-xs mt-1 block">
+          {{ obtenerMensajeError('nombre') }}
+        </small>
+      </div>
+
+      <div class="col-span-1">
+        <app-select-component
+          label="Tipo *"
+          formControlName="tipo"
+          [options]="tipoEdicionOpciones()"
+          class="w-full">
+        </app-select-component>
+        <small *ngIf="esInvalido('tipo')" class="text-red-500 text-xs mt-1 block">
+          {{ obtenerMensajeError('tipo') }}
+        </small>
+      </div>
+
+      <div class="col-span-1">
+        <app-select-component
+          label="Marca"
+          formControlName="marca"
+          [options]="marcaEdicionOpciones()"
+          class="w-full">
+        </app-select-component>
+      </div>
+
+      <div class="col-span-1">
+        <app-input-component
+          label="Modelo"
+          formControlName="modelo"
+          placeholder="Modelo del equipo"
+          class="w-full">
+        </app-input-component>
+      </div>
+
+      <div class="col-span-1">
+        <app-input-component
+          label="Stock *"
+          formControlName="stock"
+          type="number"
+          placeholder="0"
+          class="w-full">
+        </app-input-component>
+        <small *ngIf="esInvalido('stock')" class="text-red-500 text-xs mt-1 block">
+          {{ obtenerMensajeError('stock') }}
+        </small>
+      </div>
+
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        type="button"
+        label="Cancelar"
+        class="p-button-text p-button-secondary"
+        (click)="cerrarModalEdicion()"
+        [disabled]="guardandoEdicion">
+      </button>
+      <button
+        pButton
+        type="button"
+        label="Guardar"
+        icon="pi pi-check"
+        [loading]="guardandoEdicion"
+        [disabled]="formularioEdicion.invalid"
+        (click)="guardarEdicion()">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

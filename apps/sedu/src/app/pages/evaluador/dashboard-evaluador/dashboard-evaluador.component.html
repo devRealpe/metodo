@@ -1,0 +1,102 @@
+<p-toast></p-toast>
+
+<div class="flex flex-col gap-6">
+  <h2 class="text-2xl font-bold text-[var(--p-text-color)]">Mis Evaluaciones</h2>
+
+  @if (periodoActivo()) {
+    <p class="text-[var(--p-text-secondary-color)]">
+      Periodo: <strong>{{ periodoActivo()!.nombre }}</strong>
+    </p>
+  }
+
+  @if (cargando()) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      @for (i of [1,2,3]; track i) {
+        <p-card><p-skeleton width="100%" height="60px"></p-skeleton></p-card>
+      }
+    </div>
+    <p-card>
+      @for (i of [1,2,3,4]; track i) {
+        <p-skeleton width="100%" height="40px" styleClass="mb-2"></p-skeleton>
+      }
+    </p-card>
+  } @else if (!periodoActivo()) {
+    <div class="text-center py-16 text-[var(--p-text-secondary-color)]">
+      <i class="pi pi-calendar-times text-5xl mb-4"></i>
+      <p class="text-lg">No hay un periodo de evaluación activo</p>
+      <p class="text-sm mt-2">Contacte al administrador GTH para más información</p>
+    </div>
+  } @else {
+    <!-- Resumen -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <p-card styleClass="sedu-card">
+        <div class="text-center p-2">
+          <span class="text-3xl font-bold text-[var(--p-primary-color)]">{{ totalAsignaciones }}</span>
+          <p class="text-sm text-[var(--p-text-secondary-color)] mt-1">Total Asignadas</p>
+        </div>
+      </p-card>
+      <p-card styleClass="sedu-card">
+        <div class="text-center p-2">
+          <span class="text-3xl font-bold text-green-600">{{ completadas }}</span>
+          <p class="text-sm text-[var(--p-text-secondary-color)] mt-1">Completadas</p>
+        </div>
+      </p-card>
+      <p-card styleClass="sedu-card">
+        <div class="text-center p-2">
+          <span class="text-3xl font-bold text-amber-500">{{ pendientes }}</span>
+          <p class="text-sm text-[var(--p-text-secondary-color)] mt-1">Pendientes</p>
+        </div>
+      </p-card>
+    </div>
+
+    @if (totalAsignaciones > 0) {
+      <p-card>
+        <p-progressBar [value]="(completadas / totalAsignaciones) * 100" [showValue]="true"
+          styleClass="mb-4"></p-progressBar>
+      </p-card>
+    }
+
+    <!-- Tabla -->
+    <p-card styleClass="sedu-card">
+      @if (asignaciones().length === 0) {
+        <div class="text-center py-8 text-[var(--p-text-secondary-color)]">
+          <i class="pi pi-clipboard text-4xl mb-3"></i>
+          <p>No tienes evaluaciones asignadas en este periodo</p>
+        </div>
+      } @else {
+        <p-table [value]="asignaciones()" styleClass="p-datatable-sm p-datatable-striped" [rowHover]="true">
+          <ng-template #header>
+            <tr>
+              <th>Evaluado</th>
+              <th>Dependencia</th>
+              <th>Cargo</th>
+              <th>Formato</th>
+              <th class="text-center">Estado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-a>
+            <tr>
+              <td class="font-semibold">{{ a.evaluadoNombre }}</td>
+              <td>{{ a.periodoNombre }}</td>
+              <td>—</td>
+              <td>—</td>
+              <td class="text-center">
+                <p-tag [value]="a.evaluacionEstado || 'SIN INICIAR'" [severity]="getEstadoSeverity(a.evaluacionEstado)"></p-tag>
+              </td>
+              <td class="text-center">
+                @if (a.evaluacionEstado === 'CERRADA' || a.evaluacionEstado === 'FIRMADO_EVALUADO') {
+                  <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
+                    pTooltip="Ver evaluación" (onClick)="iniciarEvaluacion(a)"></p-button>
+                } @else {
+                  <p-button icon="pi pi-pencil" severity="primary" [text]="true" [rounded]="true"
+                    pTooltip="Evaluar" [loading]="a.creando || false" (onClick)="iniciarEvaluacion(a)"></p-button>
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </p-card>
+  }
+</div>

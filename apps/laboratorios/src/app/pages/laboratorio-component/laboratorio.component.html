@@ -1,0 +1,133 @@
+<div class="w-full overflow-x-hidden">
+    <div class="w-full max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
+
+        <div class="text-center py-3 px-2">
+            <h2 class="text-xl sm:text-2xl font-bold mb-1" [style]="{'color':'var(--p-text-color)'}">
+                {{ modoEdicion ? "Editar Laboratorio" : "Registro de Laboratorio" }}
+            </h2>
+            <p class="text-sm sm:text-base" [style]="{'color':'var(--p-text-muted-color, var(--p-surface-600))'}">
+                {{
+                  modoEdicion
+                    ? "Modifique la información del laboratorio"
+                    : "Complete la información para registrar un nuevo laboratorio"
+                }}
+            </p>
+        </div>
+
+        <div *ngIf="mostrarMensajeExito" class="mb-4">
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                <span class="block sm:inline">
+                    {{ modoEdicion ? '¡Laboratorio actualizado exitosamente!' : '¡Laboratorio guardado exitosamente!' }}
+                </span>
+            </div>
+        </div>
+
+        <form [formGroup]="formularioLaboratorio" (ngSubmit)="enviarFormulario()" class="grid gap-4">
+            <div class="min-w-0">
+                <app-input-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                    label="Nombre del Laboratorio *" id="nombre_laboratorio" formControlName="nombre_laboratorio"
+                    placeholder="Ingrese el nombre del laboratorio" [ngClass]="{ 'p-invalid': formularioLaboratorio.get('nombre_laboratorio')?.invalid && formularioLaboratorio.get('nombre_laboratorio')?.touched }">
+                </app-input-component>
+
+                <small *ngIf="formularioLaboratorio.get('nombre_laboratorio')?.invalid && formularioLaboratorio.get('nombre_laboratorio')?.touched" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                    El nombre del laboratorio es obligatorio
+                </small>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div class="min-w-0">
+                    <app-input-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                        label="Capacidad *" id="capacidad" type="number" formControlName="capacidad"
+                        placeholder="Ingrese la capacidad" [ngClass]="{ 'p-invalid': formularioLaboratorio.get('capacidad')?.invalid && formularioLaboratorio.get('capacidad')?.touched }">
+                    </app-input-component>
+
+                    <small *ngIf="formularioLaboratorio.get('capacidad')?.invalid && formularioLaboratorio.get('capacidad')?.touched" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                        La capacidad es obligatoria
+                    </small>
+
+                    <small class="text-xs sm:text-sm text-gray-500 mt-1 block">
+                        Número de personas que puede albergar
+                    </small>
+                </div>
+
+                <div class="min-w-0">
+                    <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                        label="Estado *" id="estado" formControlName="estado" [options]="opcionesEstado"
+                        placeholder="Seleccionar estado" [ngClass]="{ 'p-invalid': formularioLaboratorio.get('estado')?.invalid && formularioLaboratorio.get('estado')?.touched }">
+                    </app-select-component>
+
+                    <small *ngIf="formularioLaboratorio.get('estado')?.invalid && formularioLaboratorio.get('estado')?.touched" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                        El estado es obligatorio
+                    </small>
+                </div>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div class="min-w-0">
+                    <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                        label="Tipo *" id="tipo" formControlName="tipo" [options]="opcionesTipo"
+                        placeholder="Seleccionar tipo" [ngClass]="{ 'p-invalid': formularioLaboratorio.get('tipo')?.invalid && formularioLaboratorio.get('tipo')?.touched }">
+                    </app-select-component>
+
+                    <small *ngIf="formularioLaboratorio.get('tipo')?.invalid && formularioLaboratorio.get('tipo')?.touched" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                        El tipo es obligatorio
+                    </small>
+                </div>
+
+                <div class="min-w-0">
+                    <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                        label="Sede *" id="sede" formControlName="sede" [options]="opcionesSede"
+                        placeholder="Seleccionar sede" [ngClass]="{ 'p-invalid': formularioLaboratorio.get('sede')?.invalid && formularioLaboratorio.get('sede')?.touched }">
+                    </app-select-component>
+
+                    <small *ngIf="formularioLaboratorio.get('sede')?.invalid && formularioLaboratorio.get('sede')?.touched" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                        La sede es obligatoria
+                    </small>
+                </div>
+
+                <div class="min-w-0">
+                    <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                        label="Bloque" id="bloque" formControlName="bloque" [options]="opcionesBloque"
+                        placeholder="Seleccionar bloque (opcional)" [ngClass]="{ 'p-invalid': formularioLaboratorio.get('bloque')?.invalid && formularioLaboratorio.get('bloque')?.touched }">
+                    </app-select-component>
+
+                    <small *ngIf="formularioLaboratorio.get('bloque')?.invalid && formularioLaboratorio.get('bloque')?.touched" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                        Error en el bloque
+                    </small>
+
+                    <small class="text-xs sm:text-sm text-gray-500 mt-1 block">
+                        Ubicación específica dentro de la sede
+                    </small>
+                </div>
+            </div>
+
+            <div class="min-w-0">
+                <app-textarea-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                    label="Descripción" id="descripcion" formControlName="descripcion"
+                    placeholder="Descripción detallada del laboratorio (opcional)" [rows]="3"
+                    [ngClass]="{ 'p-invalid': formularioLaboratorio.get('descripcion')?.invalid && formularioLaboratorio.get('descripcion')?.touched }">
+                </app-textarea-component>
+
+                <small *ngIf="formularioLaboratorio.get('descripcion')?.invalid && formularioLaboratorio.get('descripcion')?.touched" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                    Error en la descripción
+                </small>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2 justify-end items-stretch sm:items-center">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <button
+                        pButton
+                        type="submit"
+                        [label]="modoEdicion ? 'Actualizar Laboratorio' : 'Registrar Laboratorio'"
+                        icon="pi pi-check"
+                        class="w-full sm:w-auto"
+                        [loading]="cargando"
+                        [disabled]="formularioLaboratorio.invalid">
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+

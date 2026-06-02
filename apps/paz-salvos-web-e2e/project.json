@@ -1,0 +1,9 @@
+{
+  "name": "paz-salvos-web-e2e",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/paz-salvos-web-e2e/src",
+  "implicitDependencies": ["paz-salvos-web"],
+  "// targets": "to see all targets run: nx show project paz-salvos-web-e2e --web",
+  "targets": {}
+}

@@ -1,0 +1,55 @@
+<div class="flex flex-col gap-6">
+  <h2 class="text-2xl font-bold text-[var(--p-text-color)]">Mi Perfil</h2>
+
+  @if (cargando()) {
+    <p-card>
+      <div class="flex items-center gap-4 mb-4">
+        <p-skeleton shape="circle" size="80px"></p-skeleton>
+        <div>
+          <p-skeleton width="200px" height="24px" styleClass="mb-2"></p-skeleton>
+          <p-skeleton width="160px" height="18px"></p-skeleton>
+        </div>
+      </div>
+    </p-card>
+  } @else if (usuario()) {
+    <p-card styleClass="sedu-card">
+      <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+        <p-avatar [label]="iniciales" size="xlarge" shape="circle"
+          [style]="{'background-color': 'var(--p-primary-color)', 'color': 'white', 'font-size': '1.5rem', 'width': '80px', 'height': '80px'}">
+        </p-avatar>
+        <div class="flex-1">
+          <h3 class="text-xl font-semibold">{{ usuario().firstName }} {{ usuario().lastName }}</h3>
+          <p class="text-[var(--p-text-secondary-color)]">{{ usuario().email }}</p>
+          <p class="text-sm text-[var(--p-text-secondary-color)] mt-1">
+            <i class="pi pi-user mr-1"></i> {{ usuario().username }}
+          </p>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card header="Roles Asignados" styleClass="sedu-card">
+      <div class="flex flex-wrap gap-2">
+        @for (rol of roles; track rol) {
+          <p-tag [value]="rol" severity="info"></p-tag>
+        }
+        @if (roles.length === 0) {
+          <p class="text-[var(--p-text-secondary-color)]">Sin roles asignados</p>
+        }
+      </div>
+    </p-card>
+
+    <p-card header="Información de Sesión" styleClass="sedu-card">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-[var(--p-text-secondary-color)]">ID de Usuario</p>
+          <p class="font-mono text-sm">{{ usuario().id }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-[var(--p-text-secondary-color)]">Estado de Cuenta</p>
+          <p-tag [value]="usuario().emailVerified ? 'Verificado' : 'Sin verificar'"
+            [severity]="usuario().emailVerified ? 'success' : 'warn'"></p-tag>
+        </div>
+      </div>
+    </p-card>
+  }
+</div>

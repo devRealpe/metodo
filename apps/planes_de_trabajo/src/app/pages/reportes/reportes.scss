@@ -1,0 +1,140 @@
+::ng-deep {
+  .p-select {
+    width: 100%;
+
+    .p-select-label {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+    }
+
+    .p-select-dropdown {
+      width: 2.5rem;
+    }
+  }
+
+  .p-select-overlay {
+    .p-select-option {
+      padding: 0.75rem;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: var(--p-primary-100);
+      }
+
+      &.p-select-option-selected {
+        background-color: var(--p-primary-600);
+        color: white;
+      }
+    }
+  }
+}
+
+// Estilos responsivos
+@media (max-width: 768px) {
+  .page-header {
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// Animaciones
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+p-card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+::ng-deep {
+  .p-paginator {
+    background: var(--p-surface-50) !important;
+    border: none !important;
+    border-top: 1px solid var(--p-surface-200) !important;
+    border-radius: 0 0 12px 12px !important;
+    padding: 1rem !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+
+    .p-paginator-first,
+    .p-paginator-prev,
+    .p-paginator-next,
+    .p-paginator-last,
+    .p-paginator-page {
+      min-width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 9999px !important;
+      border: none !important;
+      margin: 0 0.125rem;
+      font-weight: 600;
+      transition: all 0.15s ease !important;
+    }
+
+    .p-paginator-pages .p-paginator-page {
+      background: transparent !important;
+      color: var(--p-surface-600) !important;
+
+      &:hover:not(.p-disabled) {
+        background: var(--p-primary-400) !important;
+        color: var(--p-surface-0) !important;
+        transform: scale(1.1);
+      }
+
+      &.p-highlight {
+        background: linear-gradient(135deg, var(--p-primary-600), var(--p-primary-500), var(--p-primary-400)) !important;
+        color: var(--p-surface-0) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        transform: scale(1.05);
+      }
+    }
+
+    .p-paginator-first,
+    .p-paginator-prev,
+    .p-paginator-next,
+    .p-paginator-last {
+      background: var(--p-surface-0) !important;
+      color: var(--p-primary-500) !important;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+
+      &:hover:not(.p-disabled) {
+        background: linear-gradient(135deg, var(--p-primary-600), var(--p-primary-500), var(--p-primary-400)) !important;
+        color: var(--p-surface-0) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        transform: scale(1.1);
+      }
+
+      &.p-disabled {
+        opacity: 0.3;
+        background: var(--p-surface-100) !important;
+      }
+    }
+
+    .p-dropdown {
+      border-radius: 12px !important;
+      border: 2px solid var(--p-surface-200) !important;
+      transition: all 0.15s ease !important;
+
+      &:hover {
+        border-color: var(--p-primary-500) !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+      }
+    }
+
+    .p-paginator-current {
+      color: var(--p-surface-600) !important;
+      font-weight: 600;
+      background: var(--p-surface-100);
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+    }
+  }
+}

@@ -1,0 +1,126 @@
+<p-dialog 
+    [(visible)]="visible"
+    (visibleChange)="visibleChange.emit($event)"
+    [modal]="true"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="crear-plan-dialog"
+    [style]="{ width: '600px' }"
+    [baseZIndex]="10000"
+    [appendTo]="'body'"
+    (onHide)="onHide()">
+    
+    <!-- Header -->
+    <ng-template pTemplate="header">
+        <div class="dialog-header">
+            <div class="header-icon">
+                <i class="pi pi-plus-circle text-primary"></i>
+            </div>
+            <span class="dialog-title">NUEVA ASESORÍA</span>
+        </div>
+    </ng-template>
+
+    <!-- Content -->
+    <div class="dialog-content">
+
+        <!-- Info Card -->
+        <div class="profesor-info-card">
+            <h4 class="info-title">
+                <i class="pi pi-bookmark"></i>
+                Información de la Actividad
+            </h4>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Actividad:</strong>
+                    <span>{{ actividad?.nombre || 'N/A' }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <strong>Plan de Trabajo:</strong>
+                    <span>{{ planDeTrabajo?.anio }}-{{ planDeTrabajo?.periodo || 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <!-- Título del Proyecto -->
+            <div class="form-field">
+                <label for="titulo" class="field-label">
+                    Título del Proyecto
+                </label>
+                <input 
+                    id="titulo" 
+                    type="text" 
+                    pInputText 
+                    [(ngModel)]="nuevaAsesoria.titulo"
+                    placeholder="Ingrese el título del proyecto"
+                    [invalid]="mostrarValidacion && !nuevaAsesoria.titulo"
+                    class="w-full"
+                    maxlength="255" />
+                @if (mostrarValidacion && !nuevaAsesoria.titulo) {
+                    <p-message severity="error" variant="simple" size="small">El título del proyecto es requerido</p-message>
+                }
+            </div>
+
+            <!-- Momento de Investigación -->
+            <div class="form-field">
+                <label for="fase" class="field-label">
+                    Momento
+                </label>
+                <p-autocomplete
+                    [(ngModel)]="selectedMomento"
+                    [suggestions]="filteredMomentos"
+                    (completeMethod)="filterMomentos($event)"
+                    [dropdown]="true"
+                    optionLabel="nombre"
+                    [forceSelection]="true"
+                    [showClear]="true"
+                    placeholder="Seleccionar fase"
+                    inputId="fase"
+                    [fluid]="true"
+                    [appendTo]="'body'"
+                    [class.ng-invalid]="mostrarValidacion && !selectedMomento"
+                    [class.ng-dirty]="mostrarValidacion && !selectedMomento"
+                    [style]="{ width: '100%' }">
+                    <ng-template let-momento pTemplate="item">
+                        <div class="flex items-center gap-2 p-2">
+                            <i class="pi pi-clock" style="color: var(--primary-blue);"></i>
+                            <span class="font-semibold" style="color: var(--p-text-color-0);">{{ momento.nombre }}</span>
+                        </div>
+                    </ng-template>
+                </p-autocomplete>
+                @if (mostrarValidacion && !selectedMomento) {
+                    <p-message severity="error" variant="simple" size="small">El momento es requerido</p-message>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <button 
+                type="button" 
+                pButton 
+                label="Cancelar"
+                icon="pi pi-times"
+                class="p-button-outlined p-button-secondary"
+                (click)="onCancelar()"
+                [disabled]="guardando">
+            </button>
+            
+            <button 
+                type="button" 
+                pButton 
+                label="Guardar Asesoría"
+                icon="pi pi-check"
+                class="p-button-success"
+                (click)="onGuardar()"
+                [loading]="guardando">
+            </button>
+        </div>
+    </ng-template>
+</p-dialog>

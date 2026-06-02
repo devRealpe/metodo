@@ -1,0 +1,216 @@
+:host ::ng-deep {
+  .p-dialog-mask {
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    pointer-events: auto !important;
+  }
+
+  .rejection-dialog.p-dialog {
+    border-radius: 8px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+    background-color: var(--p-surface-0) !important;
+    width: clamp(300px, 90vw, 800px) !important;
+    max-width: 95vw !important;
+    overflow: hidden !important;
+
+    .p-dialog-header {
+      background: var(--p-surface-0) !important;
+      padding: 1rem !important;
+      text-align: center !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      position: relative !important;
+      border-top-left-radius: 8px !important;
+      border-top-right-radius: 8px !important;
+
+      @media (max-width: 767px) {
+        padding: 0.75rem !important;
+      }
+
+      .dialog-title {
+        font-size: clamp(0.875rem, 2.5vw, 1rem) !important;
+        font-weight: 600 !important;
+        color: var(--p-text-color) !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+        line-height: 1.4 !important;
+        word-break: break-word !important;
+        flex: 1 !important;
+        text-align: center !important;
+      }
+
+      .custom-close-button {
+        position: absolute !important;
+        right: 1rem !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 2rem !important;
+        height: 2rem !important;
+        color: var(--p-text-color) !important;
+
+        &:hover {
+          background-color: var(--p-surface-100) !important;
+        }
+
+        .p-button-icon {
+          font-size: 1.1rem !important;
+        }
+      }
+    }
+
+    .p-dialog-content {
+      background: var(--p-surface-0) !important;
+      padding: 0 !important;
+    }
+
+    .p-dialog-footer {
+      background: var(--p-surface-0) !important;
+      padding: 0 !important;
+    }
+
+    .rejection-content {
+      padding: 0 1rem 1rem !important;
+      background-color: var(--p-surface-0) !important;
+
+      @media (min-width: 768px) {
+        padding: 0 1.5rem 1.5rem !important;
+      }
+    }
+
+    .rejection-footer {
+      background-color: var(--p-surface-0) !important;
+      padding: 0.75rem 1rem 1rem !important;
+      border-bottom-left-radius: 8px !important;
+      border-bottom-right-radius: 8px !important;
+
+      @media (min-width: 768px) {
+        padding: 1rem 1.5rem 1.5rem !important;
+      }
+
+      .flex {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        flex-wrap: wrap !important;
+
+        @media (min-width: 768px) {
+          gap: 0.75rem !important;
+        }
+      }
+
+      button {
+        padding: 0.625rem 1.25rem !important;
+        font-weight: 500 !important;
+        font-size: clamp(0.8rem, 2vw, 0.875rem) !important;
+        border-radius: 5px !important;
+        border: none !important;
+        color: #ffffff !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        white-space: nowrap !important;
+        flex: 1 1 auto !important;
+        min-width: 100px !important;
+
+        @media (min-width: 480px) {
+          flex: 0 1 auto !important;
+          padding: 0.625rem 1.5rem !important;
+        }
+
+        &:focus {
+          outline: none !important;
+        }
+      }
+
+      .cancel-button {
+        background-color: var(--p-blue-500) !important;
+
+        &:hover {
+          background-color: var(--p-blue-600) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 2px 8px rgba(49, 130, 206, 0.3) !important;
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2) !important;
+        }
+      }
+
+      .reject-button {
+        background-color: var(--p-red-500) !important;
+
+        &:hover:not(:disabled) {
+          background-color: var(--p-red-600) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 2px 8px rgba(246, 135, 179, 0.4) !important;
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 3px rgba(246, 135, 179, 0.2) !important;
+        }
+
+        &:disabled {
+          opacity: 0.6 !important;
+          cursor: not-allowed !important;
+        }
+      }
+
+      button:active:not(:disabled) {
+        transform: translateY(0) !important;
+      }
+    }
+
+    .dialog-content {
+      app-textarea-component {
+        ::ng-deep {
+          label {
+            display: block !important;
+            font-size: clamp(0.8rem, 2vw, 0.875rem) !important;
+            color: var(--p-text-color) !important;
+            margin-bottom: 0.75rem !important;
+            font-weight: 400 !important;
+            text-align: center !important;
+            line-height: 1.4 !important;
+
+            &::after {
+              content: " (obligatoria)" !important;
+              color: var(--p-text-muted) !important;
+              font-weight: 400 !important;
+            }
+          }
+
+          textarea {
+            width: 100% !important;
+            min-height: 120px !important;
+            max-height: 300px !important;
+            padding: 0.75rem !important;
+            border: 1px solid var(--p-surface-300) !important;
+            border-radius: 6px !important;
+            font-family: inherit !important;
+            font-size: max(0.875rem, 16px) !important;
+            background-color: var(--p-surface-100) !important;
+            color: var(--p-text-color) !important;
+            resize: none !important;
+            transition: all 0.2s ease-in-out !important;
+            line-height: 1.5 !important;
+
+            @media (min-width: 768px) {
+              min-height: 150px !important;
+              padding: 0.875rem !important;
+            }
+
+            &:focus {
+              outline: none !important;
+              border-color: var(--p-primary-500) !important;
+              box-shadow: 0 0 0 3px var(--p-primary-100) !important;
+            }
+
+            &::placeholder {
+              color: var(--p-text-muted-color) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,138 @@
+<p-dialog [(visible)]="visible" (visibleChange)="visibleChange.emit($event)" [modal]="true" [closable]="true"
+    [draggable]="false" [resizable]="false" styleClass="crear-plan-dialog"
+    [style]="{ width: '500px', maxHeight: '90vh' }" [baseZIndex]="10000" [appendTo]="'body'" (onHide)="onHide()">
+
+    <!-- Header -->
+    <ng-template pTemplate="header">
+        <div class="dialog-header">
+            <div class="header-icon">
+                <i class="pi pi-plus-circle text-primary"></i>
+            </div>
+            <span class="dialog-title">AGREGAR PRODUCTO ESPERADO</span>
+        </div>
+    </ng-template>
+
+    <!-- Content -->
+    <div class="dialog-content">
+
+        <div class="profesor-info-card">
+            <h4 class="info-title">
+                <i class="pi pi-bookmark"></i>
+                Información del Proyecto
+            </h4>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Proyecto:</strong>
+                    <span>{{ investigacion?.nombreProyecto}}</span>
+                </div>
+
+                <div class="info-item">
+                    <strong>Código:</strong>
+                    <span>{{ investigacion?.codigo}}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-field">
+                <label for="nombreProducto" class="field-label">
+                    Nombre del Producto
+                </label>
+                <input id="nombreProducto" type="text" pInputText [(ngModel)]="nuevoProducto.nombre"
+                    placeholder="Ingrese el nombre del producto" [invalid]="mostrarValidacion && !nuevoProducto.nombre"
+                    class="w-full" maxlength="255" />
+                @if (mostrarValidacion && !nuevoProducto.nombre) {
+                <p-message severity="error" variant="simple" size="small">El nombre del producto es
+                    requerido</p-message>
+                }
+            </div>
+
+            <!-- Tipo de Producto con Accordion -->
+            <div class="form-field">
+                <label class="field-label">
+                    Tipo de Producto
+                </label>
+
+                <div class="tipo-producto-selector" [class.ng-invalid]="mostrarValidacion && !selectedTipoProducto"
+                    [class.ng-dirty]="mostrarValidacion && !selectedTipoProducto">
+                    <p-accordion [multiple]="false">
+                        @for (tipo of tiposProducto; track tipo.id) {
+                        <p-accordion-panel [value]="tipo.id">
+                            <p-accordion-header>
+                                <div class="flex items-center gap-2 w-full">
+                                    <i class="pi pi-bookmark" style="color: var(--primary-blue);"></i>
+                                    <span class="font-medium">{{ tipo.nombre }}</span>
+                                </div>
+                            </p-accordion-header>
+                            <p-accordion-content>
+                                <div class="tipo-options">
+                                    <!-- Opción del padre -->
+                                    <div class="tipo-option" [class.selected]="selectedTipoProducto?.id === tipo.id"
+                                        (click)="seleccionarTipo(tipo, true)">
+                                        <div class="tipo-info">
+                                            <span class="tipo-nombre">{{ tipo.nombre }}</span>
+                                            <small class="tipo-descripcion">{{ tipo.descripcion }}</small>
+                                        </div>
+                                        @if (selectedTipoProducto?.id === tipo.id) {
+                                        <i class="pi pi-check ml-auto" style="color: var(--secondary-green);"></i>
+                                        }
+                                    </div>
+
+                                    <!-- Opciones de los hijos -->
+                                    @if (tieneHijos(tipo)) {
+                                    <div class="tipo-hijos">
+                                        @for (hijo of obtenerHijos(tipo); track hijo.id) {
+                                        <div class="tipo-option hijo"
+                                            [class.selected]="selectedTipoProducto?.id === hijo.id"
+                                            (click)="seleccionarTipo(hijo, false)">
+                                            <div class="tipo-info">
+                                                <span class="tipo-nombre">{{ hijo.nombre }}</span>
+                                                <small class="tipo-descripcion">{{ hijo.descripcion }}</small>
+                                            </div>
+                                            @if (selectedTipoProducto?.id === hijo.id) {
+                                            <i class="pi pi-check ml-auto" style="color: var(--secondary-green);"></i>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </p-accordion-content>
+                        </p-accordion-panel>
+                        }
+                    </p-accordion>
+
+                    <!-- Selección actual -->
+                    @if (selectedTipoProducto) {
+                    <div class="selected-tipo-display">
+                        <span class="text-sm font-semibold" style="color: var(--primary-blue);">
+                            Seleccionado:
+                        </span>
+                        <span class="text-sm">{{ selectedTipoProducto.nombre }}</span>
+                        <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" size="small"
+                            (onClick)="limpiarSeleccion()" class="ml-auto">
+                        </p-button>
+                    </div>
+                    }
+                </div>
+                @if (mostrarValidacion && !selectedTipoProducto) {
+                <p-message severity="error" variant="simple" size="small">El tipo de producto es requerido</p-message>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <button type="button" pButton label="Cancelar" icon="pi pi-times"
+                class="p-button-outlined p-button-secondary" (click)="onCancelar()" [disabled]="guardando">
+            </button>
+
+            <button type="button" pButton label="Guardar Producto" icon="pi pi-check" class="p-button-success"
+                (click)="onGuardar()" [loading]="guardando">
+            </button>
+        </div>
+    </ng-template>
+</p-dialog>

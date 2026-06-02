@@ -1,0 +1,328 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="novedad-dialog"
+  [style]="{
+    background: 'var(--p-surface-0)',
+    width: '90%',
+    maxWidth: '800px'
+  }"
+  (onHide)="onClose()"
+>
+  <ng-template pTemplate="header">
+    <div class="dialog-header">
+      <span class="dialog-title">
+        {{ novedadExistente ? 'NOVEDAD REGISTRADA' : 'REGISTRAR NOVEDAD' }}
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="dialog-content">
+    <div *ngIf="cargandoNovedad" class="text-center p-4">
+      <i class="pi pi-spin pi-spinner text-4xl text-primary mb-3"></i>
+      <p [style.color]="'var(--p-text-muted)'">
+        Verificando novedades existentes...
+      </p>
+    </div>
+
+    <div *ngIf="!cargandoNovedad">
+      <div class="mb-4" *ngIf="profesorNombre || planDeTrabajoPeriodo">
+        <div
+          class="info-card p-3 mb-3"
+          [style]="{
+            background: 'var(--p-surface-50)',
+            border: '1px solid var(--p-surface-200)',
+            'border-radius': '8px',
+            padding: '2rem'
+          }"
+        >
+          <div
+            class="flex align-items-center gap-2 mb-2"
+            *ngIf="profesorNombre"
+          >
+            <i
+              class="pi pi-user"
+              [style]="{ color: 'var(--p-primary-500)' }"
+            ></i>
+            <strong [style]="{ color: 'var(--p-text-color)' }"
+              >Profesor:</strong
+            >
+            <span [style]="{ color: 'var(--p-text-color)' }">{{
+              profesorNombre
+            }}</span>
+          </div>
+          <div
+            class="flex align-items-center gap-2"
+            *ngIf="planDeTrabajoPeriodo"
+          >
+            <i
+              class="pi pi-calendar"
+              [style]="{ color: 'var(--p-primary-500)' }"
+            ></i>
+            <strong [style]="{ color: 'var(--p-text-color)' }">Periodo:</strong>
+            <span [style]="{ color: 'var(--p-text-color)' }">{{
+              planDeTrabajoPeriodo
+            }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        *ngIf="novedadExistente"
+        class="p-4"
+        [style]="{
+          background: 'var(--p-surface-50)',
+          border: '2px solid var(--p-primary-200)',
+          'border-radius': '8px'
+        }"
+      >
+        <div
+          class="mb-4 p-3"
+          [style]="{
+            background: 'var(--p-yellow-50)',
+            border: '1px solid var(--p-yellow-200)',
+            'border-radius': '6px'
+          }"
+          *ngIf="
+            !estaEnModoLectura() &&
+            (novedadExistente.estado === 'PENDIENTE' ||
+              novedadExistente.estado === 'APROBADA')
+          "
+        >
+          <div class="flex align-items-start gap-2">
+            <i
+              class="pi pi-info-circle"
+              [style]="{ color: 'var(--p-yellow-600)', 'font-size': '1.2rem' }"
+            ></i>
+            <div>
+              <p
+                class="font-semibold mb-1"
+                [style.color]="'var(--p-yellow-800)'"
+              >
+                Este plan de trabajo ya tiene una novedad registrada
+              </p>
+              <p class="text-sm" [style.color]="'var(--p-yellow-700)'">
+                No es posible registrar una nueva novedad hasta que la actual
+                sea resuelta o cancelada.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">ID:</span>
+            <span class="detail-value">{{ novedadExistente.id }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Fecha de registro:</span>
+            <span class="detail-value">{{
+              novedadExistente.fechaRegistro | date : 'dd/MM/yyyy HH:mm'
+            }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Estado:</span>
+            <p-tag
+              [value]="getTextoEstado(novedadExistente.estado)"
+              [severity]="getSeverityEstado(novedadExistente.estado)"
+            ></p-tag>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Registrado por:</span>
+            <span class="detail-value">{{
+              novedadExistente.registradoPor
+            }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Motivo:</span>
+            <span class="detail-value">{{ novedadExistente.motivo }}</span>
+          </div>
+          <div class="detail-row" *ngIf="novedadExistente.tipoNovedad">
+            <span class="detail-label">Tipo:</span>
+            <span class="detail-value">{{ novedadExistente.tipoNovedad }}</span>
+          </div>
+          <div class="detail-row" *ngIf="novedadExistente.observaciones">
+            <span class="detail-label">Observaciones:</span>
+            <span class="detail-value">{{
+              novedadExistente.observaciones
+            }}</span>
+          </div>
+          <div class="detail-row" *ngIf="novedadExistente.fechaResolucion">
+            <span class="detail-label">Fecha de resolución:</span>
+            <span class="detail-value">{{
+              novedadExistente.fechaResolucion | date : 'dd/MM/yyyy HH:mm'
+            }}</span>
+          </div>
+          <div class="detail-row" *ngIf="novedadExistente.resueltoPor">
+            <span class="detail-label">Resuelto por:</span>
+            <span class="detail-value">{{ novedadExistente.resueltoPor }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!novedadExistente">
+        <div class="flex flex-col sm:flex-row sm:gap-3 mb-4">
+          <div class="flex-1">
+            <label
+              class="block mb-2 text-sm font-medium"
+              [style.color]="'var(--p-text-color)'"
+              >Fecha y hora de registro</label
+            >
+            <p-datepicker
+              [(ngModel)]="fechaRegistro"
+              selectionMode="single"
+              [timeOnly]="false"
+              [iconDisplay]="'input'"
+              class="w-full"
+              [style]="{
+                background: 'var(--p-surface-50)',
+                color: 'var(--p-text-color)',
+                border: '1px solid var(--p-surface-300)',
+                'box-shadow': '0 1px 2px rgba(0,0,0,0.05)'
+              }"
+            >
+            </p-datepicker>
+          </div>
+          <div class="flex-1">
+            <label
+              class="block mb-2 text-sm font-medium"
+              [style.color]="'var(--p-text-color)'"
+              >Registrado por</label
+            >
+            <input
+              pInputText
+              class="w-full"
+              [ngModel]="registradoPorNombreCedula"
+              disabled
+              [style]="{
+                background: 'var(--p-surface-100)',
+                color: 'var(--p-text-color)',
+                border: '1px solid var(--p-surface-300)',
+                'box-shadow': '0 1px 2px rgba(0,0,0,0.05)'
+              }"
+            />
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label
+            class="block mb-2 text-sm font-medium"
+            [style.color]="'var(--p-text-color)'"
+            >Motivo de la novedad</label
+          >
+          <select
+            [(ngModel)]="motivoPredefinido"
+            class="w-full p-2 border border-surface-300 rounded bg-surface-50 text-text-color"
+            [style]="{
+              background: 'var(--p-surface-50)',
+              color: 'var(--p-text-color)',
+              border: '1px solid var(--p-surface-300)',
+              'border-radius': '6px'
+            }"
+          >
+            <option value="" disabled>Seleccione un motivo</option>
+            <option
+              *ngFor="let opcion of opcionesMotivo"
+              [value]="opcion.value"
+            >
+              {{ opcion.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-4" *ngIf="motivoPredefinido === 'OTRO'">
+          <app-textarea-component
+            [(ngModel)]="motivoPersonalizado"
+            [id]="'motivoPersonalizado'"
+            [label]="'Especifique el motivo'"
+            [placeholder]="'Describa el motivo...'"
+            [rows]="3"
+            [autoResize]="false"
+            [required]="true"
+            [showCounters]="false"
+            [showCharCount]="false"
+          >
+          </app-textarea-component>
+        </div>
+
+        <div class="mb-4">
+          <app-input-component
+            [(ngModel)]="tipoNovedad"
+            [label]="'Tipo de novedad (opcional)'"
+            [placeholder]="'Ej: Ausencia, Reasignación, etc.'"
+            class="w-full"
+          >
+          </app-input-component>
+        </div>
+
+        <div class="mb-4">
+          <app-textarea-component
+            [(ngModel)]="observaciones"
+            [id]="'observacionesNovedad'"
+            [label]="'Observaciones (opcional)'"
+            [placeholder]="
+              'Agregue observaciones adicionales si es necesario...'
+            "
+            [rows]="3"
+            [autoResize]="false"
+            [required]="false"
+            [showCounters]="false"
+            [showCharCount]="false"
+          >
+          </app-textarea-component>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        *ngIf="!novedadExistente && !cargandoNovedad"
+        type="button"
+        pButton
+        label="Cancelar"
+        styleClass="mi-boton-cancelar"
+        (click)="onCancelarClick()"
+      ></button>
+
+      <button
+        *ngIf="!novedadExistente && !cargandoNovedad"
+        type="button"
+        pButton
+        label="Registrar Novedad"
+        styleClass="mi-boton-registrar"
+        [disabled]="creando || !puedeConfirmar()"
+        [loading]="creando"
+        (click)="onConfirmarClick()"
+      ></button>
+
+      <button
+        *ngIf="
+          novedadExistente &&
+          novedadExistente.estado === 'PENDIENTE' &&
+          !estaEnModoLectura()
+        "
+        type="button"
+        pButton
+        label="Cancelar Novedad"
+        class="p-button-danger"
+        [disabled]="cancelando"
+        [loading]="cancelando"
+        (click)="onCancelarNovedad()"
+      ></button>
+
+      <button
+        *ngIf="novedadExistente || cargandoNovedad"
+        type="button"
+        pButton
+        label="Cerrar"
+        class="p-button"
+        (click)="onClose()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>

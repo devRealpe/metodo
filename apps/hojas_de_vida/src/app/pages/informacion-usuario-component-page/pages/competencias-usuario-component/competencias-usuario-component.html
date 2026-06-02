@@ -1,0 +1,199 @@
+<p-toast></p-toast>
+<div class="surface-ground min-h-screen">
+  <div class="container mx-auto px-2 sm:px-4 py-4">
+    <p-card 
+      class="relative h-full border-none shadow-3"
+      [style]="{
+                'background': 'var(--p-surface-50)',
+                'border-radius': '16px',
+                'border': '2px solid var(--p-surface-200)'
+              }">
+    <div class="mb-6">
+        <div class="flex justify-between items-center mb-2">
+            <h2 class="text-2xl font-bold">Gestión de Competencias</h2>
+            <p-button 
+        icon="pi pi-home" 
+        label="Ir al Inicio" 
+        size="small"
+        [outlined]="true"
+        styleClass="border-round-xl text-sm font-medium shadow-2"
+        routerLink="/app/inicio"
+        pTooltip="Ir a la página de inicio"
+        tooltipPosition="left">
+      </p-button>
+        </div>
+        <p>
+            Registre almenos una competencia para continuar con la postulacion
+        </p>
+    </div>
+    <div class="flex justify-center mb-4">
+        <p-button (click)="showDialog()" label="Agregar Competencia"></p-button>
+    </div>
+    <p-dialog [modal]="true" [(visible)]="visible" [style]="{ width: '800px', 'max-height': '90vh' }" [resizable]="true" [draggable]="true" [closable]="false" [dismissableMask]="false">
+        <ng-template pTemplate="header">
+            <div class="flex justify-between items-center w-full">
+                <span class="p-dialog-title">Competencias</span>
+                <button 
+                    type="button" 
+                    pButton 
+                    pRipple 
+                    icon="pi pi-times" 
+                    (click)="visible = false" 
+                    class="p-dialog-header-close [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible hover:[&_.pi]:!opacity-100 hover:[&_i]:!opacity-100">
+                </button>
+            </div>
+        </ng-template>
+        <form [formGroup]="form" (ngSubmit)="!isLoading && !isSubmitting && guardar()" class="space-y-6 pt-4">
+            <div class="w-full min-h-96">
+                <div class="grid grid-cols-1 gap-6">
+
+                    <!-- Modo AGREGAR: multiselect -->
+                    <div class="w-full" *ngIf="!editingId">
+                        <app-multiselect-component
+                            #multiselectRef
+                            id="destreza"
+                            formControlName="destreza"
+                            [control]="form.get('destreza')"
+                            label="Seleccione sus competencias (máximo 5)"
+                            [options]="opcionesDestrezasConOtro"
+                            [optionLabel]="'label'"
+                            [optionValue]="'value'"
+                            placeholder="Seleccionar competencias"
+                            [filter]="true"
+                            [showClear]="true"
+                            [maxSelectedLabels]="3"
+                            [selectedItemsLabel]="'{0} competencias seleccionadas'"
+                            [required]="true"
+                            [appendTo]="'body'"
+                            (selectionChange)="onCompetenciasChange($event)"
+                        >
+                        </app-multiselect-component>
+                    </div>
+
+                    <!-- Modo EDITAR: select simple (si la competencia es de la lista) -->
+                    <div class="w-full" *ngIf="editingId && !isEditOtro">
+                        <app-select-component
+                            id="destreza"
+                            formControlName="destreza"
+                            [control]="form.get('destreza')"
+                            label="Seleccione la competencia"
+                            [options]="opcionesDestrezas"
+                            [optionLabel]="'label'"
+                            [optionValue]="'value'"
+                            placeholder="Seleccionar competencia"
+                            [filter]="true"
+                            [showClear]="true"
+                            [required]="true"
+                            [appendTo]="'body'"
+                            (selectionChange)="onEditSelectChange($event)"
+                        >
+                        </app-select-component>
+                    </div>
+
+                    <!-- Modo EDITAR: campo de texto (si la competencia era "otro") -->
+                    <div class="w-full" *ngIf="editingId && isEditOtro">
+                        <app-input-component
+                            formControlName="otraDestreza"
+                            placeholder="Ej: Liderazgo"
+                            [maxlength]="20"
+                            label="Competencia personalizada"
+                            [control]="form.get('otraDestreza')"
+                            [required]="true"
+                            [customErrorMessages]="{
+                              required: 'Debe especificar la competencia',
+                              minlength: 'Mínimo 4 caracteres requeridos',
+                              maxlength: 'Máximo 20 caracteres permitidos',
+                              pattern: 'Solo se permiten letras (sin espacios ni números)'
+                            }">
+                        </app-input-component>
+                    </div>
+
+                    <!-- Modo AGREGAR: campo "otra destreza" cuando selecciona "otro" -->
+                    <div class="w-full" *ngIf="!editingId && form.get('destreza')?.value?.includes('otro')">
+                        <app-input-component
+                            formControlName="otraDestreza"
+                            placeholder="Ej: Liderazgo"
+                            [maxlength]="20"
+                            label="Otra destreza"
+                            [control]="form.get('otraDestreza')"
+                            [required]="form.get('destreza')?.value?.includes('otro')"
+                            [customErrorMessages]="{
+                              required: 'Debe especificar la otra competencia',
+                              minlength: 'Mínimo 4 caracteres requeridos',
+                              maxlength: 'Máximo 20 caracteres permitidos',
+                              pattern: 'Solo se permiten letras (sin espacios ni números)'
+                            }">
+                        </app-input-component>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+                    <p-button 
+                        type="submit" 
+                        label="Guardar" 
+                        icon="pi pi-save" 
+                        [disabled]="isLoading || isSubmitting"
+                        severity="primary" 
+                        styleClass="flex-1 sm:flex-none"
+                        [style]="{
+                          'visibility': 'visible !important',
+                          'display': 'inline-flex !important',
+                          'opacity': '1 !important'
+                        }">
+                    </p-button>
+                </div>
+
+            </div>
+        </form>
+    </p-dialog>
+
+
+
+    <br>
+    <h2 class="text-2xl font-bold  mb-2">Registros almacenados</h2>
+    <p>
+        Aquí se muestran los registros de su información académica. Puede editar o eliminar cada registro según sea
+        necesario.
+    </p>
+    <br>
+
+    <div class="hidden md:block mt-6">
+        <lib-info-table
+          [data]="tableData"
+          [columns]="tableColumns"
+          [actions]="tableActions"
+          [showTableHeader]="true"
+          [tableHeaderTitle]="'Competencias y Destrezas'"
+          [tableHeaderIcon]="'pi pi-star'"
+          [tableHeaderBadge]="'Actualizado'"
+          [showRowNumbers]="true"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          [showGlobalFilter]="true"
+          [globalFilterFields]="['nombre']"
+          [emptyIcon]="'pi pi-star'"
+          [emptyTitle]="'No hay competencias registradas'"
+          [emptySubtitle]="'Agregue sus competencias y destrezas para continuar'"
+        >
+        </lib-info-table>
+    </div>
+
+    <div class="block md:hidden space-y-4 mt-6">
+        <p-card *ngFor="let destreza of destrezas" class="bg-white rounded-lg shadow p-4">
+            <p><strong>Nombre:</strong> {{ destreza.nombre }}</p>
+            <div class="flex justify-end space-x-2 mt-3">
+                <p-button icon="pi pi-pencil" severity="info" size="small" [outlined]="true"
+                    (click)="editarDestreza(destreza)">
+                </p-button>
+                <p-button icon="pi pi-trash" severity="danger" size="small" [outlined]="true"
+                    (click)="eliminarDestreza(destreza.id!)">
+                </p-button>
+            </div>
+        </p-card>
+    </div>
+</p-card>
+  </div>
+</div>
+
+<p-confirmDialog></p-confirmDialog>

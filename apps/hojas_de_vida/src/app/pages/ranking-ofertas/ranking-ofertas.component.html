@@ -1,0 +1,111 @@
+<p-toast></p-toast>
+
+<p-card class="unimar-card-main" [style]="{
+  'background': 'var(--p-surface-50)'
+}">
+  <div class="w-[90%] mx-auto rounded-2xl p-6 mb-4">
+    <div class="mb-4">
+      <!-- PrimeNG Breadcrumb -->
+      <p-breadcrumb class="custom-breadcrumb" [model]="breadcrumbItems" [home]="breadcrumbHome"
+        [style]="{'background': 'transparent !important', 'border': 'none !important'}"></p-breadcrumb>
+
+      <div class="flex items-center gap-4">
+        <div class="flex-1">
+          <h1 class="text-4xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+            Evaluación y Ranking de Postulaciones
+          </h1>
+          <p [style]="{'color': 'var(--p-text-secondary-color)', 'margin-top': '0.5rem'}">Selecciona una oferta para evaluar y clasificar candidatos</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros de búsqueda -->
+  <div class="w-[90%] mx-auto mb-6">
+    <p-card [style]="{
+      'background': 'var(--p-surface-50)',
+      'border': '1px solid var(--p-border)'
+    }" class="mb-4">
+      <div class="flex flex-col gap-4">
+        <!-- Barra de búsqueda -->
+        <div class="flex-1">
+          <app-input-component
+            id="filtro-texto"
+            label="Buscar ofertas"
+            placeholder="Buscar por cargo, dependencia, número de oferta laboral..."
+            [(ngModel)]="filtroTexto"
+            (inputChange)="onFiltroChange()"
+          />
+        </div>
+
+        <!-- Filtros -->
+        <div class="flex flex-wrap gap-4 items-end">
+          <div class="flex-shrink-0 min-w-[200px]">
+            <label for="filtro-estado" class="block text-sm font-semibold mb-2" [style]="{'color': 'var(--p-text-color)'}">
+              Filtrar por estado
+            </label>
+            <p-select
+              id="filtro-estado"
+              [options]="opcionesEstado"
+              [(ngModel)]="filtroEstado"
+              (onChange)="onFiltroChange()"
+              placeholder="Seleccionar estado"
+              styleClass="w-full"
+            />
+          </div>
+
+          <!-- Información de resultados -->
+          <div class="flex-1 text-right">
+            <span class="text-sm font-semibold" [style]="{'color': 'var(--p-primary-color)'}">
+              {{ ofertasFiltradas.length }} {{ ofertasFiltradas.length === 1 ? 'oferta encontrada' : 'ofertas encontradas' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="flex justify-center items-center py-8">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Tabla de ofertas -->
+  <div *ngIf="!loading" class="w-[90%] mx-auto">
+    <lib-info-table
+      [data]="ofertasFiltradas"
+      [columns]="columns"
+      [actions]="actions"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} ofertas"
+      [globalFilterFields]="['numeroConvocatoria', 'cargoRequerido', 'departamentoSolicitante', 'tipoConvocatoria', 'convocatoriaDisplay', 'cargoDisplay']"
+      [showGlobalFilter]="false"
+      tableTitle="Ofertas Laborales Disponibles"
+      [showTableHeader]="true"
+      tableHeaderTitle="Ofertas Laborales"
+      [tableHeaderSubtitle]="ofertasFiltradas.length + ' ofertas encontradas'"
+      tableHeaderIcon="pi pi-briefcase"
+      emptyTitle="No se encontraron ofertas"
+      emptySubtitle="Intenta ajustar los filtros de búsqueda para ver más resultados."
+      emptyIcon="pi pi-search"
+      (rowSelect)="onRowSelect($event)"
+      (rowUnselect)="onRowUnselect($event)"
+    >
+      <!-- Custom actions template -->
+      <ng-template #actionsTemplate let-rowData>
+        <p-button 
+          label="Ver Ranking"
+          icon="pi pi-list" 
+          severity="primary"
+          size="small"
+          (onClick)="verRanking(rowData)"
+          pTooltip="Ver ranking completo de postulaciones"
+          tooltipPosition="top">
+        </p-button>
+      </ng-template>
+    </lib-info-table>
+  </div>
+</p-card>

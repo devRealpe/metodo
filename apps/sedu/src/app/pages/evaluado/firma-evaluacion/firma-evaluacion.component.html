@@ -1,0 +1,97 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="flex flex-col gap-6">
+  <div class="flex items-center gap-4">
+    <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (onClick)="volver()"></p-button>
+    <h2 class="text-2xl font-bold text-[var(--p-text-color)]">Firma de Evaluación</h2>
+  </div>
+
+  @if (cargando()) {
+    <p-card>
+      <p-skeleton width="60%" height="24px" styleClass="mb-3"></p-skeleton>
+      <p-skeleton width="100%" height="120px" styleClass="mb-4"></p-skeleton>
+    </p-card>
+  } @else if (evaluacion()) {
+    <!-- Resumen -->
+    <p-card styleClass="sedu-card">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <p class="text-xs text-[var(--p-text-secondary-color)]">Evaluado</p>
+          <p class="font-semibold">{{ evaluacion()!.nombreEvaluado }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-[var(--p-text-secondary-color)]">Evaluador</p>
+          <p class="font-semibold">{{ evaluacion()!.nombreEvaluador }}</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="text-center p-4 rounded-lg bg-[var(--p-primary-50)]">
+          <span class="text-3xl font-bold text-[var(--p-primary-color)]">{{ evaluacion()!.puntajeTotal | number:'1.2-2' }}</span>
+          <p class="text-sm mt-1">Puntaje Total</p>
+        </div>
+        <div class="text-center p-4 rounded-lg bg-[var(--p-surface-100)]">
+          <span class="text-xl font-bold">{{ evaluacion()!.estado }}</span>
+          <p class="text-sm mt-1">Estado</p>
+        </div>
+        <div class="text-center p-4 rounded-lg bg-[var(--p-surface-100)]">
+          <p-tag [value]="evaluacion()!.estado" [severity]="evaluacion()!.estado === 'FIRMADO_EVALUADOR' ? 'warn' : 'info'"
+            [style]="{'font-size': '1rem'}"></p-tag>
+          <p class="text-sm mt-1">Estado</p>
+        </div>
+      </div>
+    </p-card>
+
+    @if (evaluacion()!.observacionGeneral) {
+      <p-card header="Observación General del Evaluador" styleClass="sedu-card">
+        <p>{{ evaluacion()!.observacionGeneral }}</p>
+      </p-card>
+    }
+
+    @if (evaluacion()!.estado === 'FIRMADO_EVALUADOR') {
+      <!-- Firmar -->
+      <p-card header="Firmar Evaluación" styleClass="sedu-card">
+        <div class="flex flex-col gap-4">
+          <div class="flex items-start gap-3 p-4 border rounded-lg bg-[var(--p-content-background)]">
+            <p-checkbox [(ngModel)]="aceptaResultados" [binary]="true" inputId="acepta"></p-checkbox>
+            <label for="acepta" class="cursor-pointer">
+              Declaro que he revisado los resultados de mi evaluación de desempeño y
+              <strong>acepto los resultados presentados</strong>.
+            </label>
+          </div>
+          <p-button label="Firmar Evaluación" icon="pi pi-pen-to-square" severity="success" size="large"
+            [loading]="firmando()" [disabled]="!aceptaResultados" (onClick)="firmar()"
+            styleClass="w-full"></p-button>
+        </div>
+      </p-card>
+
+      <!-- Devolver -->
+      <p-card header="¿No está de acuerdo?" styleClass="sedu-card">
+        <div class="flex flex-col gap-4">
+          <p class="text-sm text-[var(--p-text-secondary-color)]">
+            Si no está de acuerdo con los resultados, puede devolver la evaluación al evaluador con una observación.
+          </p>
+          <textarea pInputTextarea [(ngModel)]="observacionDevolucion" [rows]="3" class="w-full"
+            placeholder="Indique el motivo de la devolución..."></textarea>
+          <p-button label="Devolver Evaluación" icon="pi pi-undo" severity="danger" [outlined]="true"
+            [loading]="devolviendo()" (onClick)="devolver()"></p-button>
+        </div>
+      </p-card>
+    } @else if (evaluacion()!.estado === 'FIRMADO_EVALUADO' || evaluacion()!.estado === 'CERRADA') {
+      <p-card styleClass="sedu-card">
+        <div class="text-center py-8">
+          <i class="pi pi-check-circle text-5xl text-green-600 mb-4"></i>
+          <p class="text-xl font-semibold text-green-600">Evaluación firmada</p>
+          <p class="text-sm text-[var(--p-text-secondary-color)] mt-2">
+            Firmada el {{ evaluacion()!.fechaFirmaEvaluado | date:'dd/MM/yyyy HH:mm' }}
+          </p>
+        </div>
+      </p-card>
+    }
+
+    <div class="flex justify-start">
+      <p-button label="Ver Evaluación Completa" icon="pi pi-eye" severity="info" [outlined]="true"
+          (onClick)="router.navigate(['/app/evaluado/revision', evaluacion()!.id])"></p-button>
+    </div>
+  }
+</div>

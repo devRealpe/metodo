@@ -1,0 +1,376 @@
+<div class="ofertas-usuarios-container">
+  <!-- Header -->
+  <div class="header-section">
+    <div class="flex justify-between items-start mb-4">
+      <div>
+        <h2 class="page-title">Ofertas Laborales Disponibles</h2>
+        <p class="page-subtitle">Encuentra oportunidades laborales que se ajusten a tu perfil profesional</p>
+      </div>
+      <p-button 
+        *ngIf="havePermission"
+        label="Vista Administrador"
+        icon="pi pi-cog"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="irAVistaAdmin()"
+        styleClass="admin-button">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Filtros y búsqueda -->
+  <div class="filters-section">
+    <div class="search-container">
+      <div class="search-field">
+        <label for="filtro-texto">Buscar ofertas</label>
+        <input 
+          id="filtro-texto"
+          type="text" 
+          pInputText 
+          [(ngModel)]="filtroTexto"
+          (input)="onFiltroTextoChange()"
+          placeholder="Buscar por cargo, funciones, tipo de oferta laboral..."
+          class="search-input"
+        />
+      </div>
+    </div>
+
+    <div class="filters-row">
+      <div class="results-info">
+        <span class="results-count">
+          {{ ofertasFiltradas.length }} {{ ofertasFiltradas.length === 1 ? 'oferta encontrada' : 'ofertas encontradas' }}
+        </span>
+      </div>
+      <!-- Selector de estado solo visible para admins -->
+      <div *ngIf="havePermission" class="filter-field">
+        <p-select
+          [options]="opcionesEstadoAdmin"
+          [(ngModel)]="filtroEstado"
+          (onChange)="onFiltroEstadoChange()"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-48"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de ofertas -->
+  <div class="ofertas-grid" *ngIf="!loading">
+    <div class="oferta-card" *ngFor="let oferta of ofertasFiltradas">
+      <div class="oferta-inner">
+        <aside class="oferta-left">
+          <div class="meta-badges">
+            <span class="tipo-badge" [ngClass]=" oferta.tipoConvocatoria === 'EXTERNA' ? 'badge-external' : 'badge-internal' ">
+              {{ formatearTipoConvocatoria(oferta.tipoConvocatoria) }}
+            </span>
+            <div class="meta-item">
+              <small class="meta-label">N°</small>
+              <div class="meta-value">{{ oferta.numeroConvocatoria }}</div>
+            </div>
+
+            <div class="meta-item">
+              <small class="meta-label">Publicada</small>
+              <div class="meta-value">{{ formatearFecha(oferta.fechaPublicacion?.toString()) }}</div>
+            </div>
+
+            <div class="meta-item estado-wrap">
+              <p-tag [value]="esOfertaVigente(oferta.fechaCierre?.toString()) ? 'Activa' : 'Cerrada'" [rounded]="true" [severity]="esOfertaVigente(oferta.fechaCierre?.toString()) ? 'success' : 'danger'" />
+            </div>
+
+            <div class="postulacion-indicator" *ngIf="oferta.yaPostulado">
+              <span class="postulado-badge">
+                <i class="pi pi-check-circle"></i>
+                Ya postulado
+              </span>
+            </div>
+          </div>
+        </aside>
+
+        <section class="oferta-center">
+          <div class="center-header">
+            <h3 class="cargo-titulo">{{ oferta.cargoRequerido }}</h3>
+            <p class="departamento">{{ oferta.departamentoSolicitante }}</p>
+          </div>
+
+          <div class="center-meta">
+            <div class="info-item"><i class="pi pi-briefcase"></i><span>{{ oferta.dedicacion }} · {{ oferta.tipoContrato }}</span></div>
+            <div class="info-item"><i class="pi pi-calendar-times"></i><span>Cierre: {{ formatearFecha(oferta.fechaCierre?.toString()) }}</span></div>
+          </div>
+
+          <div class="funciones-resumen modern">
+            <h4>Funciones</h4>
+            <p class="funciones-texto">{{ oferta.funciones.length > 220 ? (oferta.funciones | slice:0:220) + '...' : oferta.funciones }}</p>
+          </div>
+        </section>
+
+        <aside class="oferta-right">
+          <div class="stats-card">
+            <div class="stat-row">
+              <div>
+                <small class="label">Vacantes</small>
+                <div class="value">{{ getVacantes(oferta) }}</div>
+              </div>
+              <div>
+                <small class="label">Estado</small>
+                <div class="value">{{ esOfertaVigente(oferta.fechaCierre?.toString()) ? getDaysRemainingLabel(oferta.fechaCierre?.toString()) : 'Cerrada' }}</div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <p-button label="Inscribir" icon="pi pi-user-plus" severity="info" (onClick)="postularse(oferta)" [disabled]="!oferta.activo || !esOfertaVigente(oferta.fechaCierre?.toString()) || oferta.yaPostulado" styleClass="inscribe-button" />
+              <p-button label="Ver detalle" icon="pi pi-eye" (onClick)="verDetalle(oferta)" [outlined]="true" styleClass="detail-small" />
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado de carga -->
+  <div class="loading-container" *ngIf="loading">
+    <p-progressSpinner strokeWidth="3" />
+    <p>Cargando ofertas...</p>
+  </div>
+
+  <!-- Estado vacío -->
+  <div class="empty-state" *ngIf="!loading && ofertasFiltradas.length === 0">
+    <i class="pi pi-search empty-icon"></i>
+    <h3>No se encontraron ofertas activas</h3>
+    <p *ngIf="filtroTexto">
+      Intenta ajustar la búsqueda para ver más resultados.
+    </p>
+    <p *ngIf="!filtroTexto">
+      No hay ofertas activas disponibles en este momento.
+    </p>
+  </div>
+</div>
+
+<!-- Modal de detalles para usuarios -->
+<p-dialog
+  [(visible)]="detalleVisible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [style]="{ width: '720px', maxWidth: '95vw' }"
+  styleClass="detalle-dialog"
+  (onHide)="ofertaSeleccionada = null"
+>
+  <ng-template pTemplate="header">
+    <div class="flex items-center gap-3">
+      <div class="detalle-dialog__icon-wrap">
+        <span class="pi pi-file-edit"></span>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-lg font-bold" style="color: var(--p-text-color)">Detalle de la Oferta Laboral</span>
+        <span *ngIf="ofertaSeleccionada" class="text-xs" style="color: var(--p-text-secondary-color)">
+          N° {{ ofertaSeleccionada.numeroConvocatoria }}
+        </span>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-container *ngIf="ofertaSeleccionada">
+    <div class="detalle-content">
+
+      <!-- Encabezado formal -->
+      <div class="detalle-header-formal">
+        <div class="flex items-center justify-center gap-3 mb-3">
+          <img src="assets/images/mariana2.png" alt="Universidad Mariana" class="w-10 h-10 object-contain" />
+          <div class="text-center">
+            <p class="text-xs font-semibold" style="color: var(--p-text-secondary-color)">UNIVERSIDAD MARIANA</p>
+            <p class="text-sm font-bold" style="color: var(--p-primary-color)">OFERTA LABORAL</p>
+            <p class="text-xs" style="color: var(--p-text-secondary-color)">GESTIÓN DEL TALENTO HUMANO</p>
+          </div>
+        </div>
+        <div class="detalle-meta-strip">
+          <div class="detalle-meta-item">
+            <span class="detalle-meta-item__label">N° Oferta</span>
+            <span class="detalle-meta-item__value">{{ ofertaSeleccionada.numeroConvocatoria }}</span>
+          </div>
+          <div class="detalle-meta-item">
+            <span class="detalle-meta-item__label">Tipo</span>
+            <p-tag
+              [value]="formatearTipoConvocatoria(ofertaSeleccionada.tipoConvocatoria)"
+              severity="info"
+              [rounded]="true"
+              styleClass="text-xs"
+            />
+          </div>
+          <div class="detalle-meta-item">
+            <span class="detalle-meta-item__label">Periodo</span>
+            <span class="detalle-meta-item__value">{{ ofertaSeleccionada.periodo || '—' }}</span>
+          </div>
+          <div class="detalle-meta-item">
+            <span class="detalle-meta-item__label">Estado</span>
+            <span
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+              [ngClass]="ofertaSeleccionada.activo ? 'estado-badge activo' : 'estado-badge inactivo'"
+            >
+              <i class="pi mr-1 text-xs" [ngClass]="ofertaSeleccionada.activo ? 'pi-check-circle' : 'pi-times-circle'"></i>
+              {{ ofertaSeleccionada.activo ? 'Publicado' : 'No publicado' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <p-divider />
+
+      <!-- Departamento -->
+      <div class="detalle-section">
+        <h4 class="detalle-section__title">
+          <span class="pi pi-building mr-2"></span>Departamento Solicitante
+        </h4>
+        <p class="detalle-section__text">{{ ofertaSeleccionada.departamentoSolicitante }}</p>
+      </div>
+
+      <!-- Cargo requerido -->
+      <div class="detalle-section">
+        <h4 class="detalle-section__title">
+          <span class="pi pi-briefcase mr-2"></span>Cargo Requerido
+        </h4>
+        <p class="detalle-section__text detalle-section__text--bold">{{ ofertaSeleccionada.cargoRequerido }}</p>
+      </div>
+
+      <!-- Funciones -->
+      <div class="detalle-section" *ngIf="ofertaSeleccionada.funciones">
+        <h4 class="detalle-section__title">
+          <span class="pi pi-list mr-2"></span>Funciones del Cargo
+        </h4>
+        <div class="detalle-section__content-block">
+          <p class="detalle-section__text" style="white-space: pre-line">{{ ofertaSeleccionada.funciones }}</p>
+        </div>
+      </div>
+
+      <!-- Requisitos -->
+      <div class="detalle-section" *ngIf="ofertaSeleccionada.requisitos && ofertaSeleccionada.requisitos.length > 0">
+        <h4 class="detalle-section__title">
+          <span class="pi pi-check-square mr-2"></span>Requisitos
+          <span
+            *ngIf="ofertaSeleccionada.permitirAreasAfines"
+            class="badge-permite-afines inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2"
+          >
+            <i class="pi pi-check-circle mr-1 text-xs"></i>Permite áreas afines
+          </span>
+        </h4>
+        <!-- Mensaje de áreas afines -->
+        <div *ngIf="ofertaSeleccionada.permitirAreasAfines" class="mb-3 p-3 rounded-lg" style="background: var(--p-highlight-bg); border: 1px solid var(--p-highlight-text-color)">
+          <p class="text-xs font-medium flex items-start gap-2" style="color: var(--p-highlight-text-color)">
+            <i class="pi pi-check-circle mt-0.5 flex-shrink-0"></i>
+            <span>Esta oferta acepta candidatos con formación académica afín a las áreas educativas especificadas en los requisitos.</span>
+          </p>
+        </div>
+        <div class="detalle-requisitos-grid">
+          <div
+            *ngFor="let req of ofertaSeleccionada.requisitos"
+            class="detalle-requisito-item"
+          >
+            <span class="detalle-requisito-item__name">{{ req.nombre }}</span>
+
+            <!-- Multi-título: estructura académica activada -->
+            <ng-container *ngIf="req.usaEstructuraAcademica && req.gruposAcademicos && req.gruposAcademicos.length > 0; else descSimple">
+              <p class="text-xs mb-1.5 mt-1" style="color: var(--p-text-secondary-color)">
+                <i class="pi pi-info-circle mr-1"></i>El aspirante cumple con cualquiera de los siguientes títulos:
+              </p>
+              <div class="flex flex-wrap gap-1.5">
+                <ng-container *ngFor="let grupo of req.gruposAcademicos">
+                  <ng-container *ngFor="let t of grupo.titulos">
+                    <span
+                      *ngIf="t.activo !== false"
+                      class="titulo-badge inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full"
+                    >
+                      <i class="pi pi-graduation-cap text-xs"></i>
+                      {{ t.tituloAcademico }}
+                      <span *ngIf="t.nivelFormacion" class="opacity-60 ml-0.5">— {{ t.nivelFormacion }}</span>
+                    </span>
+                  </ng-container>
+                </ng-container>
+              </div>
+            </ng-container>
+
+            <!-- Descripción simple (un único título o requisito general) -->
+            <ng-template #descSimple>
+              <span
+                *ngIf="req.descripcion"
+                class="detalle-requisito-item__desc"
+                style="white-space: pre-line"
+              >{{ req.descripcion }}</span>
+            </ng-template>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Información de selección y vinculación -->
+      <div class="detalle-section">
+        <h4 class="detalle-section__title">
+          <span class="pi pi-info-circle mr-2"></span>Información de Selección y Vinculación
+        </h4>
+        <div class="detalle-info-table">
+          <div class="detalle-info-row" *ngIf="ofertaSeleccionada.experiencia">
+            <span class="detalle-info-row__label">Experiencia</span>
+            <span class="detalle-info-row__value" style="white-space: pre-line">{{ ofertaSeleccionada.experiencia }}</span>
+          </div>
+          <div class="detalle-info-row" *ngIf="ofertaSeleccionada.dedicacion">
+            <span class="detalle-info-row__label">Dedicación</span>
+            <span class="detalle-info-row__value">{{ ofertaSeleccionada.dedicacion }}</span>
+          </div>
+          <div class="detalle-info-row" *ngIf="ofertaSeleccionada.tipoContrato">
+            <span class="detalle-info-row__label">Tipo de Contrato</span>
+            <span class="detalle-info-row__value">{{ ofertaSeleccionada.tipoContrato }}</span>
+          </div>
+          <div class="detalle-info-row" *ngIf="ofertaSeleccionada.cargosDisponibles">
+            <span class="detalle-info-row__label">N° de cargos a vincular</span>
+            <span class="detalle-info-row__value">{{ ofertaSeleccionada.cargosDisponibles }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fechas -->
+      <div class="detalle-section">
+        <h4 class="detalle-section__title">
+          <span class="pi pi-calendar mr-2"></span>Fechas
+        </h4>
+        <div class="detalle-info-table">
+          <div class="detalle-info-row">
+            <span class="detalle-info-row__label">Fecha de Publicación</span>
+            <span class="detalle-info-row__value">{{ ofertaSeleccionada.fechaPublicacion | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="detalle-info-row">
+            <span class="detalle-info-row__label">Fecha de Cierre</span>
+            <span class="detalle-info-row__value">{{ ofertaSeleccionada.fechaCierre | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción (conservados del diseño anterior) -->
+      <div class="flex justify-between pt-4 mt-4" style="border-top: 1px solid var(--p-surface-border)">
+        <p-button
+          label="Volver a Ofertas Laborales"
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="detalleVisible = false"
+        />
+        <p-button
+          label="Postularse a esta Oferta Laboral"
+          icon="pi pi-send"
+          severity="primary"
+          (onClick)="postularse(ofertaSeleccionada); detalleVisible = false"
+          [disabled]="!ofertaSeleccionada.activo || (ofertaSeleccionada.fechaCierre != null && !esOfertaVigente(ofertaSeleccionada.fechaCierre.toString()))"
+        />
+      </div>
+
+      <p-message
+        *ngIf="!ofertaSeleccionada?.activo || (ofertaSeleccionada?.fechaCierre && !esOfertaVigente(ofertaSeleccionada.fechaCierre.toString()))"
+        severity="warn"
+        text="Esta oferta laboral no está disponible para postulaciones"
+        class="w-full mt-3"
+      />
+
+    </div>
+  </ng-container>
+</p-dialog>
+
+<!-- Toast para mensajes -->
+<p-toast />

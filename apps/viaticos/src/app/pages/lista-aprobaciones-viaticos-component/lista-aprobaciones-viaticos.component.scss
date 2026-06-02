@@ -1,0 +1,249 @@
+::ng-deep .compact-confirm-dialog {
+  .p-dialog-header {
+    display: none;
+  }
+
+  .p-dialog-content {
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+  }
+
+  .p-confirm-dialog-message {
+    margin-left: 0;
+  }
+
+  .p-dialog-footer {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+
+    button {
+      min-width: 80px;
+    }
+  }
+}
+
+// Estilos de paginación para modo oscuro
+::ng-deep .p-paginator {
+  background: var(--p-surface-0) !important;
+  border-top: 1px solid var(--p-border-color) !important;
+  padding: 1rem !important;
+  border-radius: 0 0 12px 12px !important;
+  
+  .p-paginator-first,
+  .p-paginator-prev,
+  .p-paginator-next,
+  .p-paginator-last,
+  .p-paginator-page {
+    min-width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50% !important;
+    border: none !important;
+    margin: 0 0.125rem;
+    font-weight: 600;
+    transition: all 0.15s ease !important;
+    background: transparent !important;
+    color: var(--p-text-color) !important;
+  }
+  
+  .p-paginator-pages .p-paginator-page {
+    &:hover:not(.p-disabled) {
+      background: var(--p-primary-400) !important;
+      color: var(--p-surface-0) !important;
+      transform: scale(1.1);
+    }
+    
+    &.p-highlight {
+      background: var(--p-primary-500) !important;
+      color: var(--p-surface-0) !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  }
+  
+  .p-paginator-current {
+    color: var(--p-text-color) !important;
+    opacity: 0.8;
+  }
+  
+  .p-dropdown {
+    background: var(--p-surface-0) !important;
+    border-color: var(--p-border-color) !important;
+    
+    .p-dropdown-label,
+    .p-dropdown-trigger {
+      color: var(--p-text-color) !important;
+    }
+  }
+}
+
+::ng-deep .pdf-dialog-simple {
+  .p-dialog-header {
+    background: white !important;
+    padding: 20px !important;
+    border-bottom: 1px solid #ddd !important;
+
+    .w-full {
+      width: 100% !important;
+      text-align: center !important;
+    }
+
+    h1 {
+      font-size: 16px !important;
+      font-weight: bold !important;
+      margin: 0 0 8px 0 !important;
+      color: #333 !important;
+      text-align: center !important;
+    }
+
+    h2 {
+      font-size: 14px !important;
+      font-weight: bold !important;
+      margin: 0 0 8px 0 !important;
+      color: #333 !important;
+      text-align: center !important;
+    }
+
+    .codigo-info {
+      font-size: 12px !important;
+      color: #666 !important;
+      margin-top: 8px !important;
+      text-align: center !important;
+    }
+  }
+
+  .p-dialog-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+  }
+
+  .pdf-content-table {
+    font-family: Arial, sans-serif;
+    background: white;
+    padding: 16px;
+    margin: 0 !important;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      border: 2px solid #000;
+
+      td {
+        border: 1px solid #000;
+        padding: 8px 12px;
+        vertical-align: middle;
+        text-align: center; // Centrar todo el contenido
+
+        &.header-blue {
+          background: #4472A8;
+          color: white;
+          font-weight: bold;
+          text-align: center;
+          font-size: 14px;
+        }
+
+        &.label-gray {
+          background: #E8E8E8;
+          font-weight: bold;
+          font-size: 13px;
+          text-align: center; // Centrar las etiquetas también
+          color: #333;
+          text-transform: uppercase;
+        }
+
+        &.content-cell {
+          background: white;
+          color: #333;
+          font-size: 13px;
+          text-align: center; // Centrar el contenido
+        }
+
+        &.center-text {
+          text-align: center;
+        }
+
+        &.badge-cell {
+          text-align: center;
+          
+          .viaticos-badge {
+            background: #C3E5F4;
+            color: #2E6DA4;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+          }
+        }
+      }
+    }
+
+    // Tabla de fecha - sin margin top para la primera
+    .fecha-table {
+      margin-bottom: 16px;
+      margin-top: 0;
+    }
+
+    // Tabla de información del trabajador
+    .trabajador-table {
+      margin-bottom: 16px;
+    }
+
+    // Tabla de descripción
+    .descripcion-table {
+      margin-bottom: 16px;
+    }
+
+    // Tabla de valor total
+    .total-table {
+      margin-bottom: 16px;
+      
+      .total-cell {
+        background: #E8F5E8;
+        padding: 20px;
+        text-align: center;
+        
+        .total-label {
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 8px;
+          font-weight: bold;
+        }
+        
+        .total-amount {
+          font-size: 28px;
+          font-weight: bold;
+          color: #27AE60;
+        }
+      }
+    }
+
+    // Tabla de estado - última tabla, completamente sin márgenes
+    .estado-table {
+      margin-bottom: 0 !important;
+      margin-top: 0 !important;
+      
+      .estado-cell {
+        text-align: center;
+        
+        .estado-badge {
+          background: #F39C12;
+          color: white;
+          padding: 6px 16px;
+          border-radius: 4px;
+          font-weight: bold;
+          display: inline-block;
+        }
+      }
+    }
+  }
+
+  // Asegurar que el footer no tenga líneas extra ni padding
+  .p-dialog-footer {
+    border-top: 1px solid #ddd !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    background: white !important;
+  }
+}

@@ -1,0 +1,239 @@
+@use 'tailwindcss/base';
+@use 'tailwindcss/components';
+@use 'tailwindcss/utilities';
+@import 'primeicons/primeicons.css';
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ═══════════════════════════════════════════════════════
+   LANDING PAGE — THEME-ADAPTIVE DESIGN TOKENS
+   Light mode = :root (default)
+   Dark mode  = .my-app-dark
+   ═══════════════════════════════════════════════════════ */
+:root {
+  color-scheme: light dark;
+
+  /* Backgrounds */
+  --color-bg:           #FFFFFF;
+  --color-bg-2:         #F8FAFC;
+  --color-bg-3:         #F1F5F9;
+  --color-surface:      rgba(255, 255, 255, 0.9);
+  --color-surface-alt:  rgba(248, 250, 252, 0.85);
+  --glass-bg:           rgba(255, 255, 255, 0.82);
+  --glass-border:       1px solid rgba(15, 23, 42, 0.06);
+
+  /* Borders */
+  --color-border:       rgba(15, 23, 42, 0.08);
+  --color-border-hover: rgba(15, 23, 42, 0.18);
+
+  /* Text */
+  --color-text-heading: #0F172A;
+  --color-text-body:    #334155;
+  --color-text-muted:   #64748B;
+  --color-text-faint:   #94A3B8;
+
+  /* Accent — Cyan */
+  --color-cyan:         #0891B2;
+  --color-cyan-dark:    #0E7490;
+  --color-cyan-dim:     rgba(8, 145, 178, 0.10);
+  --color-cyan-glow:    rgba(8, 145, 178, 0.05);
+
+  /* Accent — Violet */
+  --color-violet:       #7C3AED;
+  --color-violet-dim:   rgba(124, 58, 237, 0.10);
+
+  /* Accent — Emerald */
+  --color-emerald:      #059669;
+  --color-emerald-dim:  rgba(5, 150, 105, 0.10);
+
+  /* Accent — Amber */
+  --color-amber:        #D97706;
+  --color-amber-dim:    rgba(217, 119, 6, 0.10);
+
+  /* Accent — Rose */
+  --color-rose:         #E11D48;
+  --color-rose-dim:     rgba(225, 29, 72, 0.10);
+
+  /* Typography */
+  --font-display: 'Space Grotesk', 'Sora', sans-serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Radii */
+  --radius-sm:  8px;
+  --radius-md:  14px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+
+  /* Effects */
+  --blur-value: blur(20px);
+
+  /* Overlays (cards, chips, hover states) */
+  --color-overlay-subtle: rgba(15, 23, 42, 0.03);
+  --color-overlay-light:  rgba(15, 23, 42, 0.05);
+  --color-overlay-medium: rgba(15, 23, 42, 0.08);
+
+  /* Buttons */
+  --color-btn-primary-text:  #FFFFFF;
+  --color-btn-ghost-border:  rgba(15, 23, 42, 0.12);
+  --color-btn-ghost-text:    #334155;
+  --color-btn-ghost-hover:   #0F172A;
+
+  /* Navbar */
+  --color-navbar-scrolled: rgba(255, 255, 255, 0.92);
+
+  /* Shadows */
+  --color-shadow:       rgba(0, 0, 0, 0.08);
+  --color-shadow-heavy: rgba(0, 0, 0, 0.15);
+
+  /* Decorative orbs */
+  --color-orb-primary:   rgba(8, 145, 178, 0.08);
+  --color-orb-secondary: rgba(124, 58, 237, 0.06);
+  --color-orb-tertiary:  rgba(8, 145, 178, 0.04);
+  --color-grid-line:     rgba(8, 145, 178, 0.025);
+  --color-glow-card:     rgba(8, 145, 178, 0.04);
+
+  /* Chart */
+  --color-chart-start: rgba(8, 145, 178, 0.7);
+  --color-chart-end:   rgba(8, 145, 178, 0.2);
+
+  /* Scroll indicator */
+  --color-scroll-border: #CBD5E1;
+  --color-scroll-wheel:  #94A3B8;
+
+  /* Scrollbar */
+  --color-scrollbar-track: #F1F5F9;
+  --color-scrollbar-thumb: rgba(8, 145, 178, 0.2);
+  --color-scrollbar-hover: rgba(8, 145, 178, 0.4);
+
+  /* Selection */
+  --color-selection-bg:   rgba(8, 145, 178, 0.15);
+  --color-selection-text: #0F172A;
+}
+
+.my-app-dark {
+  /* Backgrounds */
+  --color-bg:           #070B14;
+  --color-bg-2:         #0C1220;
+  --color-bg-3:         #111827;
+  --color-surface:      rgba(15, 22, 38, 0.8);
+  --color-surface-alt:  rgba(17, 24, 39, 0.6);
+  --glass-bg:           rgba(12, 18, 32, 0.75);
+  --glass-border:       1px solid rgba(255, 255, 255, 0.05);
+
+  /* Borders */
+  --color-border:       rgba(0, 229, 255, 0.08);
+  --color-border-hover: rgba(0, 229, 255, 0.25);
+
+  /* Text */
+  --color-text-heading: #F1F5F9;
+  --color-text-body:    #94A3B8;
+  --color-text-muted:   #64748B;
+  --color-text-faint:   #475569;
+
+  /* Accent — Cyan */
+  --color-cyan:         #00E5FF;
+  --color-cyan-dark:    #00B0CC;
+  --color-cyan-dim:     rgba(0, 229, 255, 0.15);
+  --color-cyan-glow:    rgba(0, 229, 255, 0.06);
+
+  /* Accent — Violet */
+  --color-violet:       #7C3AED;
+  --color-violet-dim:   rgba(124, 58, 237, 0.15);
+
+  /* Accent — Emerald */
+  --color-emerald:      #10B981;
+  --color-emerald-dim:  rgba(16, 185, 129, 0.15);
+
+  /* Accent — Amber */
+  --color-amber:        #F59E0B;
+  --color-amber-dim:    rgba(245, 158, 11, 0.15);
+
+  /* Accent — Rose */
+  --color-rose:         #F43F5E;
+  --color-rose-dim:     rgba(244, 63, 94, 0.15);
+
+  /* Overlays */
+  --color-overlay-subtle: rgba(255, 255, 255, 0.05);
+  --color-overlay-light:  rgba(255, 255, 255, 0.08);
+  --color-overlay-medium: rgba(255, 255, 255, 0.12);
+
+  /* Buttons */
+  --color-btn-primary-text:  #070B14;
+  --color-btn-ghost-border:  rgba(255, 255, 255, 0.12);
+  --color-btn-ghost-text:    #CBD5E1;
+  --color-btn-ghost-hover:   #F1F5F9;
+
+  /* Navbar */
+  --color-navbar-scrolled: rgba(7, 11, 20, 0.85);
+
+  /* Shadows */
+  --color-shadow:       rgba(0, 0, 0, 0.3);
+  --color-shadow-heavy: rgba(0, 0, 0, 0.4);
+
+  /* Decorative orbs */
+  --color-orb-primary:   rgba(0, 229, 255, 0.12);
+  --color-orb-secondary: rgba(124, 58, 237, 0.10);
+  --color-orb-tertiary:  rgba(0, 229, 255, 0.06);
+  --color-grid-line:     rgba(0, 229, 255, 0.025);
+  --color-glow-card:     rgba(0, 229, 255, 0.05);
+
+  /* Chart */
+  --color-chart-start: rgba(0, 229, 255, 0.6);
+  --color-chart-end:   rgba(0, 229, 255, 0.15);
+
+  /* Scroll indicator */
+  --color-scroll-border: #334155;
+  --color-scroll-wheel:  #475569;
+
+  /* Scrollbar */
+  --color-scrollbar-track: #0C1220;
+  --color-scrollbar-thumb: rgba(0, 229, 255, 0.25);
+  --color-scrollbar-hover: rgba(0, 229, 255, 0.45);
+
+  /* Selection */
+  --color-selection-bg:   rgba(0, 229, 255, 0.2);
+  --color-selection-text: #F1F5F9;
+}
+
+/* Base resets */
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text-body);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-hover);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-selection-bg);
+  color: var(--color-selection-text);
+}
+
+/* Ripple override */
+.p-ink {
+  background: var(--color-cyan-dim) !important;
+}

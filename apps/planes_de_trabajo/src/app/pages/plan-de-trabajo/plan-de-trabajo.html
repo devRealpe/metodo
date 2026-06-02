@@ -1,0 +1,220 @@
+<p-toast />
+
+<div class="page-header mb-4 flex align-items-center justify-content-between">
+  <h1 class="text-2xl sm:text-3xl font-bold" [style]="{'color': 'var(--p-text-color)'}">
+    Plan de trabajo de: {{ profesor?.nombres }} {{ profesor?.apellidos }}
+  </h1>
+  <p-button icon="pi pi-home" label="Inicio" [outlined]="true" severity="info" (click)="volverHome()" class="ml-auto">
+  </p-button>
+</div>
+
+<!-- Información del profesor -->
+<p-card class="info-card mb-6"
+  [style]="{ 'background': 'linear-gradient(135deg, var(--p-surface-50) 0%, var(--p-surface-100) 100%)', 'border': '2px solid var(--p-surface-200)', 'border-radius': '16px', 'box-shadow': '0 4px 12px rgba(0, 0, 0, 0.08)'}">
+  <div class="flex flex-wrap gap-3 align-items-stretch">
+
+    <div class="flex-1" style="width: 180px">
+      <div
+        class="h-full flex align-items-center gap-2 p-3 border-round-lg transition-all transition-duration-200 hover:shadow-2"
+        [style]="{'background': 'linear-gradient(135deg, var(--p-primary-600), var(--p-primary-500))','box-shadow': '0 4px 12px rgba(0, 113, 188, 0.3)'}">
+        <div class="flex-1 overflow-hidden">
+          <p class="m-0 text-l font-bold" [style]="{'color': 'white'}">
+            <i class="pi pi-calendar text-white"></i> Periodo Académico
+          </p>
+          <br />
+          <p class="m-0 text-xl font-bold text-center" [style]="{'color': 'white'}">
+            {{ planDeTrabajo.anio }}-{{ planDeTrabajo.periodo }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1" style="min-width: 180px">
+      <div
+        class="h-full flex align-items-center gap-2 p-3 border-round-lg transition-all transition-duration-200 hover:shadow-2"
+        [style]="{'background': 'var(--p-surface-0)','border': '1px solid var(--p-surface-200)'}">
+        <div class="flex align-items-center justify-content-center w-2rem h-2rem border-circle flex-shrink-0">
+          <i class="pi pi-building" [style]="{'color': 'var(--p-primary-600)'}"></i>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <p class="m-0 text-xs font-semibold text-color-secondary text-uppercase white-space-nowrap overflow-hidden text-overflow-ellipsis"
+            style="letter-spacing: 0.5px">
+            Facultad
+          </p>
+          <p class="m-0 mt-1 text-sm font-bold text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">
+            {{ profesor?.facultad }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1" style="min-width: 200px">
+      <div
+        class="h-full flex align-items-center gap-2 p-3 border-round-lg transition-all transition-duration-200 hover:shadow-2"
+        [style]="{'background': 'var(--p-surface-0)','border': '1px solid var(--p-surface-200)'}">
+        <div class="flex align-items-center justify-content-center w-2rem h-2rem border-circle flex-shrink-0">
+          <i class="pi pi-book" [style]="{'color': 'var(--p-primary-600)'}" aria-hidden="true"></i>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <p class="m-0 text-xs font-semibold text-color-secondary text-uppercase white-space-nowrap overflow-hidden text-overflow-ellipsis"
+            style="letter-spacing: 0.5px">
+            Programa
+          </p>
+          <p class="m-0 mt-1 text-sm font-bold text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">
+            {{ profesor?.programa }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1" style="min-width: 150px">
+      <div
+        class="h-full flex align-items-center gap-2 p-3 border-round-lg transition-all transition-duration-200 hover:shadow-2"
+        [style]="{'background': 'var(--p-surface-0)','border': '1px solid var(--p-surface-200)'}">
+        <div class="flex align-items-center justify-content-center w-2rem h-2rem border-circle flex-shrink-0">
+          <i class="pi pi-graduation-cap" [style]="{'color': 'var(--p-primary-600)'}" aria-hidden="true"></i>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <p class="m-0 text-xs font-semibold text-color-secondary text-uppercase white-space-nowrap overflow-hidden text-overflow-ellipsis"
+            style="letter-spacing: 0.5px">
+            Nivel de Formación
+          </p>
+          <p class="m-0 mt-1 text-sm font-bold text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">
+            {{ profesor?.nivelEducativo }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1" style="min-width: 150px">
+      <div
+        class="h-full flex align-items-center gap-2 p-3 border-round-lg transition-all transition-duration-200 hover:shadow-2"
+        [style]="{'background': 'var(--p-surface-0)','border': '1px solid var(--p-surface-200)'}">
+        <div class="flex align-items-center justify-content-center w-2rem h-2rem border-circle flex-shrink-0">
+          <i class="pi pi-star" [style]="{'color': 'var(--p-primary-600)'}" aria-hidden="true"></i>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <p class="m-0 text-xs font-semibold text-color-secondary text-uppercase white-space-nowrap overflow-hidden text-overflow-ellipsis"
+            style="letter-spacing: 0.5px">
+            Categoría Escalafón
+          </p>
+          <p class="m-0 mt-1 text-sm font-bold text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">
+            {{ profesor?.escalafon }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1" style="min-width: 160px">
+      <div
+        class="h-full flex align-items-center gap-2 p-3 border-round-lg transition-all transition-duration-200 hover:shadow-2"
+        [style]="{'background': 'var(--p-surface-0)','border': '1px solid var(--p-surface-200)'}">
+        <div class="flex align-items-center justify-content-center w-2rem h-2rem border-circle flex-shrink-0">
+          <i class="pi pi-clock" [style]="{'color': 'var(--p-primary-600)'}" aria-hidden="true"></i>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <p class="m-0 text-xs font-semibold text-color-secondary text-uppercase white-space-nowrap overflow-hidden text-overflow-ellipsis"
+            style="letter-spacing: 0.5px">
+            Tipo Dedicación
+          </p>
+          <p class="m-0 mt-1 text-sm font-bold text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">
+            {{ profesor?.dedicacion }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1" style="min-width: 160px">
+      <div
+        class="h-full flex align-items-center gap-2 p-3 border-round-lg transition-all transition-duration-200 hover:shadow-2"
+        [style]="{'background': 'var(--p-surface-0)','border': '1px solid var(--p-surface-200)'}">
+        <div class="flex align-items-center justify-content-center w-2rem h-2rem border-circle flex-shrink-0">
+          <i class="pi pi-link" [style]="{'color': 'var(--p-primary-600)'}"></i>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <p class="m-0 text-xs font-semibold text-color-secondary text-uppercase white-space-nowrap overflow-hidden text-overflow-ellipsis"
+            style="letter-spacing: 0.5px">
+            Tipo Vinculación
+          </p>
+          <p class="m-0 mt-1 text-sm font-bold text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">
+            {{ profesor?.vinculacion }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</p-card>
+
+<!-- Donde se cargan todas las horas -->
+<div class="mb-4 p-3 border-round-lg"
+  [style]="{'background': 'var(--p-surface-0)','border': '1px solid var(--p-surface-200)'}">
+  <div class="flex align-items-center gap-3">
+    <i class="pi pi-clock text-2xl" [style]="{'color': 'var(--p-primary-600)'}"></i>
+    <div class="flex-1">
+      <p class="m-0 mt-1 text-sm font-bold text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">
+        Horas disponibles: {{ calcularHorasDisponibles() }} / {{ horasTotales }}
+      </p>
+      <p class="m-0 mt-1 text-sm font-bold text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">
+        Cursos: {{ horasCursos }}h | Actividades: {{ horasNormales }}h | Investigación: {{ horasInvestigacion }}h
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<!-- Botón de enviar plan de trabajo -->
+<div class="flex justify-content-end gap-3 mb-4">
+  <p-button
+    [label]="planDeTrabajo.estado === 'Rechazado por Decanatura' || planDeTrabajo.estado === 'RECHAZADO' ? 'Reenviar plan de trabajo' : 'Enviar plan de trabajo'"
+    icon="pi pi-send" severity="success" [raised]="true" [loading]="cargandoEnvio"
+    [disabled]="calcularHorasDisponibles() != 0 || planDeTrabajo.enviadoProfesor == true || estaSuspendido || estaInactivado"
+    (click)="onEnviarPlanClick()">
+  </p-button>
+</div>
+
+
+<!-- Donde se cargan todas las secciones -->
+<div class="rounded-xl border-2 shadow-lg overflow-hidden"
+  style="background: 'var(--p-surface-0)'; border-color: var(--p-surface-200); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+  <div *ngIf="!loading && !error && planDeTrabajo">
+    <p-accordion [multiple]="true" [value]="[]">
+      <p-accordion-panel *ngFor="let seccionPadre of seccionesPadres" [value]="seccionPadre.id">
+
+        <p-accordion-header
+          [style]="{background: 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))', margin: '0 0 0.25rem'}">
+          <div>
+            <h2 class="m-0 mb-2 text-xl font-bold text-white">
+              {{ seccionPadre.nombre }}
+            </h2>
+          </div>
+        </p-accordion-header>
+
+        <p-accordion-content *ngFor="let hijo of seccionPadre.hijos">
+          <app-seccion-cursos *ngIf="esSeccionCursos(hijo)" [seccionHijo]="hijo" [planDeTrabajo]="planDeTrabajo"
+            (horasUsadasChange)="onHorasChange(hijo.id, $event)">
+          </app-seccion-cursos>
+
+          <app-seccion-investigacion *ngIf="esSeccionInvestigacion(hijo)" [seccionHijo]="hijo"
+            [planDeTrabajo]="planDeTrabajo" [horasDisponibles]="calcularHorasDisponibles()"
+            (horasUsadasChange)="onHorasChange(hijo.id, $event)">
+          </app-seccion-investigacion>
+
+          <app-seccion-normal *ngIf="esSeccionNormal(hijo)" [seccionHijo]="hijo" [planDeTrabajo]="planDeTrabajo"
+            [horasDisponibles]="calcularHorasDisponibles()" [nombrePrograma]="profesor.programa"
+            (horasUsadasChange)="onHorasChange(hijo.id, $event)">
+          </app-seccion-normal>
+        </p-accordion-content>
+
+      </p-accordion-panel>
+    </p-accordion>
+  </div>
+</div>
+
+<!-- Modal de confirmación para enviar -->
+<app-modal-confirmacion [(visible)]="displayModalConfirmacion"
+  [titulo]="planDeTrabajo.estado === 'Rechazado por Decanatura' || planDeTrabajo.estado === 'RECHAZADO' ? 'Reenviar Plan de Trabajo' : 'Enviar Plan de Trabajo'"
+  [mensaje]="planDeTrabajo.estado === 'Rechazado por Decanatura' || planDeTrabajo.estado === 'RECHAZADO' ? '¿Está seguro de que desea reenviar el plan de trabajo? Una vez enviado, será revisado por el profesor.' : '¿Está seguro de que desea enviar el plan de trabajo? Una vez enviado, será revisado por el profesor.'"
+  textoConfirmar="Enviar" textoCancelar="Cancelar" severidad="info" (onConfirmar)="handleConfirmarEnvio()"
+  (onCancelar)="handleCancelarEnvio()">
+</app-modal-confirmacion>

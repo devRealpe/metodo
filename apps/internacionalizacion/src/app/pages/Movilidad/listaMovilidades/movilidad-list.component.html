@@ -1,0 +1,245 @@
+<div class="min-h-screen bg-surface-50 dark:bg-surface-900 max-w-7xl mx-auto px-4 py-6 space-y-10">
+  <p-confirmDialog></p-confirmDialog>
+  <p-toast></p-toast>
+  <div class="text-center mb-8">
+    <h1 class="text-3xl md:text-4xl font-bold text-surface-900 dark:text-surface-0">
+      {{ viewMode === 'cerradas' ? 'Movilidades Cerradas' : 'Movilidades Internacionalización
+' }}
+    </h1>
+    <hr class="w-24 mx-auto mt-2 border-blue-300">
+    <p class="text-base text-surface-500 dark:text-surface-400 mt-4">
+      {{ viewMode === 'cerradas' ? 'Listar únicamente movilidades con estado de aprobación CERRADA' : 'Sistema Gestión de Movilidades' }}
+    </p>
+  </div>
+
+  <!-- Estadísticas Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Movilidades -->
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg ring-2 ring-blue-600/25 dark:ring-blue-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer" (click)="filtrarPorEstado('total')">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-semibold text-surface-900 dark:text-surface-200 mb-1">Total Movilidades</p>
+          <p class="text-3xl font-bold text-surface-900 dark:text-surface-0">{{ estadisticas.total }}</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-chart-line text-blue-800 text-lg"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Movilidades Activas -->
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg ring-2 ring-green-600/25 dark:ring-green-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer" (click)="filtrarPorEstado('activas')">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-semibold text-surface-900 dark:text-surface-200 mb-1">Movilidades Activas</p>
+          <p class="text-3xl font-bold text-surface-900 dark:text-surface-0">{{ estadisticas.activas }}</p>
+          <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">En funcionamiento</p>
+        </div>
+        <div class="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-check-circle text-green-800 text-lg"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Movilidades Inactivas -->
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg ring-2 ring-red-600/25 dark:ring-red-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer" (click)="filtrarPorEstado('inactivas')">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-semibold text-surface-900 dark:text-surface-200 mb-1">Movilidades Inactivas</p>
+          <p class="text-3xl font-bold text-surface-900 dark:text-surface-0">{{ estadisticas.inactivas }}</p>
+          <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">Sin actividad</p>
+        </div>
+        <div class="w-12 h-12 bg-red-200 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-exclamation-triangle text-red-800 text-lg"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Movilidades Cerradas -->
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg ring-2 ring-purple-600/25 dark:ring-purple-800/25 p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer" (click)="filtrarPorEstado('cerradas')">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-semibold text-surface-900 dark:text-surface-200 mb-1">Movilidades Cerradas</p>
+          <p class="text-3xl font-bold text-surface-900 dark:text-surface-0">{{ estadisticas.cerradas }}</p>
+          <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">Aprobadas y cerradas</p>
+        </div>
+        <div class="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-lock text-purple-800 text-lg"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros Collapsible -->
+  <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center space-x-3">
+        <i class="pi pi-filter text-surface-600 dark:text-surface-400 text-xl cursor-pointer hover:text-blue-600 transition-all duration-200" 
+           [class.rotate-180]="mostrarFiltros"
+           (click)="mostrarFiltros = !mostrarFiltros"></i>
+        <span class="text-lg font-medium text-surface-700 dark:text-surface-300">Filtros de Búsqueda</span>
+      </div>
+    </div>
+    <div *ngIf="mostrarFiltros" class="transition-all duration-300 ease-in-out">
+      <!-- filtros organizados en dos filas iguales de tres columnas -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- fila 1 -->
+        <div>
+          <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-6">Filtrar por Nombre</label>
+          <app-input-component
+            id="filtroNombre"
+            [(ngModel)]="filtroNombre"
+            (inputChange)="aplicarFiltros()"
+            placeholder="Buscar por nombre..."
+            htmlAutocomplete="on"
+            [label]="''">
+          </app-input-component>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-6">Filtrar por Modalidad</label>
+          <!-- store label in model so table filters by text instead of id -->
+          <app-select-component
+            id="filtroModalidad"
+            [(ngModel)]="filtroModalidad"
+            [options]="opcionesModalidad"
+            (ngModelChange)="aplicarFiltros()"
+            optionLabel="label"
+            optionValue="label"
+            placeholder="Seleccionar modalidad"
+            [filter]="true"
+            [showClear]="true"
+            [label]="''">
+          </app-select-component>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-6">Filtrar por Cobertura</label>
+          <!-- using label here ensures the input acts like a text filter for names -->
+          <app-select-component
+            id="filtroCobertura"
+            [(ngModel)]="filtroCobertura"
+            [options]="opcionesCobertura"
+            (ngModelChange)="aplicarFiltros()"
+            optionLabel="label"
+            optionValue="label"
+            placeholder="Seleccionar cobertura"
+            [filter]="true"
+            [showClear]="true"
+            [label]="''">
+          </app-select-component>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+        <!-- fila 2 -->
+        <div>
+          <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-6">Filtrar por Tipo</label>
+          <!-- keep label value so filtering behaves like text search -->
+          <app-select-component
+            id="filtroTipo"
+            [(ngModel)]="filtroTipo"
+            [options]="opcionesTipo"
+            (ngModelChange)="aplicarFiltros()"
+            optionLabel="label"
+            optionValue="label"
+            placeholder="Seleccionar tipo"
+            [filter]="true"
+            [showClear]="true"
+            [label]="''">
+          </app-select-component>
+        </div>
+        <div>
+          <label for="filtroFechaDesde" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-6">Fecha Desde</label>
+          <app-datepicker-component
+            id="filtroFechaDesde"
+            placeholder="dd/mm/aaaa"
+            [(ngModel)]="filtroFechaDesde"
+            (ngModelChange)="aplicarFiltros()"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [label]="''">
+          </app-datepicker-component>
+        </div>
+        <div>
+          <label for="filtroFechaHasta" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-6">Fecha Hasta</label>
+          <app-datepicker-component
+            id="filtroFechaHasta"
+            placeholder="dd/mm/aaaa"
+            [(ngModel)]="filtroFechaHasta"
+            (ngModelChange)="aplicarFiltros()"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [label]="''">
+          </app-datepicker-component>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Movilidades -->
+  <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+    <div class="flex justify-between items-center mb-6 pb-4 border-b border-surface-200 dark:border-surface-700">
+      <div class="flex items-center space-x-3">
+        <div>
+          <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-100">
+          {{ viewMode === 'cerradas' ? 'Movilidades Cerradas' : 'Movilidades Registradas' }}
+        </h2>
+          <p class="text-sm text-surface-600 dark:text-surface-400">
+            {{ viewMode === 'cerradas' ? 'Mostrando únicamente las movilidades cuya aprobación ha sido cerrada' : 'Listado completo de movilidades registradas en el sistema' }}
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center">
+        <p-button type="button" icon="pi pi-file-excel" label="Exportar Excel" (onClick)="exportFilteredExcel()"
+                [loading]="loading"
+                severity="success">
+        </p-button>
+      </div>
+    </div>
+
+    <lib-info-table
+      [data]="movilidadesFiltradas"
+      [columns]="columns"
+      [actions]="actions"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5,10,25,50]"
+      [globalFilterFields]="['nombreMovilidad', 'modalidad', 'facultad', 'programa', 'lugarDestino', 'pais']"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} movilidades filtradas"
+      [striped]="true"
+      [hoverable]="true"
+      [showTableHeader]="false"
+      [showGlobalFilter]="false"
+      emptyTitle="No se encontraron movilidades {{ viewMode === 'cerradas' ? 'cerradas' : 'registradas' }}"
+      emptySubtitle="Intenta ajustar los filtros o crea una nueva movilidad"
+      emptyIcon="pi pi-info-circle"
+    >
+      <ng-template #customCell let-row="row" let-column="column" let-value="value">
+        <span *ngIf="column.field === 'programa'">{{ getProgramaNombre(value) }}</span>
+        <span *ngIf="column.field === 'pais'">{{ getPaisNombre(value) }}</span>
+        <span *ngIf="column.field === 'facultad'">{{ getFacultadNombre(value) }}</span>
+        <span *ngIf="column.field === 'modalidad'">{{ value?.nombre || '-' }}</span>
+        <span *ngIf="column.field === 'cobertura'">{{ value?.nombre || '-' }}</span>
+        <span *ngIf="column.field === 'fechaInicio'" 
+              pTooltip="Fecha Fin: {{ formatDate(row.fechaFin) }}" 
+              tooltipPosition="top"
+              [escape]="false">{{ value }}</span>
+        <span *ngIf="column.field !== 'programa' && column.field !== 'pais' && column.field !== 'facultad' && column.field !== 'modalidad' && column.field !== 'cobertura' && column.field !== 'fechaInicio'">{{ value }}</span>
+      </ng-template>
+    </lib-info-table>
+  </div>
+
+<!-- Botón Atrás -->
+<div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl mt-6">
+  <div class="flex justify-between">
+    <p-button
+      type="button"
+      label="Atrás"
+      icon="pi pi-arrow-left"
+      (click)="goBack()"
+      severity="primary">
+    </p-button>
+
+  </div>
+</div>
+

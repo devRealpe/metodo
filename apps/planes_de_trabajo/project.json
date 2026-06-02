@@ -1,0 +1,114 @@
+{
+  "name": "planes_de_trabajo",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/planes_de_trabajo/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:webpack-browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/planes_de_trabajo",
+        "index": "apps/planes_de_trabajo/src/index.html",
+        "main": "apps/planes_de_trabajo/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/planes_de_trabajo/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/planes_de_trabajo/public"
+          }
+        ],
+        "styles": ["apps/planes_de_trabajo/src/styles.scss"],
+        "customWebpackConfig": {
+          "path": "apps/planes_de_trabajo/webpack.config.ts"
+        }
+      },
+      "configurations": {
+        "production": {
+          "baseHref": "/planes_de_trabajo/",
+          "deployUrl": "/planes_de_trabajo/",
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "800kb",
+              "maximumError": "2mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "25kb",
+              "maximumError": "50kb"
+            }
+          ],
+          "outputHashing": "all",
+          "customWebpackConfig": {
+            "path": "apps/planes_de_trabajo/webpack.prod.config.ts"
+          }
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@nx/angular:dev-server",
+      "options": {
+        "port": 4204,
+        "publicHost": "http://localhost:4204",
+        "proxyConfig": "apps/planes_de_trabajo/proxy.conf.js"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "planes_de_trabajo:build:production"
+        },
+        "development": {
+          "buildTarget": "planes_de_trabajo:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "planes_de_trabajo:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/apps/planes_de_trabajo"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "defaultConfiguration": "production",
+      "options": {
+        "buildTarget": "planes_de_trabajo:build",
+        "port": 4204,
+        "watch": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "planes_de_trabajo:build:development"
+        },
+        "production": {
+          "buildTarget": "planes_de_trabajo:build:production"
+        }
+      }
+    }
+  }
+}

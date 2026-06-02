@@ -1,0 +1,394 @@
+<p-toast></p-toast>
+<div class="surface-ground min-h-screen">
+  <div class="container mx-auto px-2 sm:px-4 py-4">
+    <p-card 
+      class="relative h-full border-none shadow-3"
+      [style]="{
+                'background': 'var(--p-surface-50)',
+                'border-radius': '16px',
+                'border': '2px solid var(--p-surface-200)'
+              }">
+
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-2">
+            <h2 class="text-2xl font-bold">Información Familiar</h2>
+            <p-button 
+        icon="pi pi-home" 
+        label="Ir al Inicio" 
+        size="small"
+        [outlined]="true"
+        styleClass="border-round-xl text-sm font-medium shadow-2"
+        routerLink="/app/inicio"
+        pTooltip="Ir a la página de inicio"
+        tooltipPosition="left">
+      </p-button>
+        </div>
+    </div>
+    <div class="flex justify-center mb-4">
+        <p-button (click)="showDialog()" label="Agregar Informacion Familiar"></p-button>
+    </div>
+    <p-dialog [modal]="true" [(visible)]="visible" [style]="{ width: '65%' }" [closable]="false" [dismissableMask]="false">
+        <ng-template pTemplate="header">
+            <div class="flex justify-between items-center w-full">
+                <span class="p-dialog-title">Información Familiar</span>
+                <button 
+                    type="button" 
+                    pButton 
+                    pRipple 
+                    icon="pi pi-times" 
+                    (click)="visible = false" 
+                    class="p-dialog-header-close [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible hover:[&_.pi]:!opacity-100 hover:[&_i]:!opacity-100">
+                </button>
+            </div>
+        </ng-template>
+        <form [formGroup]="form" (ngSubmit)="!isLoading && guardarRegistro()" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 mb-4">
+                <div>
+                    <app-input-component
+                        formControlName="nombres"
+                        id="nombres"
+                        label="Nombres Completos del Familiar"
+                        placeholder="Ingrese nombres completos"
+                        type="text"
+                        [maxlength]="60"
+                        [required]="true">
+                    </app-input-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('nombres')"
+                            severity="error" 
+                            [text]="getFieldError('nombres')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Parentesco -->
+                <div>
+                    <app-select-component
+                        formControlName="parentesco"
+                        [filter]="true"
+                        id="parentesco"
+                        label="Parentesco"
+                        placeholder="Seleccione el parentesco"
+                        [options]="parentescos"
+                        optionLabel="nombre"
+                        optionValue="id"
+                        [showClear]="true"
+                        [required]="true">
+                    </app-select-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('parentesco')"
+                            severity="error" 
+                            [text]="getFieldError('parentesco')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Tipo de Documento -->
+                <div>
+                    <app-select-component
+                        formControlName="tipoDocumento"
+                        [filter]="true"
+                        id="tipoDocumento"
+                        label="Tipo de Documento del Familiar"
+                        placeholder="Seleccione tipo de documento"
+                        [options]="tiposDocumento"
+                        optionLabel="nombre"
+                        optionValue="id"
+                        [showClear]="true"
+                        [required]="true">
+                    </app-select-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('tipoDocumento')"
+                            severity="error" 
+                            [text]="getFieldError('tipoDocumento')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Identificación -->
+                <div>
+                    <app-input-component
+                        formControlName="identificacion"
+                        id="identificacion"
+                        label="Identificación del Familiar"
+                        placeholder="Ingrese número de identificación"
+                        type="number"
+                        [min]="0"
+                        [maxlength]="12"
+                        [required]="true">
+                    </app-input-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('identificacion')"
+                            severity="error" 
+                            [text]="getFieldError('identificacion')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Fecha de Nacimiento -->
+                <div>
+                    <app-datepicker-component
+                        formControlName="fechaNacimiento"
+                        id="fechaNacimiento"
+                        label="Fecha de Nacimiento del Familiar"
+                        placeholder="Seleccione fecha de nacimiento"
+                        [showIcon]="true">
+                    </app-datepicker-component>
+                    <!-- Mensaje de error manual para fechas -->
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('fechaNacimiento')"
+                            severity="error" 
+                            [text]="getFieldError('fechaNacimiento')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- País de Expedición -->
+                <div>
+                    <app-select-component
+                        id="paisExpedicion"
+                        formControlName="paisExpedicion"
+                        label="País de Expedición"
+                        placeholder="Seleccione país de expedición"
+                        [options]="paises"
+                        optionLabel="nombre"
+                        optionValue="id"
+                        [filter]="true"
+                        [required]="true">
+                    </app-select-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('paisExpedicion')"
+                            severity="error" 
+                            [text]="getFieldError('paisExpedicion')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Departamento de Expedición (solo para Colombia) -->
+                <div *ngIf="esColombia">
+                    <app-select-component
+                        formControlName="departamentoExpedicion"
+                        id="departamentoExpedicion"
+                        label="Departamento/Estado/Provincia de Expedición"
+                        placeholder="Seleccione departamento de expedición"
+                        [options]="departamentos"
+                        optionLabel="nombre"
+                        optionValue="id"
+                        [filter]="true"
+                        [loading]="isLoadingDepartamentos"
+                        [disabled]="!form.get('paisExpedicion')?.value"
+                        [required]="esColombia">
+                    </app-select-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('departamentoExpedicion')"
+                            severity="error" 
+                            [text]="getFieldError('departamentoExpedicion')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Ciudad de Expedición (solo para Colombia) -->
+                <div *ngIf="esColombia">
+                    <app-select-component
+                        formControlName="municipioExpedicion"
+                        id="municipioExpedicion"
+                        label="Ciudad/Municipio de Expedición"
+                        placeholder="Seleccione ciudad de expedición"
+                        [options]="municipios"
+                        optionLabel="nombre"
+                        optionValue="id"
+                        [filter]="true"
+                        [loading]="isLoadingMunicipios"
+                        [disabled]="!form.get('departamentoExpedicion')?.value"
+                        [required]="esColombia">
+                    </app-select-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('municipioExpedicion')"
+                            severity="error" 
+                            [text]="getFieldError('municipioExpedicion')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Ciudad de Expedición (para países diferentes a Colombia) -->
+                <div *ngIf="!esColombia && form.get('paisExpedicion')?.value">
+                    <app-input-component
+                        formControlName="ciudadExpedicion"
+                        id="ciudadExpedicion"
+                        label="Ciudad de Expedición"
+                        placeholder="Ingrese la ciudad de expedición"
+                        [maxlength]="60"
+                        [required]="!esColombia">
+                    </app-input-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('ciudadExpedicion')"
+                            severity="error" 
+                            [text]="getFieldError('ciudadExpedicion')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Celular -->
+                <div>
+                    <app-input-component
+                        formControlName="celular"
+                        id="celular"
+                        label="Celular del Familiar"
+                        placeholder="Ingrese número de celular"
+                        type="number"
+                        [min]="0"
+                        [maxlength]="10"
+                        [required]="celularEsRequerido">
+                    </app-input-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('celular')"
+                            severity="error" 
+                            [text]="getFieldError('celular')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Ocupación -->
+                <div>
+                    <app-input-component
+                        formControlName="ocupacion"
+                        id="ocupacion"
+                        label="Ocupación del Familiar"
+                        placeholder="Ingrese ocupación"
+                        type="text"
+                        [maxlength]="60"
+                        [required]="ocupacionEsRequerida">
+                    </app-input-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('ocupacion')"
+                            severity="error" 
+                            [text]="getFieldError('ocupacion')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Correo -->
+                <div>
+                    <app-input-component
+                        formControlName="correo"
+                        id="correo"
+                        label="Correo Electrónico del Familiar"
+                        placeholder="Ingrese correo electrónico"
+                        type="email"
+                        [maxlength]="100"
+                        [required]="correoEsRequerido">
+                    </app-input-component>
+                    <div class="min-h-[20px]">
+                        <p-message
+                            *ngIf="isFieldInvalid('correo')"
+                            severity="error" 
+                            [text]="getFieldError('correo')" 
+                            size="small" 
+                            variant="simple">
+                        </p-message>
+                    </div>
+                </div>
+
+                <!-- Depende Económicamente -->
+                <div>
+                    <label for="dependeEconomicamente" class="block text-sm font-medium mb-1">¿Depende económicamente de usted? <span class="text-red-500">*</span></label>
+                    <div class="flex items-center space-x-4">
+                        <p-radioButton formControlName="dependeEconomicamente" name="dependeEconomicamente"
+                            [value]="true" inputId="depSi"></p-radioButton>
+                        <label for="depSi" class="ml-2">Sí</label>
+
+                        <p-radioButton formControlName="dependeEconomicamente" name="dependeEconomicamente"
+                            [value]="false" inputId="depNo"></p-radioButton>
+                        <label for="depNo" class="ml-2">No</label>
+                    </div>
+                    <div class="min-h-[20px]"><p-message
+                        *ngIf="isFieldInvalid('dependeEconomicamente')"
+                        severity="error" 
+                        [text]="getFieldError('dependeEconomicamente')" 
+                        size="small" 
+                        variant="simple">
+                    </p-message></div>
+                    
+                </div>
+
+                <!-- Botones (ocupan las 2 columnas) -->
+                <div class="md:col-span-2 flex flex-col sm:flex-row gap-4 mt-4 border-t border-gray-200 pt-6">
+                
+                <p-button type="submit" [label]="isEditando ? 'Actualizar' : 'Guardar'"
+                    [disabled]="isLoadingDropdowns || isSubmitting" severity="primary" styleClass="flex-1 sm:flex-none"
+                    [style]="isSubmitting ? {'pointer-events': 'none'} : {}"
+                    icon="pi pi-save">
+                </p-button>
+
+                <p-button 
+                    *ngIf="isEditando" type="button" label="Cancelar" (onClick)="cancelarEdicion()"  severity="secondary"
+                    styleClass="flex-1 sm:flex-none" icon="pi pi-times">
+                </p-button>
+                </div>
+            </div>
+        </form>
+    </p-dialog>
+
+
+    <!-- Registros familiares guardados -->
+    <div *ngIf="!isLoadingInitial" class="mt-8">
+        <!-- Tabla moderna usando InfoTableComponent -->
+        <lib-info-table
+            [data]="tableData"
+            [columns]="tableColumns"
+            [actions]="tableActions"
+            [emptyMessage]="'No se encontraron registros familiares'"
+            [paginator]="true"
+            [rows]="10"
+            [rowsPerPageOptions]="[5, 10, 20]"
+            [tableTitle]="'Registros Familiares Guardados'"
+            [showGlobalFilter]="true"
+            [globalFilterFields]="['nombres', 'identificacion', 'tipoDocumento', 'ocupacion', 'parentesco']">
+            
+            <!-- Custom template para dependeEconomicamente -->
+            <ng-template #customCell let-value="value" let-column="column" let-row="row">
+                <span *ngIf="column.field === 'dependeEconomicamente'"
+                      [ngClass]="row.dependeEconomicamente ? 'text-green-600' : 'text-red-600'">
+                    {{ value }}
+                </span>
+            </ng-template>
+        </lib-info-table>
+    </div>
+</p-card>
+  </div>
+</div>
+
+<p-confirmDialog></p-confirmDialog>

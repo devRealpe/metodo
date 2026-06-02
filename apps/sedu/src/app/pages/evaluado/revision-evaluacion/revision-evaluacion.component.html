@@ -1,0 +1,88 @@
+<p-toast></p-toast>
+
+<div class="flex flex-col gap-6">
+  <div class="flex items-center gap-4">
+    <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (onClick)="volver()"></p-button>
+    <h2 class="text-2xl font-bold text-[var(--p-text-color)]">Revisión de Evaluación</h2>
+  </div>
+
+  @if (cargando()) {
+    <p-card>
+      <p-skeleton width="60%" height="24px" styleClass="mb-3"></p-skeleton>
+      @for (i of [1,2,3]; track i) {
+        <p-skeleton width="100%" height="80px" styleClass="mb-4"></p-skeleton>
+      }
+    </p-card>
+  } @else if (evaluacion()) {
+    <!-- Info general -->
+    <p-card styleClass="sedu-card">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-[var(--p-text-secondary-color)]">Evaluado</p>
+          <p class="font-semibold">{{ evaluacion()!.nombreEvaluado }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-[var(--p-text-secondary-color)]">Evaluador</p>
+          <p class="font-semibold">{{ evaluacion()!.nombreEvaluador }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-[var(--p-text-secondary-color)]">Estado</p>
+          <p-tag [value]="evaluacion()!.estado" [severity]="getSeveridadEstado(evaluacion()!.estado)"></p-tag>
+        </div>
+        @if (evaluacion()!.puntajeTotal != null) {
+          <div>
+            <p class="text-xs text-[var(--p-text-secondary-color)]">Puntaje Total</p>
+            <p class="text-3xl font-bold text-[var(--p-primary-color)]">{{ evaluacion()!.puntajeTotal | number:'1.2-2' }}</p>
+          </div>
+        }
+      </div>
+    </p-card>
+
+    <!-- Observación general -->
+    @if (evaluacion()!.observacionGeneral) {
+      <p-card header="Observación General" styleClass="sedu-card">
+        <p>{{ evaluacion()!.observacionGeneral }}</p>
+      </p-card>
+    }
+
+    <!-- Secciones e ítems con respuestas -->
+    @for (seccion of secciones(); track seccion.id; let si = $index) {
+      <p-panel [header]="(si + 1) + '. ' + seccion.nombre" [toggleable]="true" styleClass="mb-4">
+        @for (item of seccion.items; track item.id) {
+          <div class="border rounded-lg p-4 mb-3 bg-[var(--p-content-background)]">
+            <div class="flex justify-between items-start mb-2">
+              <p class="font-medium">{{ item.orden }}. {{ item.descripcion }}</p>
+              @if (item.peso != null) {
+                <span class="text-xs text-[var(--p-text-secondary-color)]">Peso: {{ item.peso }}%</span>
+              }
+            </div>
+            @let resp = getRespuesta(item.id);
+            @if (resp) {
+              <div class="mt-2 flex flex-col gap-1">
+                <span class="inline-flex items-center gap-2">
+                  <i class="pi pi-check-circle text-green-600"></i>
+                  <strong>{{ resp.escalaEtiqueta }}</strong>
+                  <span class="text-xs text-[var(--p-text-secondary-color)]">(valor: {{ resp.escalaValor }})</span>
+                </span>
+                @if (resp.observacion) {
+                  <p class="text-sm text-[var(--p-text-secondary-color)] italic">{{ resp.observacion }}</p>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-[var(--p-text-secondary-color)] italic">Sin respuesta registrada</p>
+            }
+          </div>
+        }
+      </p-panel>
+    }
+
+    <!-- Acciones -->
+    @if (evaluacion()!.estado === 'FIRMADO_EVALUADOR') {
+      <div class="flex justify-end">
+        <p-button label="Ir a Firmar" icon="pi pi-pen-to-square" severity="warn"
+          (onClick)="router.navigate(['/app/evaluado/firma', evaluacion()!.id])"></p-button>
+      </div>
+    }
+  }
+</div>
+

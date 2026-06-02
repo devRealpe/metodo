@@ -1,0 +1,303 @@
+<div class="surface-ground min-h-screen">
+  <div class="container mx-auto px-2 sm:px-4 py-4">
+    <p-card class="relative h-full shadow-3" [style]="{
+        'background': 'var(--p-surface-50)',
+        'border': 'none',
+        'border-radius': '16px',
+        'overflow': 'visible'
+      }">
+      <ng-template #header>
+        <div class="h-auto sm:h-32 relative bg-gradient-to-r from-primary-600 via-primary-500 to-primary-400">
+          <div class="flex flex-col sm:flex-row sm:justify-end gap-2 p-2 pb-4 sm:p-4">
+            <p-button 
+              label="Revisar Hoja de Vida" 
+              icon="pi pi-file-edit" 
+              severity="secondary" 
+              [raised]="true"
+              size="small" 
+              styleClass="w-full sm:w-auto"
+              (click)="revisarHojaDeVida()">
+            </p-button>
+
+            <p-button 
+              label="Mis Postulaciones" 
+              icon="pi pi-briefcase" 
+              severity="info" 
+              [outlined]="true"
+              size="small" 
+              styleClass="w-full sm:w-auto"
+              (click)="irAMisPostulaciones()">
+            </p-button>
+
+            <p-button 
+              label="Ir a Convocatorias" 
+              icon="pi pi-check" 
+              [outlined]="true" 
+              size="small"
+              styleClass="w-full sm:w-auto"
+              (click)="irAConvocatorias()">
+            </p-button>
+          </div>
+        </div>
+      </ng-template>
+
+      <div class="px-3 sm:px-6 pb-4 sm:pb-6 relative z-20">
+        <div class="flex flex-column align-items-start xl:align-items-center gap-4 sm:gap-6 pt-6 sm:-mt-12">
+          <div class="flex-shrink-0 relative mx-auto xl:mx-0">
+            <div class="relative inline-block">
+              <p-avatar shape="square" size="xlarge"
+                styleClass="profile-avatar border-round-2xl shadow-4 transition-all duration-300 hover:shadow-6 overflow-hidden flex items-center justify-center"
+                [style]="{
+                  'width': '100px',
+                  'height': '100px',
+                  'border': '3px solid var(--p-surface-0)',
+                  'background': fotoPerfilUrl ? 'transparent' : 'linear-gradient(135deg, var(--p-primary-600), var(--p-primary-500), var(--p-primary-400))',
+                  'color': 'white',
+                  'position': 'relative',
+                  'border-radius': '16px',
+                  'overflow': 'hidden'
+                }">
+                <lib-image-viewer
+                  [imageUrl]="fotoPerfilUrl"
+                  alt="Foto de perfil"
+                  width="100px"
+                  height="100px"
+                  [rounded]="false"
+                  [initials]="getInitials()"
+                  dialogTitle="Foto de perfil"
+                  placeholderIcon="pi pi-user"
+                  placeholderText=""
+                />
+              </p-avatar>
+
+              <p-avatar size="normal"
+                styleClass="camera-button absolute border-round-circle shadow-3 transition-all duration-300 hover:scale-110 cursor-pointer [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible"
+                [style]="{
+                  'width': '32px',
+                  'height': '32px',
+                  'bottom': '-6px',
+                  'right': '-6px',
+                  'font-size': '0.75rem',
+                  'background': 'var(--p-surface-0)',
+                  'color': 'var(--p-primary-color)',
+                  'border': '2px solid var(--p-surface-0)',
+                  'box-shadow': '0 4px 12px var(--p-primary-color-alpha-20)'
+                }" class="sm:w-10 sm:h-10 sm:-bottom-2 sm:-right-2" (click)="abrirDialogoFoto()"
+                pTooltip="Gestionar foto de perfil" tooltipPosition="top">
+                <i class="pi pi-camera" [style]="{'font-size': '0.625rem', 'opacity': '1', 'visibility': 'visible'}"></i>
+              </p-avatar>
+            </div>
+          </div>
+
+          <div class="flex-1 pt-2 text-center xl:text-left w-full">
+            <h1 class="text-2xl sm:text-3xl font-bold mb-2 break-words" [style]="{'color': 'var(--p-text-color)'}">
+              {{ usuarioInfo.nombre || 'Usuario' }}
+            </h1>
+            <p class="text-base sm:text-lg mb-4 sm:mb-6" [style]="{'color': 'var(--p-text-muted)'}">
+              Hoja de Vida Profesional
+            </p>
+          </div>
+        </div>
+
+        <div class="flex-col pt-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+            <p-card class="border-none shadow-3 hover:shadow-4 transition-all duration-300 cursor-pointer group"
+              [style]="{
+                'background': 'var(--p-surface-50)', 
+                'border': '2px solid var(--p-surface-200)',
+                'border-radius': '12px'
+              }">
+              <div class="flex align-items-center gap-3 sm:gap-4 p-1 sm:p-2">
+                <div class="flex-shrink-0 border-round-lg flex items-center justify-center" [style]="{
+                    'width': '40px',
+                    'height': '40px',
+                    'background': 'var(--p-primary-100)', 
+                    'color': 'var(--p-primary-600)',
+                    'border': '2px solid var(--p-primary-200)'
+                  }">
+                  <i class="pi pi-id-card" [style]="{'font-size': '16px'}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs sm:text-sm font-medium mb-1" [style]="{'color': 'var(--p-text-muted)'}">
+                    Identificación</p>
+                  <p class="text-sm sm:text-lg font-semibold" [style]="{'color': 'var(--p-text-color)'}">
+                    {{ usuarioInfo.identificacion || 'No disponible' }}
+                  </p>
+                </div>
+              </div>
+            </p-card>
+
+            <p-card class="border-none shadow-3 hover:shadow-4 transition-all duration-300 cursor-pointer group"
+              [style]="{
+                'background': 'var(--p-surface-50)', 
+                'border': '2px solid var(--p-surface-200)',
+                'border-radius': '12px'
+              }">
+              <div class="flex align-items-center gap-3 sm:gap-4 p-1 sm:p-2">
+                <div class="flex-shrink-0 border-round-lg flex items-center justify-center" [style]="{
+                    'width': '40px',
+                    'height': '40px',
+                    'background': 'var(--p-primary-100)', 
+                    'color': 'var(--p-primary-600)',
+                    'border': '2px solid var(--p-primary-200)'
+                  }">
+                  <i class="pi pi-phone" [style]="{'font-size': '16px'}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs sm:text-sm font-medium mb-1" [style]="{'color': 'var(--p-text-muted)'}">Celular</p>
+                  <p class="text-sm sm:text-lg font-semibold" [style]="{'color': 'var(--p-text-color)'}">
+                    {{ usuarioInfo.celular || 'No disponible' }}
+                  </p>
+                </div>
+              </div>
+            </p-card>
+
+            <p-card
+              class="border-none shadow-3 hover:shadow-4 transition-all duration-300 cursor-pointer group lg:col-span-2"
+              [style]="{
+                'background': 'var(--p-surface-50)', 
+                'border': '2px solid var(--p-surface-200)',
+                'border-radius': '12px'
+              }">
+              <div class="flex align-items-center gap-3 sm:gap-4 p-1 sm:p-2">
+                <div class="flex-shrink-0 border-round-lg flex items-center justify-center" [style]="{
+                    'width': '40px',
+                    'height': '40px',
+                    'background': 'var(--p-primary-100)', 
+                    'color': 'var(--p-primary-600)',
+                    'border': '2px solid var(--p-primary-200)'
+                  }">
+                  <i class="pi pi-envelope" [style]="{'font-size': '16px'}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs sm:text-sm font-medium mb-1" [style]="{'color': 'var(--p-text-muted)'}">Correo
+                    Personal</p>
+                  <p class="text-sm sm:text-lg font-semibold" [style]="{'color': 'var(--p-text-color)'}">
+                    {{ usuarioInfo.correoPersonal || 'No disponible' }}
+                  </p>
+                </div>
+              </div>
+            </p-card>
+          </div>
+        </div>
+      </div>
+    </p-card>
+
+    <div class="unimar-navigation-grid pt-4">
+      <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6" [style]="{'color': 'var(--p-text-color)'}">
+        Secciones de tu Hoja de Vida
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        <div *ngFor="let section of sections; let i = index" class="unimar-nav-card group"
+          [class.cursor-pointer]="section.route === 'informacion-personal' || hojaVidaStatusService.isDatosPersonalesCompleted()"
+          [class.cursor-not-allowed]="section.route !== 'informacion-personal' && !hojaVidaStatusService.isDatosPersonalesCompleted()"
+          [class.opacity-60]="section.route !== 'informacion-personal' && !hojaVidaStatusService.isDatosPersonalesCompleted()"
+          (click)="navigateToSection(section.route)" [attr.data-index]="i">
+          <p-card
+            class="relative h-full border-none shadow-3 overflow-hidden transition-all duration-300"
+            [class.hover:shadow-5]="section.route === 'informacion-personal' || hojaVidaStatusService.isDatosPersonalesCompleted()"
+            [class.hover:-translate-y-1]="section.route === 'informacion-personal' || hojaVidaStatusService.isDatosPersonalesCompleted()"
+            [class.group-hover:scale-105]="section.route === 'informacion-personal' || hojaVidaStatusService.isDatosPersonalesCompleted()"
+            [style]="{
+              'background': 'var(--p-surface-50)',
+              'border': '2px solid var(--p-surface-200)',
+              'border-radius': '16px'
+            }">
+            <ng-template #header>
+              <div class="h-2 w-full relative overflow-hidden" [style]="{'background': 'var(--p-surface-200)'}">
+                <div class="h-full transition-all duration-700 ease-out absolute top-0 left-0" [style]="section.completed ? 
+                    'width: 100%; background: linear-gradient(90deg, var(--p-primary-500), var(--p-primary-400))' : 
+                    'width: 20%; background: var(--p-surface-400)'">
+                </div>
+                <div *ngIf="section.completed" class="absolute top-0 left-0 h-full w-8 animate-pulse" [style]="{
+                    'background': 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+                    'animation': 'shine 2s infinite'
+                  }"></div>
+              </div>
+            </ng-template>
+
+            <div class="p-3 sm:p-4 lg:p-6 text-center relative">
+              <div class="mb-2 sm:mb-3 lg:mb-4 relative">
+                <div class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center"
+                  [style]="section.completed ? 
+                    'background: linear-gradient(135deg, var(--p-primary-500), var(--p-primary-400)); color: white; box-shadow: 0 8px 25px -8px var(--p-primary-500)' : 
+                    'background: var(--p-surface-200); color: var(--p-text-muted); border: 2px solid var(--p-surface-300)'">
+                  <i class="pi {{section.piIcon}}" [style]="{'font-size': '32px'}"></i>
+                </div>
+
+                <div *ngIf="section.completed"
+                  class="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 border-round-circle flex items-center justify-center"
+                  [style]="{
+                    'background': '#10b981', 
+                    'color': 'white',
+                    'border': '2px solid var(--p-surface-50)'
+                  }">
+                  <i class="pi pi-check font-bold" [style]="{'font-size': '8px'}"></i>
+                </div>
+              </div>
+              <h3 class="text-sm sm:text-base lg:text-lg font-semibold mb-2 sm:mb-3"
+                [style]="{'color': 'var(--p-text-color)'}">
+                {{ section.title }}
+              </h3>
+              <div class="flex items-center justify-center">
+                <span
+                  class="px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-2 border-round-full text-xs font-medium flex items-center gap-1 sm:gap-2"
+                  [style]="section.completed ? 
+                    'background: #10b981; color: white; border: 1px solid #059669' : 
+                    'background: var(--p-surface-200); color: var(--p-text-muted); border: 1px solid var(--p-surface-300)'">
+                  <i class="pi" [ngClass]="section.completed ? 'pi-check-circle' : 'pi-clock'"
+                    [style]="{'font-size': '8px'}"></i>
+                  <span>{{ section.completed ? 'Completado' : 'Pendiente' }}</span>
+                </span>
+              </div>
+            </div>
+          </p-card>
+        </div>
+      </div>
+    </div>
+    <div class="mt-6">
+      <router-outlet (deactivate)="onChildRouteDeactivate()"></router-outlet>
+    </div>
+  </div>
+</div>
+
+<input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none;">
+<p-dialog [(visible)]="mostrarDialogoFoto" [modal]="true" [style]="{width: '400px'}" [style]="{'background':  'var(--p-surface-50)'}" [closable]="false">
+  <ng-template pTemplate="header">
+    <div class="flex justify-between items-center w-full">
+      <span class="text-xl font-bold">Foto de perfil</span>
+      <button 
+        type="button" 
+        pButton 
+        pRipple 
+        icon="pi pi-times" 
+        (click)="mostrarDialogoFoto = false" 
+        class="p-dialog-header-close [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible hover:[&_.pi]:!opacity-100 hover:[&_i]:!opacity-100">
+      </button>
+    </div>
+  </ng-template>
+  <div class="flex flex-column gap-3 items-center justify-center text-center">
+    <lib-image-viewer
+      [imageUrl]="fotoPerfilUrl"
+      alt="Foto actual"
+      width="128px"
+      height="128px"
+      [rounded]="true"
+      [initials]="getInitials()"
+      dialogTitle="Foto de perfil actual"
+      placeholderIcon="pi pi-user"
+      placeholderText="Sin foto"
+    />
+
+    <p-button label="Subir nueva foto" icon="pi pi-upload" styleClass="p-button-primary w-full [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible"
+      (click)="abrirSelectorArchivo()">
+    </p-button>
+
+    <p-button *ngIf="fotoPerfilUrl" label="Eliminar foto" icon="pi pi-trash" styleClass="p-button-danger w-full [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible"
+      (click)="eliminarFoto()">
+    </p-button>
+  </div>
+</p-dialog>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

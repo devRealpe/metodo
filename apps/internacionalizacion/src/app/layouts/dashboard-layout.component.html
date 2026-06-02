@@ -1,0 +1,40 @@
+<div class="dashboard-layout">
+  <!-- Notifications Panel (debe estar antes del drawer para que el z-index funcione) -->
+  <app-notifications-panel></app-notifications-panel>
+  
+  <lib-drawer-component
+    [logoTitle]="logoTitle"
+    [homeRoute]="'/app/inicio'"
+    [sections]="visibleSections"
+    [user]="user"
+    [visible]="drawerVisible"
+    [modal]="true"
+    [showCloseIcon]="true"
+    [showThemeToggle]="true"
+    [showNotifications]="true"
+    [notificationCount]="notificationCount"
+    (visibleChange)="onDrawerVisibilityChange($event)"
+    (menuItemClick)="onMenuItemClick($event)"
+    (userProfileClick)="onUserProfileClick($event)"
+    (themeToggle)="onThemeToggle($event)"
+    (notificationClick)="onNotificationClick($event)"
+    (logout)="onLogout()"
+  >
+  </lib-drawer-component>
+
+
+<div class="main-content" [class.drawer-open]="drawerVisible">
+    <header class="top-header">
+      <div class="header-content">
+        <h1 class="page-title">Sistema de Internacionalización</h1>
+        <div class="header-actions">
+          <!-- Aquí puedes agregar acciones adicionales del header -->
+        </div>
+      </div>
+    </header>
+    
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

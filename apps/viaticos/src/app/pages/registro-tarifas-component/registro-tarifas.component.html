@@ -1,0 +1,200 @@
+<div class="surface-ground min-h-screen">
+  <div class="py-5 px-3">
+    <div class="mb-4">
+      <p-button
+        label="Volver a Inicio"
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        (onClick)="volverAInicio()"
+        [outlined]="true"
+        styleClass="w-auto">
+      </p-button>
+    </div>
+
+    <!-- Formulario de Registro de Tarifas -->
+    <p-card styleClass="border-round shadow-3" [style]="{ 'border': '1px solid var(--p-surface-200)' }">
+      <ng-template pTemplate="header">
+        <div class="py-4 px-6 border-bottom-1 surface-border">
+          <h2 class="text-2xl font-semibold m-0 mb-2" [style]="{ color: 'var(--p-text-color)' }">
+            <i class="pi pi-plus-circle mr-2"></i>
+            Nueva Tarifa de Viático
+          </h2>
+          <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+            Configure las tarifas de viáticos por ubicación, categoría y concepto
+          </p>
+        </div>
+      </ng-template>
+
+      <!-- Formulario -->
+      <div class="p-6">
+        <!-- Checkbox Tarifa Internacional -->
+        <div class="mb-6 p-4 border-l-4 rounded"
+             [style]="{
+               'background-color': 'var(--p-primary-50)',
+               'border-color': 'var(--p-primary-500)'
+             }">
+          <div class="flex items-center gap-3">
+            <p-checkbox
+              [(ngModel)]="esInternacional"
+              (onChange)="onInternacionalChange($event.checked)"
+              [binary]="true"
+              inputId="esInternacional"
+            />
+            <label for="esInternacional" class="font-semibold cursor-pointer" [style]="{ color: '#1e40af' }">
+              <i class="pi pi-globe mr-2" [style]="{ color: 'var(--p-primary-500)' }"></i>
+              Tarifa Internacional
+            </label>
+          </div>
+          <small class="block mt-2 ml-7 text-xs" [style]="{ color: 'var(--p-text-muted)' }">
+            Marque esta opción si la tarifa es para una ciudad fuera de Colombia
+          </small>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <!-- País (dinámico) -->
+          <div class="col-span-1">
+            <app-select-component
+              [filter]="true"
+              label="País *"
+              [options]="paisesOptions"
+              [(ngModel)]="paisSeleccionado"
+              placeholder="Seleccione un país"
+              [loading]="loadingPaises"
+              [disabled]="loading || loadingPaises || !esInternacional"
+              (ngModelChange)="onPaisChange($event)"
+            />
+          </div>
+
+          <!-- Departamento (para todos los países) -->
+          <div class="col-span-1" *ngIf="paisSeleccionado">
+            <app-select-component
+              [filter]="true"
+              label="Departamento *"
+              [options]="departamentosOptions"
+              [(ngModel)]="departamentoSeleccionado"
+              placeholder="Seleccione un departamento"
+              [loading]="loadingDepartamentos"
+              [disabled]="loading || loadingDepartamentos"
+              (ngModelChange)="onDepartamentoChangeEvent($event)"
+            />
+          </div>
+
+          <!-- Municipio/Ciudad (para todos los países) -->
+          <div class="col-span-1" *ngIf="paisSeleccionado">
+            <app-select-component
+              [filter]="true"
+              label="Municipio / Ciudad *"
+              [options]="municipiosOptions"
+              [(ngModel)]="tarifaSeleccionada.ubicacionNombre"
+              placeholder="Seleccione un municipio"
+              [loading]="loadingMunicipios"
+              [disabled]="!departamentoSeleccionado || loadingMunicipios"
+            />
+          </div>
+
+        
+          <!-- Categoría -->
+          <div class="col-span-1">
+            <app-select-component
+              [filter]="false"
+              label='Categoría'
+              [(ngModel)]="tarifaSeleccionada.categoriaCodigo"
+              [disabled]="loadingCategorias"
+              [style]="{ 'background': 'var(--p-surface-0)', 'color': 'var(--p-text-color)' }"
+              [options]="categoriasOptions"
+            >
+            </app-select-component>
+          </div>
+
+          <!-- Concepto -->
+          <div class="col-span-1">
+            <app-select-component
+              [filter]="false"
+              label='Concepto'
+              [(ngModel)]="tarifaSeleccionada.conceptoCodigo"
+              [disabled]="loadingConceptos"
+              [style]="{ 'background': 'var(--p-surface-0)', 'color': 'var(--p-text-color)' }"
+              [options]="conceptosOptions"
+            >
+            </app-select-component>
+          </div>
+
+          <!-- Tipo de Transporte -->
+          <div class="col-span-1" *ngIf="esConceptoTransporte">
+            <app-select-component
+              [filter]="false"
+              label='Tipo de Transporte (opcional)'
+              [(ngModel)]="tarifaSeleccionada.tipoTransporte"
+              [style]="{ 'background': 'var(--p-surface-0)', 'color': 'var(--p-text-color)' }"
+              [options]="tiposTransporteOptions"
+              [loading]="loadingTiposTransporte"
+            >
+            </app-select-component>
+          </div>
+
+          <!-- Año de Vigencia -->
+          <div class="col-span-1">
+            <app-select-component
+              [filter]="true"
+              label='Año de Vigencia'
+              [(ngModel)]="tarifaSeleccionada.anioVigencia"
+              [style]="{ 'background': 'var(--p-surface-0)', 'color': 'var(--p-text-color)' }"
+              [options]="aniosVigencia"
+            >
+            </app-select-component>
+            
+          </div>
+
+          <!-- Valor Unitario -->
+          <div class="col-span-1">
+            <label class="block mb-2 font-medium text-sm" [style]="{ 'color': 'var(--p-text-color)' }">
+              Valor Unitario *
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 font-semibold text-gray-600">
+                $
+              </span>
+              <input
+                type="text"
+                [(ngModel)]="valorUnitarioFormateado"
+                (input)="formatearValorMoneda($event)"
+                (blur)="onValorBlur()"
+                (focus)="onValorFocus()"
+                placeholder="0"
+                class="w-full pl-8 pr-4 py-2 border rounded-lg"
+                [style]="{ 
+                  'background': 'var(--p-surface-0)', 
+                  'color': 'var(--p-text-color)',
+                  'border-color': 'var(--p-surface-300)'
+                }"
+              />
+            </div>
+           
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end gap-3 mt-6 pt-4 border-top-1" [style]="{ 'border-color': 'var(--p-surface-200)' }">
+          <p-button
+            label="Limpiar Formulario"
+            icon="pi pi-refresh"
+            severity="secondary"
+            [text]="true"
+            (onClick)="limpiarFormulario()"
+            [disabled]="loading"
+          />
+          <p-button
+            label="Crear Tarifa"
+            icon="pi pi-plus"
+            severity="success"
+            (onClick)="crearTarifa()"
+            [loading]="loading"
+            [disabled]="loading || loadingCategorias || loadingConceptos || loadingMunicipios"
+          />
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <p-toast />
+</div>

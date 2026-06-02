@@ -1,0 +1,165 @@
+<p-dialog
+  [(visible)]="visible"
+  (visibleChange)="visibleChange.emit($event)"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="crear-plan-dialog"
+  [style]="{ width: '600px' }"
+  [baseZIndex]="10000"
+  [appendTo]="'body'"
+  (onHide)="onHide()"
+>
+  <ng-template pTemplate="header">
+    <div class="dialog-header">
+      <div class="header-icon">
+        <i
+          class="pi pi-folder-plus text-primary"
+          style="box-shadow: 0 4px 12px rgba(17, 69, 92, 0.4)"
+        ></i>
+      </div>
+      <span class="dialog-title">CREAR NUEVA SECCIÓN</span>
+    </div>
+  </ng-template>
+
+  <div class="dialog-content">
+    <div class="profesor-info-card">
+      <h4 class="info-title">
+        <i class="pi pi-bookmark"></i>
+        Información
+      </h4>
+      <div class="info-grid">
+        <div class="info-item">
+          <span><strong>Plantilla:</strong> {{ plantillaNombre }}</span>
+        </div>
+        <div class="info-item" *ngIf="seccionPadreNombre">
+          <span><strong>Sección Padre:</strong> {{ seccionPadreNombre }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-field">
+        <label for="nombre" class="field-label"> Nombre de la Sección </label>
+        <input
+          id="nombre"
+          type="text"
+          pInputText
+          [(ngModel)]="nuevaSeccion.nombre"
+          placeholder="Ingrese el nombre de la sección"
+          [invalid]="mostrarValidacion && !nuevaSeccion.nombre"
+          class="w-full"
+          maxlength="255"
+        />
+        @if (mostrarValidacion && !nuevaSeccion.nombre) {
+        <p-message severity="error" variant="simple" size="small"
+          >El nombre de la sección es requerido</p-message
+        >
+        }
+      </div>
+
+      <!-- Campos específicos para secciones secundarias -->
+      <div *ngIf="!esSeccionPrincipal" class="form-field">
+        <label for="concepto" class="field-label"> Concepto Asignado </label>
+        <p-inputnumber
+          id="concepto"
+          [(ngModel)]="nuevaSeccion.concepto"
+          [min]="0"
+          [showButtons]="false"
+          buttonLayout="vertical"
+          spinnerMode="vertical"
+          inputId="vertical"
+          [useGrouping]="false"
+          class="w-full"
+          placeholder="Ingrese el concepto asignado"
+        >
+        </p-inputnumber>
+        @if (mostrarValidacion && !nuevaSeccion.concepto) {
+        <p-message severity="error" variant="simple" size="small"
+          >El concepto es requerido</p-message
+        >
+        }
+      </div>
+
+      <div *ngIf="!esSeccionPrincipal" class="form-field">
+        <label
+          class="field-label"
+          style="display: block; margin-bottom: 0.5rem"
+        >
+          Características
+        </label>
+        <div class="flex align-items-center gap-4">
+          <div class="flex items-center">
+            <p-checkbox
+              [(ngModel)]="nuevaSeccion.seccionCursos"
+              [binary]="true"
+              inputId="seccionCursos"
+              (onChange)="onCambioSeccionCursos()"
+              [disabled]="existeSeccionCursos"
+            ></p-checkbox>
+            <label
+              for="seccionCursos"
+              class="cursor-pointer ml-2"
+              [ngClass]="{'text-primary font-semibold': nuevaSeccion.seccionCursos}"
+              style="transition: color 0.2s"
+            >
+              Requiere cursos
+              <span
+                *ngIf="existeSeccionCursos"
+                style="color: #f44336; font-size: 0.85em; margin-left: 0.5em"
+              >
+                (Ya existe una sección con cursos)
+              </span>
+            </label>
+          </div>
+          <div class="flex items-center">
+            <p-checkbox
+              [(ngModel)]="nuevaSeccion.seccionInvestigativa"
+              [binary]="true"
+              inputId="seccionInvestigativa"
+              [style]="{ marginLeft: '0.5rem' }"
+              (onChange)="onCambioSeccionInvestigativa()"
+            ></p-checkbox>
+            <label
+              for="seccionInvestigativa"
+              class="cursor-pointer ml-2"
+              [ngClass]="{'text-primary font-semibold': nuevaSeccion.seccionInvestigativa}"
+              style="transition: color 0.2s"
+            >
+              Requiere investigación
+            </label>
+          </div>
+        </div>
+        @if (mostrarErrorTipoSeccion) {
+        <p-message severity="error" variant="simple" size="small"
+          >La sección solo puede ser de un tipo</p-message
+        >
+        }
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        type="button"
+        pButton
+        label="Cancelar"
+        icon="pi pi-times"
+        class="p-button-outlined p-button-secondary"
+        (click)="onCancelar()"
+        [disabled]="guardando"
+      ></button>
+      <button
+        type="button"
+        pButton
+        label="Guardar Sección"
+        icon="pi pi-check"
+        class="p-button-success"
+        (click)="onGuardar()"
+        [loading]="guardando"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>

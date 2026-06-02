@@ -1,0 +1,2135 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="mb-4">
+  <p-button
+    label="Volver a Inicio"
+    icon="pi pi-arrow-left"
+    severity="secondary"
+    (onClick)="volverAInicio()"
+    [outlined]="true"
+    styleClass="w-auto">
+  </p-button>
+</div>
+
+<p-card
+  class="w-full max-w-8xl mx-auto"
+  [style]="{
+    'background': 'var(--p-surface-50)',
+    'border': '1px solid var(--p-border)',
+    'box-shadow': 'var(--p-elevation-2)'
+  }"
+>
+  <!-- Panel de Filtros y Controles -->
+  <div class="mb-6">
+    <div
+      class="p-6 rounded-xl border-2 shadow-lg"
+      [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+      }"
+    >
+      <!-- Encabezado del panel -->
+      <div class="text-center mb-6">
+        <h2
+          class="text-3xl font-bold mb-2"
+          [style]="{ color: 'var(--p-text-color)' }"
+        >
+          Gestión de Aprobaciones de Viáticos
+        </h2>
+        <p
+          class="text-base opacity-80"
+          [style]="{ color: 'var(--p-text-color)' }"
+        >
+          Gestión de solicitudes de viáticos de tu equipo: revisar y consultar detalles
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        <!-- Columna 1: Filtros Principales -->
+        <div class="xl:col-span-3">
+          <div
+            class="p-5 rounded-lg border"
+            [style]="{
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            <div class="flex items-center gap-2 mb-5">
+              <h4
+                class="text-lg font-semibold m-0"
+                [style]="{ color: 'var(--p-text-color)' }"
+              >
+                Criterios de Búsqueda
+              </h4>
+            </div>
+
+            <div class="space-y-5" [formGroup]="filtroForm">
+              <!-- Buscar - Ocupa toda la fila -->
+              <!-- Búsqueda General -->
+              <div class="mb-5">
+                <label for="texto-input" class="block text-sm font-medium mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                  Búsqueda General
+                </label>
+                <input
+                  pInputText
+                  id="texto-input"
+                  formControlName="texto"
+                  placeholder="Buscar por nombre, Identificación o código..."
+                  class="w-full"
+                />
+              </div>
+
+              <!-- Estado -->
+              <div>
+                <label for="estado-select" class="block text-sm font-medium mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                  Estado
+                </label>
+                <p-select
+                  id="estado-select"
+                  formControlName="estado"
+                  [options]="opcionesEstado"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Todos los estados"
+                  class="w-full"
+                  [showClear]="true"
+                ></p-select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna 2: Panel de Acciones -->
+        <div class="xl:col-span-1">
+          <div
+            class="p-4 rounded-lg border h-full"
+            [style]="{
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            <div class="flex items-center gap-2 mb-4">
+              <h4
+                class="text-base font-semibold m-0"
+                [style]="{ color: 'var(--p-text-color)' }"
+              >
+                Acciones
+              </h4>
+            </div>
+
+            <div class="space-y-3">
+              <!-- Botón Limpiar Filtros -->
+              <button
+                pButton
+                label="Limpiar Filtros"
+                icon="pi pi-filter-slash"
+                class="w-full p-button-outlined p-button-secondary"
+                (click)="limpiarFiltros()"
+                aria-label="Limpiar todos los filtros aplicados"
+              >
+                <span class="sr-only">Limpiar Filtros</span>
+              </button>
+
+              <!-- Botón Actualizar Lista -->
+              <button
+                pButton
+                label="Actualizar Lista"
+                icon="pi pi-refresh"
+                class="w-full p-button-lg"
+                [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+                  'border': 'none',
+                  'color': 'white'
+                }"
+                (click)="cargarAprobaciones()"
+                [disabled]="cargando"
+                aria-label="Actualizar la lista de solicitudes"
+              >
+                <span class="sr-only">Actualizar Lista</span>
+              </button>
+
+              <!-- Botón Archivo Plano General -->
+              <button
+                pButton
+                label="Archivo Plano General"
+                icon="pi pi-file-export"
+                class="w-full p-button-lg"
+                [style]="{
+                  'background': 'linear-gradient(135deg, #10b981, #059669)',
+                  'border': 'none',
+                  'color': 'white',
+                  'font-weight': '600'
+                }"
+                (click)="generarArchivoPlanoGeneral()"
+                [disabled]="cargando || solicitudesFiltradas.length === 0"
+                [pTooltip]="solicitudesFiltradas.length === 0 ? 'No hay solicitudes para exportar' : 'Generar archivo CSV con todas las solicitudes filtradas'"
+                tooltipPosition="left"
+                aria-label="Generar archivo plano general con todas las solicitudes"
+              >
+                <span class="sr-only">Archivo Plano General</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tarjetas KPI de Estadísticas -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <!-- Total -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-blue-600/50': filtroForm.get('estado')?.value === '',
+        'ring-2 ring-blue-600/25': filtroForm.get('estado')?.value !== ''
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('')"
+      (keydown.enter)="filtrarPorEstado('')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Total Solicitudes</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.total }}</p>
+        </div>
+        <div class="w-16 h-16 bg-blue-200 dark:bg-blue-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-chart-line text-blue-600 dark:text-blue-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aprobadas -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-green-600/50': filtroForm.get('estado')?.value === 'aprobado',
+        'ring-2 ring-green-600/25': filtroForm.get('estado')?.value !== 'aprobado'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('aprobado')"
+      (keydown.enter)="filtrarPorEstado('aprobado')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Aprobadas</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.aprobadas }}</p>
+        </div>
+        <div class="w-16 h-16 bg-green-200 dark:bg-green-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-check-circle text-green-600 dark:text-green-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pendientes -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-yellow-600/50': filtroForm.get('estado')?.value === 'pendiente',
+        'ring-2 ring-yellow-600/25': filtroForm.get('estado')?.value !== 'pendiente'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('pendiente')"
+      (keydown.enter)="filtrarPorEstado('pendiente')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Pendientes</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.pendientes }}</p>
+        </div>
+        <div class="w-16 h-16 bg-yellow-200 dark:bg-yellow-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-clock text-yellow-600 dark:text-yellow-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rechazadas -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-red-600/50': filtroForm.get('estado')?.value === 'rechazado',
+        'ring-2 ring-red-600/25': filtroForm.get('estado')?.value !== 'rechazado'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('rechazado')"
+      (keydown.enter)="filtrarPorEstado('rechazado')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Rechazadas</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.rechazadas }}</p>
+        </div>
+        <div class="w-16 h-16 bg-red-200 dark:bg-red-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-times-circle text-red-600 dark:text-red-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagadas -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-purple-600/50': filtroForm.get('estado')?.value === 'pagado',
+        'ring-2 ring-purple-600/25': filtroForm.get('estado')?.value !== 'pagado'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('pagado')"
+      (keydown.enter)="filtrarPorEstado('pagado')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Pagadas</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.pagadas }}</p>
+        </div>
+        <div class="w-16 h-16 bg-purple-200 dark:bg-purple-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-money-bill text-purple-600 dark:text-purple-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Resultados -->
+  <div
+    class="rounded-xl border-2 shadow-lg overflow-hidden"
+    [style]="{
+      'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+      'border-color': 'var(--p-primary-200)',
+      'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+    }"
+  >
+    <!-- Encabezado de la tabla -->
+    <div
+      class="px-6 py-4 border-b"
+      [style]="{
+        'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+        'border-color': 'var(--p-primary-300)'
+      }"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-list text-3xl text-white"></i>
+          <div>
+            <h3 class="text-xl font-bold text-white m-0">Aprobaciones de Viáticos</h3>
+            <p class="text-sm text-white opacity-90 m-0 mt-1">{{ solicitudesFiltradas.length }} solicitudes encontradas</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <p-tag 
+            [value]="'Actualizado'" 
+            severity="success"
+            [style]="{ 'font-size': '0.75rem' }"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido de la tabla -->
+    <div class="relative">
+      <!-- Loading overlay -->
+      <div
+        *ngIf="cargando"
+        class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm z-10"
+        [style]="{ 'background': 'rgba(255,255,255,0.95)' }"
+      >
+        <p-progressSpinner
+          styleClass="w-16 h-16"
+          [style]="{ 'animation-duration': '1s' }"
+        ></p-progressSpinner>
+        <p
+          class="mt-4 text-lg font-semibold"
+          [style]="{ color: 'var(--p-text-color)' }"
+        >
+          Cargando aprobaciones...
+        </p>
+      </div>
+
+      <div class="p-4">
+        <p-table
+          [value]="solicitudesFiltradas"
+          [loading]="cargando"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[10, 25, 50]"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} solicitudes"
+          responsiveLayout="scroll"
+          dataKey="codigoSolicitud"
+          [tableStyle]="{ 'min-width': '1200px' }"
+          sortMode="multiple"
+          class="overflow-x-auto"
+          [style]="{
+            '--p-datatable-header-background': 'var(--p-surface-100)',
+            '--p-datatable-header-border-color': 'var(--p-border-color)',
+            '--p-datatable-row-background': 'var(--p-surface-0)',
+            '--p-datatable-row-hover-background': 'var(--p-surface-50)'
+          }"
+        >
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8" class="text-center py-8">
+                <div class="flex flex-col items-center gap-3">
+                  <i class="pi pi-inbox text-6xl opacity-30" [style]="{ color: 'var(--p-text-muted)' }"></i>
+                  <div>
+                    <p class="text-xl font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                      No hay aprobaciones disponibles
+                    </p>
+                    <p class="text-sm opacity-60" [style]="{ color: 'var(--p-text-color)' }">
+                      Intenta ajustar los filtros de búsqueda
+                    </p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="header">
+        <tr>
+          <th 
+            style="width: 3%"
+            class="font-semibold"
+            [style]="{
+              'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+              'border-color': 'var(--p-border-color)',
+              'color': 'var(--p-text-color)',
+              'padding': '1rem 0.75rem'
+            }"
+          ></th>
+          <th 
+            pSortableColumn="codigoSolicitud" 
+            style="width: 14%"
+            class="font-semibold"
+            [style]="{
+              'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+              'border-color': 'var(--p-border-color)',
+              'color': 'var(--p-text-color)',
+              'padding': '1rem 0.75rem'
+            }"
+          >
+            <div class="flex items-center gap-2">Código Solicitud</div>
+            <p-sortIcon field="codigoSolicitud" />
+          </th>
+          <th 
+            style="width: 10%"
+            class="font-semibold"
+            [style]="{
+              'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+              'border-color': 'var(--p-border-color)',
+              'color': 'var(--p-text-color)',
+              'padding': '1rem 0.75rem'
+            }"
+          >
+            <div class="flex items-center gap-2">Estado de Aprobaciones</div>
+          </th>
+          <th 
+            pSortableColumn="estadoSolicitud" 
+            style="width: 10%"
+            class="font-semibold"
+            [style]="{
+              'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+              'border-color': 'var(--p-border-color)',
+              'color': 'var(--p-text-color)',
+              'padding': '1rem 0.75rem'
+            }"
+          >
+            <div class="flex items-center gap-2">Estado Actual</div>
+            <p-sortIcon field="estadoSolicitud" />
+          </th>
+          <th 
+            pSortableColumn="fechaCreacion" 
+            style="width: 12%"
+            class="font-semibold"
+            [style]="{
+              'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+              'border-color': 'var(--p-border-color)',
+              'color': 'var(--p-text-color)',
+              'padding': '1rem 0.75rem'
+            }"
+          >
+            <div class="flex items-center gap-2">Fecha Creación</div>
+            <p-sortIcon field="fechaCreacion" />
+          </th>
+          <th 
+            pSortableColumn="fechaUltimaAccion" 
+            style="width: 12%"
+            class="font-semibold"
+            [style]="{
+              'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+              'border-color': 'var(--p-border-color)',
+              'color': 'var(--p-text-color)',
+              'padding': '1rem 0.75rem'
+            }"
+          >
+            <div class="flex items-center gap-2">Última Acción</div>
+            <p-sortIcon field="fechaUltimaAccion" />
+          </th>
+          <th 
+            style="width: 8%"
+            class="font-semibold"
+            [style]="{
+              'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+              'border-color': 'var(--p-border-color)',
+              'color': 'var(--p-text-color)',
+              'padding': '1rem 0.75rem'
+            }"
+          >
+            <div class="flex items-center gap-2">Progreso</div>
+          </th>
+          <th 
+            style="width: 8%"
+            class="font-semibold text-center"
+            [style]="{
+              'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+              'border-color': 'var(--p-border-color)',
+              'color': 'var(--p-text-color)',
+              'padding': '1rem 0.75rem'
+            }"
+          >
+            <div class="flex items-center justify-center gap-2">Acciones</div>
+          </th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-solicitud let-expanded="expanded" let-rowIndex="rowIndex">
+        <!-- Fila Principal -->
+        <tr 
+          class="solicitud-row transition-all duration-200 hover:shadow-sm" 
+          [class.row-expanded]="expanded"
+          [style]="{
+            'background': rowIndex % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-25)',
+            'border-bottom': '1px solid var(--p-border-color)'
+          }"
+        >
+          <td class="py-4 px-3">
+            <button
+              type="button"
+              pButton
+              pRipple
+              [pRowToggler]="solicitud"
+              class="p-button-text p-button-rounded p-button-plain"
+              [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+              [attr.aria-label]="expanded ? 'Contraer detalles' : 'Expandir detalles'"
+            >
+              <span class="sr-only">{{ expanded ? 'Contraer' : 'Expandir' }}</span>
+            </button>
+          </td>
+          <td class="py-4 px-3">
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-file-edit text-primary text-xl"></i>
+              <span class="font-bold" [style]="{ color: 'var(--p-text-color)' }">{{ solicitud.codigoSolicitud }}</span>
+            </div>
+          </td>
+          <td class="py-4 px-3">
+            <div class="flex gap-3 justify-content-center align-items-center">
+              <div class="flex align-items-center gap-1" *ngIf="solicitud.nivelesAprobados > 0">
+                <i class="pi pi-play-circle text-green-600 text-lg"></i>
+                <span class="text-green-600 font-semibold">{{ solicitud.nivelesAprobados }}</span>
+              </div>
+              <div class="flex align-items-center gap-1" *ngIf="solicitud.nivelesPendientes > 0">
+                <i class="pi pi-pause-circle text-orange-600 text-lg"></i>
+                <span class="text-orange-600 font-semibold">{{ solicitud.nivelesPendientes }}</span>
+              </div>
+              <div class="flex align-items-center gap-1" *ngIf="solicitud.nivelesRechazados > 0">
+                <i class="pi pi-times-circle text-red-600 text-lg"></i>
+                <span class="text-red-600 font-semibold">{{ solicitud.nivelesRechazados }}</span>
+              </div>
+            </div>
+          </td>
+          <td class="py-4 px-3">
+            <p-tag
+              [value]="obtenerTextoEstado(solicitud.estadoSolicitud || 'pendiente')"
+              [severity]="obtenerSeveridadEstado(solicitud.estadoSolicitud || 'pendiente')"
+            />
+          </td>
+          <td class="py-4 px-3">
+            <span class="text-sm" [style]="{ color: 'var(--p-text-color)' }" *ngIf="solicitud.fechaCreacion">
+              {{ solicitud.fechaCreacion | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+            <span class="text-sm opacity-60" [style]="{ color: 'var(--p-text-color)' }" *ngIf="!solicitud.fechaCreacion">-</span>
+          </td>
+          <td class="py-4 px-3">
+            <span class="text-sm" [style]="{ color: 'var(--p-text-color)' }" *ngIf="solicitud.fechaUltimaAccion">
+              {{ solicitud.fechaUltimaAccion | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+            <span class="text-sm opacity-60" [style]="{ color: 'var(--p-text-color)' }" *ngIf="!solicitud.fechaUltimaAccion">-</span>
+          </td>
+          <td class="py-4 px-3">
+            <div class="flex align-items-center gap-2">
+              <div class="w-full">
+                <p-progressbar 
+                  [value]="(solicitud.nivelesAprobados / solicitud.totalNiveles) * 100"
+                  [showValue]="false"
+                  [style]="{ height: '8px' }"
+                />
+              </div>
+              <span class="text-xs white-space-nowrap" [style]="{ color: 'var(--p-text-color)' }">
+                {{ solicitud.nivelesAprobados }}/{{ solicitud.totalNiveles }}
+              </span>
+            </div>
+          </td>
+          <td class="py-4 px-3">
+            <div class="flex gap-1 justify-center">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-eye"
+                class="p-button-rounded p-button-text p-button-sm p-button-info"
+                pTooltip="Ver detalle completo"
+                tooltipPosition="left"
+                (click)="verDetalleSolicitudAgrupada(solicitud.codigoSolicitud)"
+                aria-label="Ver detalle completo"
+              >
+                <span class="sr-only">Ver detalle</span>
+              </button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-text p-button-sm p-button-warning"
+                pTooltip="Editar solicitud"
+                tooltipPosition="left"
+                (click)="editarSolicitudDirecta(solicitud.codigoSolicitud)"
+                aria-label="Editar solicitud"
+              >
+                <span class="sr-only">Editar</span>
+              </button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-file-pdf"
+                class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                pTooltip="Descargar PDF"
+                tooltipPosition="left"
+                (click)="descargarPDFDirecto(solicitud.codigoSolicitud)"
+                aria-label="Descargar PDF"
+              >
+                <span class="sr-only">Descargar PDF</span>
+              </button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-file-excel"
+                class="p-button-rounded p-button-text p-button-sm p-button-success"
+                pTooltip="Exportar archivo plano con distribución por centro de costo"
+                tooltipPosition="left"
+                (click)="prepararDistribucionCSVSolicitud(solicitud.codigoSolicitud)"
+                aria-label="Exportar archivo plano"
+              >
+                <span class="sr-only">Exportar archivo plano</span>
+              </button>
+              <button
+                *ngIf="solicitud.estadoSolicitud === 'aprobado'"
+                pButton
+                type="button"
+                icon="pi pi-money-bill"
+                class="p-button-rounded p-button-text p-button-sm"
+                pTooltip="Marcar como Pagado"
+                tooltipPosition="left"
+                (click)="marcarComoPagado(solicitud.codigoSolicitud)"
+                aria-label="Marcar como pagado"
+                [style]="{ color: 'var(--p-green-600)' }"
+              >
+                <span class="sr-only">Marcar como Pagado</span>
+              </button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-ban"
+                class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                pTooltip="Anular Viático"
+                tooltipPosition="left"
+                (click)="anularSolicitud(solicitud.codigoSolicitud)"
+                aria-label="Anular viático"
+              >
+                <span class="sr-only">Anular Viático</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Fila Expandida con Detalles de Aprobaciones -->
+        <tr 
+          *ngIf="expanded" 
+          class="detalle-aprobaciones-row"
+          [style]="{
+            'background': 'var(--p-surface-50)',
+            'border-bottom': '1px solid var(--p-border-color)'
+          }"
+        >
+          <td colspan="8">
+            <div 
+              class="p-3 border-round"
+              [style]="{
+                'background': 'var(--p-surface-100)',
+                'border': '1px solid var(--p-border-color)'
+              }"
+            >
+              <h5 class="mt-0 mb-3" [style]="{ color: 'var(--p-primary-color)' }">
+                <i class="pi pi-list mr-2"></i>
+                Detalle de Aprobaciones por Nivel
+              </h5>
+              <div class="grid">
+                <div 
+                  class="col-12 md:col-6 lg:col-3 mb-2"
+                  *ngFor="let aprobacion of solicitud.aprobaciones"
+                >
+                  <div 
+                    class="aprobacion-card p-3 border-round shadow-1 h-full"
+                    [class.aprobado]="aprobacion.estado === 'aprobado'"
+                    [class.rechazado]="aprobacion.estado === 'rechazado'"
+                    [class.pendiente]="aprobacion.estado === 'pendiente'"
+                    [style]="{
+                      'background': 'var(--p-surface-0)',
+                      'border': '1px solid var(--p-border-color)'
+                    }"
+                  >
+                    <div class="flex justify-content-between align-items-start mb-2">
+                      <div class="font-bold" [style]="{ color: 'var(--p-primary-color)' }">
+                        Nivel {{ aprobacion.nivelAprobacion }}
+                      </div>
+                      <p-tag
+                        [value]="obtenerTextoEstado(aprobacion.estado)"
+                        [severity]="obtenerSeveridadEstado(aprobacion.estado)"
+                        styleClass="text-xs"
+                      />
+                    </div>
+                    <div class="text-xs font-semibold mb-2" [style]="{ color: 'var(--p-primary-color)' }">
+                      {{ aprobacion.aprobadorCargo || 'Pendiente asignación' }}
+                    </div>
+                    <div class="text-sm mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                      <strong>{{ aprobacion.aprobadorNombre || 'Sin asignar' }}</strong>
+                    </div>
+                    <div class="text-xs mb-1 opacity-60" [style]="{ color: 'var(--p-text-color)' }" *ngIf="aprobacion.aprobadorIdentificacion">
+                      {{ aprobacion.aprobadorIdentificacion }}
+                    </div>
+                    <div class="mt-2 pt-2" [style]="{ 'border-top': '1px solid var(--p-border-color)' }">
+                      <div class="text-xs opacity-70" [style]="{ color: 'var(--p-text-color)' }" *ngIf="aprobacion.fechaAprobacion">
+                        <i class="pi pi-calendar mr-1"></i>
+                        {{ aprobacion.fechaAprobacion | date: 'dd/MM/yyyy HH:mm' }}
+                      </div>
+                      <div class="text-xs opacity-60 italic" [style]="{ color: 'var(--p-text-color)' }" *ngIf="!aprobacion.fechaAprobacion">
+                        Sin respuesta
+                      </div>
+                    </div>
+                    <div class="mt-2" *ngIf="aprobacion.observaciones">
+                      <div class="text-xs font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">Observaciones:</div>
+                      <div class="text-xs line-height-3 opacity-70" [style]="{ color: 'var(--p-text-color)' }">
+                        {{ aprobacion.observaciones }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+      </div>
+    </div>
+  </div>
+</p-card>
+
+<!-- Diálogo de Detalle de Solicitud -->
+<!-- DIÁLOGO DE DETALLE COMPLETO (SOLO LECTURA) -->
+<p-dialog
+    [(visible)]="mostrarDialogoDetalle"
+    [modal]="true"
+    [style]="{ width: '90vw', maxWidth: '1400px' }"
+    [closable]="true"
+    (onHide)="cerrarDialogoDetalle()"
+    [dismissableMask]="true"
+  >
+    <ng-template pTemplate="header">
+      <div class="flex align-items-center gap-3">
+        <i class="pi pi-eye text-3xl" [style]="{ color: 'var(--primary-color)' }"></i>
+        <div>
+          <h3 class="m-0 text-2xl font-bold" [style]="{ color: 'white' }">
+            Detalle Completo de Solicitud
+          </h3>
+          <p class="m-0 mt-1 text-sm opacity-90" [style]="{ color: 'white' }">
+            {{ solicitudSeleccionada?.codigoSolicitud || '' }}
+          </p>
+        </div>
+      </div>
+    </ng-template>
+
+    <div *ngIf="solicitudSeleccionada" class="surface-ground">
+      <!-- INFORMACIÓN DEL SOLICITANTE -->
+      <p-card class="mb-4 border-none shadow-3" [style]="{
+          'background': 'var(--p-surface-50)',
+          'border': '2px solid var(--p-surface-200)',
+          'border-radius': '12px'
+        }">
+        <h4 class="text-lg font-semibold mb-4 pb-2 border-bottom-1" [style]="{
+            color: 'var(--primary-color)',
+            'border-color': 'var(--p-surface-300)'
+          }">
+          <i class="pi pi-user mr-2"></i>
+          Información del Solicitante
+        </h4>
+
+        <div class="flex gap-4">
+          <div class="flex-1">
+            <div class="mb-3">
+              <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                Nombre Completo
+              </div>
+              <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+                {{ obtenerNombreCompleto(solicitudSeleccionada) }}
+              </p>
+            </div>
+          </div>
+          <div class="flex-1">
+            <div class="mb-3">
+              <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                Identificación
+              </div>
+              <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+                {{ solicitudSeleccionada.identificacion || solicitudSeleccionada.nit }}
+              </p>
+            </div>
+          </div>
+          <div class="flex-1">
+            <div class="mb-3">
+              <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                Cargo
+              </div>
+              <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+                {{ solicitudSeleccionada.cargo || 'N/A' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- INFORMACIÓN DEL VIAJE -->
+      <p-card class="mb-4 border-none shadow-3" [style]="{
+          'background': 'var(--p-surface-50)',
+          'border': '2px solid var(--p-surface-200)',
+          'border-radius': '12px'
+        }">
+        <h4 class="text-lg font-semibold mb-4 pb-2 border-bottom-1" [style]="{
+            color: 'var(--primary-color)',
+            'border-color': 'var(--p-surface-300)'
+          }">
+          <i class="pi pi-map-marker mr-2"></i>
+          Información del Viaje
+        </h4>
+
+        <!-- Primer destino -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+          <div class="mb-3">
+            <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+              Destino
+            </div>
+            <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+              <i class="pi pi-map-marker mr-2 text-sm" [style]="{ color: 'var(--primary-color)' }"></i>
+              {{ obtenerDestinoCompleto(solicitudSeleccionada) }}
+            </p>
+          </div>
+          <div class="mb-3">
+            <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+              Fecha de Salida
+            </div>
+            <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+              <i class="pi pi-calendar mr-2 text-sm" [style]="{ color: 'var(--primary-color)' }"></i>
+              {{ solicitudSeleccionada.fechaSalida | date:'dd/MM/yyyy' }}
+            </p>
+          </div>
+          <div class="mb-3">
+            <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+              Fecha de Llegada
+            </div>
+            <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+              <i class="pi pi-calendar mr-2 text-sm" [style]="{ color: 'var(--primary-color)' }"></i>
+              {{ (solicitudSeleccionada.destinos && solicitudSeleccionada.destinos.length > 0 ? solicitudSeleccionada.destinos[0].fechaLlegada : null) | date:'dd/MM/yyyy' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Destinos adicionales -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3" *ngIf="solicitudSeleccionada.destinos && solicitudSeleccionada.destinos.length > 1">
+          <ng-container *ngFor="let destino of solicitudSeleccionada.destinos?.slice(1); let i = index">
+            <div class="mb-3">
+              <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                Destino {{ i + 2 }}
+              </div>
+              <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+                <i class="pi pi-map-marker mr-2 text-sm" [style]="{ color: 'var(--primary-color)' }"></i>
+                {{ obtenerNombreUbicacion(destino.municipio) }}
+              </p>
+            </div>
+            <div class="mb-3">
+              <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                Fecha de Salida {{ i + 2 }}
+              </div>
+              <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+                <i class="pi pi-calendar mr-2 text-sm" [style]="{ color: 'var(--primary-color)' }"></i>
+                {{ destino.fechaSalida | date:'dd/MM/yyyy' }}
+              </p>
+            </div>
+            <div class="mb-3">
+              <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                Fecha de Llegada {{ i + 2 }}
+              </div>
+              <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+                <i class="pi pi-calendar mr-2 text-sm" [style]="{ color: 'var(--primary-color)' }"></i>
+                {{ destino.fechaLlegada | date:'dd/MM/yyyy' }}
+              </p>
+            </div>
+          </ng-container>
+        </div>
+        
+        <div class="mb-3 p-4 text-center" [style]="{ 
+            'background': 'var(--p-surface-0)', 
+            'border': '3px solid var(--p-green-500)',
+            'border-radius': '12px',
+            'box-shadow': '0 2px 8px rgba(0,0,0,0.1)'
+          }">
+          <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+            <i class="pi pi-dollar mr-2"></i>
+            Valor Total de Viáticos
+          </div>
+          <p class="m-0 text-2xl font-bold" [style]="{ color: 'var(--p-green-600)' }">
+            {{ solicitudSeleccionada.valorTotalViaticos | currency:'COP':'symbol-narrow':'1.0-0' }}
+          </p>
+        </div>
+      </p-card>
+
+      <!-- ARCHIVOS ADJUNTOS -->
+      <p-card class="mb-4 border-none shadow-3" [style]="{
+          'background': 'var(--p-surface-50)',
+          'border': '2px solid var(--p-surface-200)',
+          'border-radius': '12px'
+        }">
+        <h4 class="text-lg font-semibold mb-4 pb-2 border-bottom-1" [style]="{
+            color: 'var(--primary-color)',
+            'border-color': 'var(--p-surface-300)'
+          }">
+          <i class="pi pi-paperclip mr-2"></i>
+          Archivos Adjuntos
+        </h4>
+
+        <!-- Loading -->
+        <div *ngIf="cargandoArchivos" class="flex flex-col items-center justify-center py-8">
+          <p-progressSpinner [style]="{ width: '40px', height: '40px' }" strokeWidth="4"></p-progressSpinner>
+          <p class="mt-3 text-sm opacity-70">Cargando archivos...</p>
+        </div>
+
+        <!-- Sin archivos -->
+        <div *ngIf="!cargandoArchivos && archivosSolicitud.length === 0" class="text-center py-8">
+          <div class="flex flex-col items-center gap-3">
+            <div
+              class="w-14 h-14 rounded-full flex items-center justify-center"
+              [style]="{ 'background': 'var(--p-surface-200)' }"
+            >
+              <i class="pi pi-inbox text-xl opacity-50" [style]="{ color: 'var(--p-text-color)' }"></i>
+            </div>
+            <div>
+              <p class="font-semibold text-base mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                Sin archivos adjuntos
+              </p>
+              <p class="text-sm opacity-70">Esta solicitud no tiene archivos adjuntos</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de archivos -->
+        <div *ngIf="!cargandoArchivos && archivosSolicitud.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div
+            *ngFor="let archivo of archivosSolicitud"
+            class="archivo-item p-3 rounded-lg border transition-all hover:shadow-md"
+            [style]="{
+              'border-color': 'var(--p-border-color)',
+              'background': 'var(--p-surface-0)'
+            }"
+          >
+            <div class="flex items-center gap-3">
+              <!-- Icono del archivo -->
+              <div
+                class="archivo-icono w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                [style]="{ 'background': 'var(--p-surface-100)' }"
+              >
+                <i
+                  [class]="'pi pi-' + obtenerIconoArchivo(archivo) + ' text-xl'"
+                  [style]="{ color: 'var(--p-primary-500)' }"
+                ></i>
+              </div>
+
+              <!-- Información del archivo -->
+              <div class="flex-1 min-w-0">
+                <h5 class="font-semibold text-sm mb-1 truncate" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ archivo.nombreArchivo }}
+                </h5>
+                <div class="flex items-center gap-2 text-xs opacity-70">
+                  <span class="flex items-center gap-1">
+                    <i class="pi pi-calendar" style="font-size: 0.65rem;"></i>
+                    {{ archivo.fechaSubida | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <i class="pi pi-database" style="font-size: 0.65rem;"></i>
+                    {{ formatearTamanio(archivo.tamanio) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Botones de acción -->
+              <div class="flex gap-2">
+                <!-- Botón de vista previa -->
+                <button
+                  *ngIf="esPrevisualizable(archivo.tipoArchivo || '')"
+                  pButton
+                  pRipple
+                  icon="pi pi-eye"
+                  class="p-button-rounded p-button-text p-button-sm"
+                  (click)="previsualizarArchivo(archivo)"
+                  [pTooltip]="'Vista previa'"
+                  tooltipPosition="top"
+                ></button>
+
+                <!-- Botón de descarga -->
+                <button
+                  pButton
+                  pRipple
+                  icon="pi pi-download"
+                  class="p-button-rounded p-button-text p-button-sm"
+                  (click)="descargarArchivo(archivo)"
+                  [pTooltip]="'Descargar ' + archivo.nombreArchivo"
+                  tooltipPosition="top"
+                ></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- ESTADO Y OBSERVACIONES GENERALES -->
+      <p-card class="mb-4 border-none shadow-3" [style]="{
+          'background': 'var(--p-surface-50)',
+          'border': '2px solid var(--p-surface-200)',
+          'border-radius': '12px'
+        }">
+        <h4 class="text-lg font-semibold mb-4 pb-2 border-bottom-1" [style]="{
+            color: 'var(--primary-color)',
+            'border-color': 'var(--p-surface-300)'
+          }">
+          <i class="pi pi-info-circle mr-2"></i>
+          Estado de la Solicitud
+        </h4>
+
+        <div class="flex gap-3">
+          <div class="flex-1">
+            <div class="mb-3 text-center">
+              <div class="block text-sm font-semibold mb-3" [style]="{ color: 'var(--p-text-color)' }">
+                Estado Actual
+              </div>
+              <div class="inline-block px-6 py-3 rounded-lg font-bold text-2xl"
+                   [style]="{
+                     'background': 'white',
+                     'color': 'var(--p-blue-500)',
+                     'border': '2px solid var(--p-blue-500)'
+                   }">
+                {{ obtenerTextoEstado(solicitudSeleccionada.estado || 'pendiente') }}
+              </div>
+            </div>
+          </div>
+          <div class="flex-1" *ngIf="solicitudSeleccionada.observaciones">
+            <div class="mb-3 p-4 h-full" [style]="{ 
+                'background': 'var(--p-surface-0)', 
+                'border': '3px solid var(--p-blue-500)',
+                'border-radius': '12px',
+                'box-shadow': '0 2px 8px rgba(0,0,0,0.1)'
+              }">
+              <div class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                <i class="pi pi-comment mr-2"></i>
+                Observaciones Generales
+              </div>
+              <p class="m-0 text-base line-height-3" [style]="{ color: 'var(--p-text-color)' }">
+                {{ solicitudSeleccionada.observaciones }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- HISTORIAL DE APROBACIONES -->
+      <p-card 
+        *ngIf="aprobacionesSolicitudSeleccionada.length > 0"
+        class="mb-4 border-none shadow-3" 
+        [style]="{
+          'background': 'var(--p-surface-50)',
+          'border': '2px solid var(--p-surface-200)',
+          'border-radius': '12px'
+        }">
+        <h4 class="text-lg font-semibold mb-4 pb-2 border-bottom-1" [style]="{
+            color: 'var(--primary-color)',
+            'border-color': 'var(--p-surface-300)'
+          }">
+          <i class="pi pi-history mr-2"></i>
+          Historial de Aprobaciones
+        </h4>
+
+        <div class="flex flex-wrap gap-3">
+          <div 
+            style="flex: 0 0 calc(33.333% - 1rem); min-width: 300px;"
+            *ngFor="let aprobacion of aprobacionesSolicitudSeleccionada; let i = index"
+          >
+            <div class="p-4 h-full" 
+                 [style]="{ 
+                   'background': 'var(--p-surface-0)',
+                   'border': '3px solid', 
+                   'border-color': aprobacion.estado === 'aprobado' ? 'var(--p-green-500)' : 
+                                 aprobacion.estado === 'rechazado' ? 'var(--p-red-500)' : 
+                                 'var(--p-orange-500)',
+                   'border-radius': '12px',
+                   'box-shadow': '0 2px 8px rgba(0,0,0,0.1)'
+                 }">
+              <div class="flex justify-content-between align-items-start mb-3">
+                <div class="flex align-items-center gap-2">
+                  <i 
+                    class="pi text-xl"
+                    [class.pi-check-circle]="aprobacion.estado === 'aprobado'"
+                    [class.pi-times-circle]="aprobacion.estado === 'rechazado'"
+                    [class.pi-clock]="aprobacion.estado === 'pendiente'"
+                    [style]="{ color: aprobacion.estado === 'aprobado' ? 'var(--p-green-600)' : 
+                                     aprobacion.estado === 'rechazado' ? 'var(--p-red-600)' : 
+                                     'var(--p-orange-600)' }"
+                  ></i>
+                  <div>
+                    <div class="font-bold text-lg" [style]="{ color: 'var(--p-text-color)' }">
+                      Nivel {{ aprobacion.nivelAprobacion }}
+                    </div>
+                    <div class="text-xs font-semibold" [style]="{ color: 'var(--p-primary-600)' }">
+                      {{ aprobacion.aprobadorCargo || 'Pendiente de asignación' }}
+                    </div>
+                  </div>
+                </div>
+                <p-tag
+                  [value]="obtenerTextoEstado(aprobacion.estado)"
+                  [severity]="obtenerSeveridadEstado(aprobacion.estado)"
+                  styleClass="text-sm"
+                />
+              </div>
+              
+              <div class="mb-2 p-2 border-round" [style]="{ 
+                  'background': 'var(--p-surface-50)', 
+                  'border': '1px solid var(--p-border-color)' 
+                }">
+                <div class="text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                  <i class="pi pi-user mr-2 text-xs"></i>
+                  {{ aprobacion.aprobadorNombre || 'Sin asignar' }}
+                </div>
+              </div>
+
+              <div class="mb-2 p-2 border-round text-xs" 
+                   *ngIf="aprobacion.fechaAprobacion"
+                   [style]="{ 
+                     'background': 'var(--p-surface-50)', 
+                     'border': '1px solid var(--p-border-color)',
+                     color: 'var(--p-text-color)' 
+                   }">
+                <i class="pi pi-calendar mr-1"></i>
+                <strong>Fecha de respuesta:</strong> {{ aprobacion.fechaAprobacion | date: 'dd/MM/yyyy HH:mm' }}
+              </div>
+
+              <div 
+                class="p-2 border-round text-xs"
+                *ngIf="aprobacion.observaciones"
+                [style]="{ 
+                  'background': 'var(--p-surface-50)',
+                  'border': '1px solid var(--p-border-color)'
+                }"
+              >
+                <div class="font-semibold text-xs mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                  <i class="pi pi-comment mr-1"></i>
+                  Observaciones:
+                </div>
+                <div class="text-xs line-height-3" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ aprobacion.observaciones }}
+                </div>
+              </div>
+
+              <div 
+                class="text-xs italic p-2 border-round"
+                *ngIf="!aprobacion.observaciones && aprobacion.estado === 'pendiente'"
+                [style]="{ 
+                  'background': 'var(--p-surface-50)', 
+                  color: 'var(--p-text-muted)',
+                  'border': '1px dashed var(--p-border-color)'
+                }"
+              >
+                <i class="pi pi-info-circle mr-1"></i>
+                Pendiente de revisión
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-content-end gap-2">
+        <p-button
+          *ngIf="puedeMostrarBotonVerificacion()"
+          label="Notificar verificación"
+          icon="pi pi-bell"
+          severity="info"
+          [loading]="enviandoVerificacion"
+          styleClass="min-w-[120px]"
+          (onClick)="notificarVerificacion(solicitudSeleccionada?.codigoSolicitud)"
+        />
+        <p-button
+          label="Cerrar"
+          icon="pi pi-times"
+          severity="secondary"
+          [outlined]="true"
+          styleClass="min-w-[120px]"
+          (onClick)="cerrarDialogoDetalle()"
+        />
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- DIÁLOGO DE EDICIÓN DE SOLICITUD (CON CONCEPTOS EDITABLES) -->
+<p-dialog
+  [(visible)]="mostrarDialogoEdicion"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '1400px' }"
+  [closable]="true"
+  (onHide)="cerrarDialogoEdicion()"
+  [dismissableMask]="true"
+  [contentStyle]="{
+    'background': 'var(--p-surface-0)',
+    'color': 'var(--p-text-color)'
+  }"
+  [styleClass]="'dark-dialog'"
+>
+  <ng-template pTemplate="header">
+    <div class="flex align-items-center gap-3">
+      <i class="pi pi-pencil text-3xl" [style]="{ color: 'white' }"></i>
+      <div>
+        <h3 class="m-0 text-2xl font-bold" [style]="{ color: 'white' }">
+          Editar Solicitud
+        </h3>
+        <p class="m-0 mt-1 text-sm opacity-90" [style]="{ color: 'white' }">
+          {{ solicitudSeleccionada?.codigoSolicitud || '' }}
+        </p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div *ngIf="solicitudSeleccionada" class="p-4 rounded-lg"
+       [style]="{
+         'background': 'var(--p-surface-ground)',
+         'color': 'var(--p-text-color)'
+       }">
+
+    <!-- INFORMACIÓN DEL SOLICITANTE -->
+    <p-card class="mb-4 border-none shadow-3" [style]="{
+        'background': 'var(--p-surface-50)',
+        'border': '2px solid var(--p-surface-border)',
+        'border-radius': '12px'
+      }">
+      <h4 class="text-lg font-semibold mb-4 pb-2 border-bottom-1"
+          [style]="{
+            color: 'var(--p-primary-color)',
+            'border-color': 'var(--p-surface-border)'
+          }">
+        <i class="pi pi-user mr-2"></i>
+        Información del Solicitante
+      </h4>
+
+      <div class="flex gap-4">
+        <div class="flex-1" *ngFor="let campo of [
+          {label:'Nombre Completo', valor: obtenerNombreCompleto(solicitudSeleccionada)},
+          {label:'Identificación', valor: solicitudSeleccionada.identificacion || solicitudSeleccionada.nit},
+          {label:'Cargo', valor: solicitudSeleccionada.cargo || 'N/A'}
+        ]">
+          <div class="mb-3">
+            <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+              {{ campo.label }}
+            </div>
+            <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+              {{ campo.valor }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- INFORMACIÓN DEL VIAJE -->
+    <p-card class="mb-4 border-none shadow-3" [style]="{
+        'background': 'var(--p-surface-50)',
+        'border': '2px solid var(--p-surface-border)',
+        'border-radius': '12px'
+      }">
+      <h4 class="text-lg font-semibold mb-4 pb-2 border-bottom-1"
+          [style]="{
+            color: 'var(--p-primary-color)',
+            'border-color': 'var(--p-surface-border)'
+          }">
+        <i class="pi pi-map-marker mr-2"></i>
+        Información del Viaje
+      </h4>
+
+      <!-- Primer destino -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+        <div class="mb-3">
+          <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+            Destino
+          </div>
+          <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+            <i class="pi pi-map-marker mr-2 text-sm" [style]="{ color: 'var(--p-primary-color)' }"></i>
+            {{ obtenerDestinoCompleto(solicitudSeleccionada) }}
+          </p>
+        </div>
+        <div class="mb-3">
+          <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+            Fecha de Llegada
+          </div>
+          <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+            <i class="pi pi-calendar mr-2 text-sm" [style]="{ color: 'var(--p-primary-color)' }"></i>
+            {{ solicitudSeleccionada.fechaSalida | date:'dd/MM/yyyy' }}
+          </p>
+        </div>
+        <div class="mb-3">
+          <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+            Fecha de Salida
+          </div>
+          <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+            <i class="pi pi-calendar mr-2 text-sm" [style]="{ color: 'var(--p-primary-color)' }"></i>
+            {{ (solicitudSeleccionada.destinos && solicitudSeleccionada.destinos.length > 0 ? solicitudSeleccionada.destinos[0].fechaLlegada : null) | date:'dd/MM/yyyy' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Destinos adicionales -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3" *ngIf="solicitudSeleccionada.destinos && solicitudSeleccionada.destinos.length > 1">
+        <ng-container *ngFor="let destino of solicitudSeleccionada.destinos?.slice(1); let i = index">
+          <div class="mb-3">
+            <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+              Destino {{ i + 2 }}
+            </div>
+            <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+              <i class="pi pi-map-marker mr-2 text-sm" [style]="{ color: 'var(--p-primary-color)' }"></i>
+              {{ obtenerNombreUbicacion(destino.municipio) }}
+            </p>
+          </div>
+          <div class="mb-3">
+            <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+              Fecha de Llegada {{ i + 2 }}
+            </div>
+            <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+              <i class="pi pi-calendar mr-2 text-sm" [style]="{ color: 'var(--p-primary-color)' }"></i>
+              {{ destino.fechaSalida | date:'dd/MM/yyyy' }}
+            </p>
+          </div>
+          <div class="mb-3">
+            <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+              Fecha de Salida {{ i + 2 }}
+            </div>
+            <p class="m-0 text-base" [style]="{ color: 'var(--p-text-muted)' }">
+              <i class="pi pi-calendar mr-2 text-sm" [style]="{ color: 'var(--p-primary-color)' }"></i>
+              {{ destino.fechaLlegada | date:'dd/MM/yyyy' }}
+            </p>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="mb-3 p-4 text-center" [style]="{ 
+          'background': 'var(--p-surface-0)', 
+          'border': '3px solid var(--p-green-500)',
+          'border-radius': '12px',
+          'box-shadow': '0 2px 8px rgba(0,0,0,0.1)'
+        }">
+        <div class="block text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+          <i class="pi pi-dollar mr-2"></i>
+          Valor Total de Viáticos
+        </div>
+        <p class="m-0 text-2xl font-bold" [style]="{ color: 'var(--p-green-600)' }">
+          {{ calcularTotalViaticos() | currency:'COP':'symbol-narrow':'1.0-0' }}
+        </p>
+      </div>
+    </p-card>
+
+    <!-- CONCEPTOS DE LIQUIDACIÓN (EDITABLES, CON ORDEN FIJO) -->
+    <p-card 
+      *ngIf="mostrarSeccionConceptos"
+      class="mb-4 border-none shadow-3" 
+      [style]="{
+        'background': 'var(--p-surface-50)',
+        'border': '2px solid var(--p-surface-border)',
+        'border-radius': '12px'
+      }">
+      <h4 class="text-lg font-semibold mb-4 pb-2 border-bottom-1" [style]="{
+          color: 'var(--p-primary-color)',
+          'border-color': 'var(--p-surface-border)'
+        }">
+        <i class="pi pi-list mr-2"></i>
+        Conceptos de Liquidación
+      </h4>
+
+      <p-table 
+        [value]="conceptosLiquidacion"
+        [scrollable]="true"
+        styleClass="p-datatable-sm"
+        [style]="{ 'background': 'var(--p-surface-0)', 'color': 'var(--p-text-color)' }">
+        <ng-template pTemplate="header">
+          <tr [style]="{ 'background': 'var(--p-surface-100)', 'color': 'var(--p-text-color)' }">
+            <th [style]="{ 'background': 'var(--p-surface-100)', 'color': 'var(--p-text-color)', 'border-color': 'var(--p-surface-border)' }">Concepto</th>
+            <th style="width: 250px; text-align: center;" [style]="{ 'background': 'var(--p-surface-100)', 'color': 'var(--p-text-color)', 'border-color': 'var(--p-surface-border)' }">Valor Aprobado</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-concepto>
+          <tr [style]="{ 'background': 'var(--p-surface-0)', 'color': 'var(--p-text-color)', 'border-color': 'var(--p-surface-border)' }">
+            <td [style]="{ 'border-color': 'var(--p-surface-border)' }">
+              <div class="font-semibold" [style]="{ 'color': 'var(--p-text-color)' }">{{ concepto.conceptoNombre || concepto.concepto }}</div>
+              <div *ngIf="concepto.modificadoPorAprobador"
+                   class="text-xs text-orange-500 mt-1">
+                <i class="pi pi-exclamation-triangle mr-1"></i>
+                Modificado en nivel {{ concepto.nivelAprobacionModificacion }}
+              </div>
+            </td>
+            <td style="text-align: center;" [style]="{ 'border-color': 'var(--p-surface-border)' }">
+              <input 
+                type="number" 
+                pInputText
+                [(ngModel)]="concepto.subtotal"
+                (ngModelChange)="calcularTotalViaticos()"
+                class="w-full text-right"
+                [style]="{ 
+                  'background': 'var(--p-surface-0)', 
+                  'color': 'var(--p-text-color)', 
+                  'border-color': 'var(--p-surface-border)'
+                }"
+                min="0"
+                step="1"
+              />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="footer">
+          <tr [style]="{ 'background': 'var(--p-surface-100)', 'color': 'var(--p-text-color)', 'border-color': 'var(--p-surface-border)' }">
+            <td class="text-right font-bold text-lg" [style]="{ 'border-color': 'var(--p-surface-border)' }">
+              Total Viáticos:
+            </td>
+            <td class="text-center font-bold text-xl text-primary" [style]="{ 'border-color': 'var(--p-surface-border)' }">
+              {{ calcularTotalViaticos() | currency:'COP':'symbol-narrow':'1.0-0' }}
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-between align-items-center">
+      <div class="flex gap-2">
+        <p-button
+          label="Guardar Cambios"
+          icon="pi pi-save"
+          [severity]="'success'"
+          (click)="guardarCambiosConceptos()"
+          [disabled]="!mostrarSeccionConceptos"
+          [style]="{ 'min-width': '180px' }"
+        />
+      </div>
+      <p-button
+        label="Cerrar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="min-w-[120px]"
+        (onClick)="cerrarDialogoEdicion()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- DIÁLOGO DE VISUALIZACIÓN DE PDF -->
+<p-dialog
+  [(visible)]="mostrarDialogoVisualizacionPDF"
+  [modal]="true"
+  [style]="{ width: '95vw', maxWidth: '1200px' }"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  (onHide)="cerrarDialogoVisualizacionPDF()"
+  styleClass="pdf-dialog-simple"
+>
+  <ng-template pTemplate="header">
+    <div class="w-full text-center">
+      <h1 style="color: white;">GESTIÓN DE TALENTO HUMANO</h1>
+      <h2 style="color: white;">AUTORIZACIÓN DE VIÁTICOS A TRABAJADORES</h2>
+      <div class="codigo-info">
+        Código: SCL-176207710268 | Versión: 1.0 | Fecha: {{ fechaActual | date:'dd/MM/yyyy' }}
+      </div>
+    </div>
+  </ng-template>
+
+  <div *ngIf="solicitudSeleccionada" class="pdf-content-table">
+    
+    <!-- Tabla: Fecha de Solicitud -->
+    <table class="fecha-table">
+      <tr>
+        <td class="header-blue" style="width: 25%;">FECHA DE SOLICITUD</td>
+        <td class="header-blue" style="width: 25%;">DÍA: {{ solicitudSeleccionada.fechaCreacion ? (solicitudSeleccionada.fechaCreacion | date:'dd') : '' }}</td>
+        <td class="header-blue" style="width: 25%;">MES: {{ solicitudSeleccionada.fechaCreacion ? (solicitudSeleccionada.fechaCreacion | date:'MM') : '' }}</td>
+        <td class="header-blue" style="width: 25%;">AÑO: {{ solicitudSeleccionada.fechaCreacion ? (solicitudSeleccionada.fechaCreacion | date:'yyyy') : '' }}</td>
+      </tr>
+    </table>
+
+    <!-- Tabla: Información del Trabajador -->
+    <table class="trabajador-table">
+      <tr>
+        <td colspan="4" class="header-blue">INFORMACIÓN DEL TRABAJADOR</td>
+      </tr>
+      <tr>
+        <td class="label-gray" style="width: 25%;">APELLIDOS Y NOMBRES</td>
+        <td class="content-cell" style="width: 25%;">{{ obtenerNombreCompleto(solicitudSeleccionada) }}</td>
+        <td class="label-gray" style="width: 25%;">IDENTIFICACIÓN</td>
+        <td class="content-cell" style="width: 25%;">{{ solicitudSeleccionada.identificacion || solicitudSeleccionada.nit }}</td>
+      </tr>
+      <tr>
+        <td class="label-gray">CARGO</td>
+        <td class="content-cell">{{ solicitudSeleccionada.cargo || 'N/A' }}</td>
+        <td class="label-gray">TIPO DE VIÁTICOS</td>
+        <td class="content-cell badge-cell">
+          <span class="viaticos-badge">{{ solicitudSeleccionada.tipoViaticos }}</span>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Tabla: Descripción de Viáticos -->
+    <table class="descripcion-table">
+      <tr>
+        <td colspan="4" class="header-blue">DESCRIPCIÓN DE VIÁTICOS</td>
+      </tr>
+      <tr>
+        <td class="label-gray center-text" style="width: 25%;">CIUDAD DE ORIGEN</td>
+        <td class="content-cell center-text" style="width: 25%;">{{ obtenerNombreUbicacion(solicitudSeleccionada.municipioSalida) }}</td>
+        <td class="label-gray center-text" style="width: 25%;">FECHA SALIDA</td>
+        <td class="content-cell center-text" style="width: 25%;">{{ solicitudSeleccionada.fechaSalida | date:'dd/MM/yyyy' }}</td>
+      </tr>
+      <tr>
+        <td class="label-gray center-text">CIUDAD DESTINO</td>
+        <td class="content-cell center-text">{{ obtenerNombreUbicacion(solicitudSeleccionada.destinos?.[0]?.municipio ?? undefined) }}</td>
+        <td class="label-gray center-text">FECHA DE LLEGADA</td>
+        <td class="content-cell center-text">{{ (solicitudSeleccionada.destinos && solicitudSeleccionada.destinos.length > 0 ? solicitudSeleccionada.destinos[0].fechaLlegada : null) | date:'dd/MM/yyyy' }}</td>
+      </tr>
+      <!-- Destinos adicionales -->
+      <ng-container *ngFor="let destino of solicitudSeleccionada.destinos?.slice(1); let i = index">
+        <tr>
+          <td class="label-gray center-text" style="width: 25%;">CIUDAD DESTINO {{ i + 2 }}</td>
+          <td class="content-cell center-text" style="width: 25%;">{{ obtenerNombreUbicacion(destino.municipio) }}</td>
+          <td class="label-gray center-text" style="width: 25%;">FECHA DE LLEGADA {{ i + 2 }}</td>
+          <td class="content-cell center-text" style="width: 25%;">{{ destino.fechaLlegada | date:'dd/MM/yyyy' }}</td>
+        </tr>
+      </ng-container>
+      <tr>
+        <td class="label-gray">CONCEPTO DEL VIAJE</td>
+        <td class="content-cell">{{ obtenerSoloConcepto(solicitudSeleccionada.conceptoViaje) }}</td>
+        <td class="label-gray">FUENTE FUNCIÓN</td>
+        <td class="content-cell">{{ (solicitudSeleccionada.centrosCosto && solicitudSeleccionada.centrosCosto.length > 0 ? solicitudSeleccionada.centrosCosto[0].fuenteFuncion : 'N/A') }}</td>
+      </tr>
+      <tr>
+        <td class="label-gray">CENTRO DE COSTO</td>
+        <td class="content-cell">{{ obtenerCodigosCentrosCosto() }}</td>
+        <td class="label-gray">NOMBRE C. COSTO</td>
+        <td class="content-cell">{{ obtenerNombresCentrosCosto() }}</td>
+      </tr>
+      <tr>
+        <td class="label-gray">MOTIVO DE VIAJE</td>
+        <td colspan="3" class="content-cell">{{ solicitudSeleccionada.motivoViaje || 'No especificado' }}</td>
+      </tr>
+    </table>
+
+    <!-- Tabla: Valor Total de Viáticos -->
+    <table class="total-table">
+      <tr>
+        <td class="header-blue">VALOR TOTAL DE VIÁTICOS</td>
+      </tr>
+      <tr>
+        <td class="total-cell">
+          <div class="total-label">Monto Total Autorizado</div>
+          <div class="total-amount">{{ calcularTotalViaticos() | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Tabla: Estado -->
+    <table class="estado-table">
+      <tr>
+        <td class="label-gray" style="width: 20%;">ESTADO ACTUAL</td>
+        <td class="estado-cell" style="width: 80%;">
+          <span class="estado-badge">{{ obtenerTextoEstado(solicitudSeleccionada.estado || 'pendiente') }}</span>
+        </td>
+      </tr>
+      <tr *ngIf="solicitudSeleccionada.observaciones">
+        <td class="label-gray">Observaciones</td>
+        <td class="content-cell">{{ solicitudSeleccionada.observaciones }}</td>
+      </tr>
+    </table>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3" [style]="{ padding: '16px', 'background': 'white' }">
+      <p-button
+        label="Enviar"
+        icon="pi pi-send"
+        severity="info"
+        [outlined]="true"
+        (click)="enviarPDFPorCorreo()"
+        [style]="{ 'min-width': '120px' }"
+      ></p-button>
+      <p-button
+        label="Descargar PDF"
+        icon="pi pi-file-pdf"
+        severity="danger"
+        (click)="descargarPDFDesdeDialogo()"
+        [style]="{ 'min-width': '140px' }"
+      ></p-button>
+      <p-button
+        label="Cerrar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="min-w-[120px]"
+        (onClick)="cerrarDialogoVisualizacionPDF()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- DIÁLOGO DE ENVÍO DE CORREO -->
+<p-dialog
+  [(visible)]="mostrarDialogoEnviarCorreo"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  (onHide)="cerrarDialogoEnviarCorreo()"
+  header="Enviar Notificación por Correo"
+>
+  <div class="p-4">
+    <div class="mb-4">
+      <p class="text-lg mb-3">
+        <i class="pi pi-info-circle text-blue-500 mr-2"></i>
+        Se enviará la notificación de aprobación de viático
+      </p>
+      
+      <div class="mb-4 p-3 bg-blue-50 border-l-4 border-blue-500">
+        <p class="text-sm text-blue-800 mb-2">
+          <strong>Asunto:</strong> Notificación de Aprobación de Viático y Solicitud de Causación y Desembolso
+        </p>
+        <p class="text-xs text-blue-600 mb-2">
+          El mensaje incluye toda la información necesaria para el proceso de causación y desembolso.
+          <strong>Se adjuntarán automáticamente al correo:</strong>
+        </p>
+        <ul class="text-xs text-blue-600 ml-4 mb-2">
+          <li><i class="pi pi-file-pdf mr-1"></i> PDF con los detalles de la solicitud</li>
+          <li><i class="pi pi-paperclip mr-1"></i> Documentos de soporte cargados por el usuario (si existen)</li>
+        </ul>
+        <p class="text-xs text-gray-500 mt-2">
+          <i class="pi pi-info-circle mr-1"></i>
+          Si el servidor no soporta adjuntos, se enviará el correo y el PDF se descargará para adjuntar manualmente.
+        </p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="emailDestino" class="font-semibold block mb-2">
+        <i class="pi pi-envelope mr-2"></i>
+        Correo electrónico de destino:
+      </label>
+      <input 
+        id="emailDestino"
+        type="email" 
+        pInputText
+        [(ngModel)]="emailDestino"
+        placeholder="ejemplo@correo.com"
+        class="w-full"
+        [disabled]="enviandoCorreo"
+        required
+      />
+      <small class="text-gray-600 mt-1 block">
+        Ingrese el correo donde se enviará la notificación de aprobación
+      </small>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-between align-items-center">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="min-w-[120px]"
+        (onClick)="cerrarDialogoEnviarCorreo()"
+        [disabled]="enviandoCorreo"
+      />
+      
+      <p-button
+        label="Enviar Correo"
+        icon="pi pi-send"
+        severity="info"
+        (click)="confirmarEnvioCorreo()"
+        [loading]="enviandoCorreo"
+        [disabled]="!emailDestino || enviandoCorreo"
+        loadingIcon="pi pi-spinner pi-spin"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- DIÁLOGO DE ENVÍO DE CORREO -->
+<p-dialog
+  [(visible)]="mostrarDialogoEnviarCorreo"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  (onHide)="cerrarDialogoEnviarCorreo()"
+  header="Enviar Notificación por Correo"
+>
+  <div class="p-4">
+    <div class="mb-4">
+      <p class="text-lg mb-3">
+        <i class="pi pi-info-circle text-blue-500 mr-2"></i>
+        Se enviará la notificación de aprobación de viático
+      </p>
+      
+      <div class="mb-4 p-3 bg-blue-50 border-l-4 border-blue-500">
+        <p class="text-sm text-blue-800 mb-2">
+          <strong>Asunto:</strong> Notificación de Aprobación de Viático y Solicitud de Causación y Desembolso
+        </p>
+        <p class="text-xs text-blue-600">
+          El mensaje incluye toda la información necesaria para el proceso de causación y desembolso.
+          <strong>El PDF con los detalles de la solicitud se adjuntará automáticamente al correo.</strong>
+        </p>
+        <p class="text-xs text-gray-500 mt-2">
+          <i class="pi pi-info-circle mr-1"></i>
+          Si el servidor no soporta adjuntos, se enviará el correo y el PDF se descargará para adjuntar manualmente.
+        </p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="emailDestino" class="font-semibold block mb-2">
+        <i class="pi pi-envelope mr-2"></i>
+        Correo electrónico de destino:
+      </label>
+      <input 
+        id="emailDestino"
+        type="email" 
+        pInputText
+        [(ngModel)]="emailDestino"
+        placeholder="ejemplo@correo.com"
+        class="w-full"
+        [disabled]="enviandoCorreo"
+        required
+      />
+      <small class="text-gray-600 mt-1 block">
+        Ingrese el correo donde se enviará la notificación de aprobación
+      </small>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-between align-items-center">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="min-w-[120px]"
+        (onClick)="cerrarDialogoEnviarCorreo()"
+        [disabled]="enviandoCorreo"
+      />
+      
+      <p-button
+        label="Enviar Correo"
+        icon="pi pi-send"
+        severity="info"
+        (click)="confirmarEnvioCorreo()"
+        [loading]="enviandoCorreo"
+        [disabled]="!emailDestino || enviandoCorreo"
+        loadingIcon="pi pi-spinner pi-spin"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo de Distribución de Porcentajes -->
+<p-dialog
+  [(visible)]="mostrarDialogoDistribucionPorcentajes"
+  [modal]="true"
+  [closable]="true"
+  [closeOnEscape]="false"
+  [draggable]="false"
+  [resizable]="false"
+  header="Distribución de Porcentajes por Centro de Costo"
+  [style]="{ width: '800px', 'max-width': '95vw' }"
+>
+  <div class="p-fluid">
+    <div class="mb-4">
+      <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+        <h3 class="text-lg font-bold mb-2 text-blue-900">
+          <i class="pi pi-info-circle mr-2"></i>
+          Instrucciones
+        </h3>
+        <p class="text-sm text-blue-800 mb-2">
+          En este apartado vas a calcular el porcentaje que va a aportar los distintos centros de costo.
+        </p>
+        <p class="text-sm text-blue-800 font-semibold">
+          <i class="pi pi-exclamation-triangle mr-1"></i>
+          Los porcentajes deben sumar exactamente 100%
+        </p>
+      </div>
+
+      <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+        <p class="text-sm font-semibold text-green-900">
+          <i class="pi pi-dollar mr-2"></i>
+          Valor Total del Viático: 
+          <span class="text-xl ml-2">
+            $ {{ (solicitudParaCSV?.valorTotalViaticos | number:'1.0-0') || '0' }}
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Tabla de Centros de Costo -->
+    <div class="mb-4">
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="border p-3 text-left font-semibold">Código Centro Costo</th>
+              <th class="border p-3 text-left font-semibold">Nombre Centro Costo</th>
+              <th class="border p-3 text-left font-semibold">Porcentaje (%)</th>
+              <th class="border p-3 text-left font-semibold">Valor Calculado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (distribucion of distribucionesCentrosCosto; track distribucion.codigoCentroCosto) {
+              <tr class="hover:bg-gray-50">
+                <td class="border p-3">
+                  <span class="font-mono bg-blue-100 px-2 py-1 rounded">
+                    {{ distribucion.codigoCentroCosto }}
+                  </span>
+                </td>
+                <td class="border p-3">
+                  <span class="text-sm">{{ distribucion.nombreCentroCosto }}</span>
+                </td>
+                <td class="border p-3">
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="number"
+                      pInputText
+                      [(ngModel)]="distribucion.porcentaje"
+                      (ngModelChange)="calcularValorPorcentaje(distribucion)"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      class="w-24"
+                    />
+                    <span class="font-semibold">%</span>
+                  </div>
+                </td>
+                <td class="border p-3">
+                  <span class="font-semibold text-green-700">
+                    $ {{ distribucion.valorCalculado | number:'1.0-0' }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr class="bg-gray-100 font-bold">
+              <td colspan="2" class="border p-3 text-right">TOTAL:</td>
+              <td class="border p-3">
+                <span 
+                  [class]="validarPorcentajes() ? 'text-green-700' : 'text-red-700'"
+                  class="text-lg font-bold"
+                >
+                  {{ obtenerTotalPorcentajes() | number:'1.2-2' }} %
+                  @if (!validarPorcentajes()) {
+                    <i class="pi pi-exclamation-triangle text-red-500 ml-2"></i>
+                  } @else {
+                    <i class="pi pi-check-circle text-green-500 ml-2"></i>
+                  }
+                </span>
+              </td>
+              <td class="border p-3">
+                <span class="text-green-700 text-lg font-bold">
+                  $ {{ (solicitudParaCSV?.valorTotalViaticos | number:'1.0-0') || '0' }}
+                </span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      @if (!validarPorcentajes()) {
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mt-4">
+          <p class="text-sm text-red-800">
+            <i class="pi pi-exclamation-circle mr-2"></i>
+            <strong>Error:</strong> Los porcentajes actualmente suman 
+            <span class="font-bold">{{ obtenerTotalPorcentajes() | number:'1.2-2' }}%</span>.
+            Deben sumar exactamente 100%.
+          </p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-between align-items-center">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="min-w-[120px]"
+        (onClick)="cerrarDialogoDistribucion()"
+      />
+      
+      <p-button
+        label="Generar Archivo Plano"
+        icon="pi pi-file-export"
+        severity="success"
+        (click)="confirmarDistribucionYGenerarCSV()"
+        [disabled]="!validarPorcentajes()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo de Vista Previa -->
+<p-dialog
+  header="Vista Previa"
+  [(visible)]="mostrarVistaPrevia"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '1200px', height: '90vh' }"
+  [closable]="true"
+  [maximizable]="true"
+  (onHide)="cerrarVistaPrevia()"
+>
+  <ng-template pTemplate="header">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <i class="pi pi-eye text-2xl" [style]="{ color: 'var(--p-primary-500)' }"></i>
+        <i 
+          *ngIf="archivoPrevisualizado"
+          [class]="'pi pi-' + obtenerIconoArchivo(archivoPrevisualizado) + ' text-xl'"
+          [style]="{ color: 'var(--p-primary-500)' }"
+        ></i>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold m-0" [style]="{ color: 'white' }">
+          Vista Previa
+        </h3>
+        <p class="text-sm opacity-70 m-0" *ngIf="archivoPrevisualizado">
+          {{ archivoPrevisualizado.nombreArchivo }}
+        </p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="flex flex-col items-center justify-center" style="height: calc(90vh - 200px);">
+    <!-- Loading -->
+    <div *ngIf="cargandoPrevia" class="flex flex-col items-center justify-center h-full">
+      <p-progressSpinner [style]="{ width: '60px', height: '60px' }" strokeWidth="4"></p-progressSpinner>
+      <p class="mt-4 opacity-70">Cargando vista previa...</p>
+    </div>
+
+    <!-- Vista previa PDF -->
+    <div *ngIf="!cargandoPrevia && archivoPrevisualizado && esPDF(archivoPrevisualizado.tipoArchivo || '')" class="w-full h-full">
+      <iframe
+        [src]="urlVistaPrevia | safeResourceUrl"
+        class="w-full h-full border-0"
+        style="min-height: 500px;"
+      ></iframe>
+    </div>
+
+    <!-- Vista previa Imagen -->
+    <div *ngIf="!cargandoPrevia && archivoPrevisualizado && esImagen(archivoPrevisualizado.tipoArchivo || '')" class="w-full h-full flex items-center justify-center p-4">
+      <img
+        [src]="urlVistaPrevia"
+        [alt]="archivoPrevisualizado.nombreArchivo"
+        class="max-w-full max-h-full object-contain"
+        style="max-height: calc(90vh - 250px);"
+      />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2">
+      <p-button
+        label="Descargar"
+        icon="pi pi-download"
+        severity="secondary"
+        (onClick)="descargarArchivo(archivoPrevisualizado!)"
+        [disabled]="!archivoPrevisualizado"
+      />
+      <p-button
+        label="Cerrar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="min-w-[120px]"
+        (onClick)="cerrarVistaPrevia()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo de Selección de Solicitudes -->
+<p-dialog
+  [(visible)]="mostrarDialogoSeleccionSolicitudes"
+  [modal]="true"
+  [closable]="true"
+  [closeOnEscape]="false"
+  [draggable]="false"
+  [resizable]="false"
+  header="Seleccionar Solicitudes para Exportar"
+  [style]="{ width: '900px', 'max-width': '95vw' }"
+>
+  <div class="p-fluid">
+    <div class="mb-4">
+      <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+        <h3 class="text-lg font-bold mb-2 text-blue-900">
+          <i class="pi pi-info-circle mr-2"></i>
+          Seleccionar Solicitudes
+        </h3>
+        <p class="text-sm text-blue-800 mb-2">
+          Selecciona las solicitudes que deseas incluir en el archivo plano. Por defecto, todas las solicitudes filtradas están seleccionadas.
+        </p>
+        <p class="text-sm text-blue-800 font-semibold">
+          <i class="pi pi-check-circle mr-1"></i>
+          Solicitudes seleccionadas: {{ solicitudesSeleccionadas.length }} de {{ solicitudesParaSeleccionar.length }}
+        </p>
+      </div>
+
+      <!-- Botones de Selección Rápida -->
+      <div class="flex gap-2 mb-4">
+        <p-button
+          label="Seleccionar Todas"
+          icon="pi pi-check-square"
+          severity="success"
+          (onClick)="seleccionarTodas()"
+          [outlined]="true"
+        ></p-button>
+        <p-button
+          label="Deseleccionar Todas"
+          icon="pi pi-times"
+          severity="danger"
+          (onClick)="deseleccionarTodas()"
+          [outlined]="true"
+        ></p-button>
+      </div>
+
+      <!-- Tabla de Solicitudes con Checkboxes -->
+      <p-table
+        [value]="solicitudesParaSeleccionar"
+        [(selection)]="solicitudesSeleccionadas"
+        dataKey="codigoSolicitud"
+        [scrollable]="true"
+        scrollHeight="400px"
+        styleClass="p-datatable-sm"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 3rem">
+              <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+            </th>
+            <th>Código Solicitud</th>
+            <th>Estado</th>
+            <th>Niveles</th>
+            <th>Fecha Última Acción</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-solicitud>
+          <tr>
+            <td>
+              <p-tableCheckbox [value]="solicitud"></p-tableCheckbox>
+            </td>
+            <td>
+              <span class="font-semibold text-primary">
+                {{ solicitud.codigoSolicitud }}
+              </span>
+            </td>
+            <td>
+              <p-tag
+                [value]="
+                  solicitud.estadoSolicitud === 'aprobado' ? 'Aprobado' :
+                  solicitud.estadoSolicitud === 'rechazado' ? 'Rechazado' :
+                  solicitud.estadoSolicitud === 'pagado' ? 'Pagado' :
+                  solicitud.estadoSolicitud === 'pendiente' ? 'Pendiente' : 'Borrador'
+                "
+                [severity]="
+                  solicitud.estadoSolicitud === 'aprobado' ? 'success' :
+                  solicitud.estadoSolicitud === 'rechazado' ? 'danger' :
+                  solicitud.estadoSolicitud === 'pagado' ? 'success' :
+                  solicitud.estadoSolicitud === 'pendiente' ? 'warn' : 'info'
+                "
+              ></p-tag>
+            </td>
+            <td>
+              <span class="text-sm">
+                <i class="pi pi-check-circle text-green-600 mr-1"></i>
+                {{ solicitud.nivelesAprobados }}/{{ solicitud.totalNiveles }}
+              </span>
+            </td>
+            <td>
+              <span class="text-sm text-gray-600">
+                {{ solicitud.fechaUltimaAccion ? (solicitud.fechaUltimaAccion | date:'dd/MM/yyyy HH:mm') : 'N/A' }}
+              </span>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" class="text-center py-4">
+              <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
+              <p class="text-gray-500">No hay solicitudes disponibles</p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-between gap-3">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="min-w-[120px]"
+        (onClick)="cerrarDialogoSeleccion()"
+      ></p-button>
+      <p-button
+        label="Generar Archivo Plano"
+        icon="pi pi-file-export"
+        severity="success"
+        (onClick)="confirmarYGenerarArchivoPlano()"
+        [disabled]="solicitudesSeleccionadas.length === 0"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+  <!-- Loading Overlay -->

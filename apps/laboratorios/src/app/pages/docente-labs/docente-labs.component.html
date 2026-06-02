@@ -1,0 +1,85 @@
+<div class="p-6 bg-gray-50 min-h-screen dark:bg-gray-900 dark:text-gray-100">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2 dark:text-gray-100">Visualización de laboratorios y horario del docente</h1>
+    <p class="text-gray-600 dark:text-gray-300">Ingrese la identificación del docente para ver sus laboratorios y horario</p>
+  </div>
+
+  <div class="flex gap-3 mb-6">
+    <input 
+      type="text" 
+      placeholder="Ingrese identificación del docente" 
+      [(ngModel)]="identificacion" 
+      class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition bg-white text-gray-800 placeholder-gray-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-400 focus:dark:border-blue-500" />
+    <button 
+      pButton 
+      type="button" 
+      label="Buscar" 
+      (click)="buscar()" 
+      [loading]="loading"
+      class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition dark:bg-blue-500 dark:hover:bg-blue-600">
+    </button>
+  </div>
+
+  <div *ngIf="mensaje" class="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded dark:bg-yellow-900/20 dark:border-yellow-500 dark:text-yellow-200">
+    <p class="text-sm">{{ mensaje }}</p>
+  </div>
+
+  <div *ngIf="nombreDocente" class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded dark:bg-blue-900/20 dark:border-blue-700">
+    <p class="text-sm text-gray-700 dark:text-gray-200">Resultados para: <span class="font-bold text-blue-900 dark:text-blue-200">{{ nombreDocente }}</span></p>
+  </div>
+
+  <div *ngIf="labs?.length" class="mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2 dark:text-gray-100">
+      <span class="inline-block w-1 h-6 bg-blue-600 rounded"></span>
+      Aulas/Laboratorios ({{ labs.length }})
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngFor="let l of labs" class="p-4 bg-white border-l-4 border-blue-500 rounded-lg shadow-sm hover:shadow-md transition flex items-center justify-between dark:bg-gray-800 dark:border-blue-500 dark:hover:shadow-md">
+        <div>
+          <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-200">{{ l.idVisible }}</h3>
+          <p class="text-sm text-gray-600 mt-1 dark:text-gray-300">Código: <span class="font-mono text-gray-800 dark:text-gray-200">{{ l.codAula }}</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="groupedHorarios?.length" class="mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2 dark:text-gray-100">
+      <span class="inline-block w-1 h-6 bg-green-600 rounded"></span>
+      Horario total ({{ horariosDocente.length }} clases)
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngFor="let g of groupedHorarios" class="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden border-t-4 border-green-500 dark:bg-gray-800 dark:border-green-500 dark:shadow-sm hover:dark:shadow-md">
+
+        <div class="bg-gradient-to-r from-green-50 to-green-100 px-4 py-3 border-b border-green-200 dark:from-green-900 dark:to-green-800 dark:border-green-700">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-green-800 uppercase dark:text-green-200">{{ g.label }}</h3>
+          </div>
+        </div>
+        <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+          <li *ngFor="let h of g.items" class="p-3 hover:bg-gray-50 transition dark:hover:bg-gray-700">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center gap-2">
+                <span class="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded dark:bg-blue-800 dark:text-blue-200">
+                  {{ h.horaInicio }} — {{ h.horaFin }}
+                </span>
+              </div>
+              <div class="text-sm">
+                <p class="font-medium text-gray-800 dark:text-gray-100">{{ h.nomAula || h.codAula }}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ h.materia || 'Sin materia especificada' }}</p>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!groupedHorarios?.length && !labs?.length && nombreDocente" class="p-6 bg-white rounded-lg border-2 border-dashed border-gray-300 text-center dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
+    <p class="text-gray-600 dark:text-gray-300">No se encontraron laboratorios ni horarios para <strong>{{ nombreDocente }}</strong></p>
+  </div>
+
+  <div *ngIf="!nombreDocente && !mensaje" class="p-6 bg-white rounded-lg border-2 border-dashed border-gray-300 text-center dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
+    <p class="text-gray-600 dark:text-gray-300">Ingrese una identificación para buscar</p>
+  </div>
+</div>

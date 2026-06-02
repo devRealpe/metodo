@@ -1,0 +1,126 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [style]="{ width: '700px', 'max-width': '95vw' }"
+  styleClass="profesor-info-dialog">
+  
+  <ng-template pTemplate="header">
+    <div class="flex align-items-center gap-2">
+      <i class="pi pi-info-circle" style="color: var(--p-primary-600); font-size: 1.5rem;"></i>
+      <span class="font-semibold text-xl">Información del Profesor</span>
+    </div>
+  </ng-template>
+
+  <div class="profesor-modal-content" *ngIf="profesor">
+    <div class="flex gap-4 mb-4">
+      <div class="flex-1 p-4 border-round" 
+           [style]="{
+             'background': 'var(--p-surface-50)',
+             'border': '1px solid var(--p-surface-200)'
+           }">
+        <h3 class="text-base font-bold mb-3" [style]="{'color': 'var(--p-text-color)'}">
+          DATOS DE IDENTIFICACIÓN DE (ROL)
+        </h3>
+        
+        <div class="flex flex-column gap-2">
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-chevron-right text-xs" [style]="{'color': 'var(--p-text-muted)'}"></i>
+            <div class="flex-1">
+              <span class="font-semibold text-sm">Nombre completo:</span>
+              <span class="ml-2 text-sm">{{ profesor.nombres }} {{ profesor.apellidos }}</span>
+            </div>
+          </div>
+
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-chevron-right text-xs" [style]="{'color': 'var(--p-text-muted)'}"></i>
+            <div class="flex-1">
+              <span class="font-semibold text-sm">Tipo de Identificación:</span>
+              <span class="ml-2 text-sm">{{ tipoIdentificacionLabel }}</span>
+            </div>
+          </div>
+
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-chevron-right text-xs" [style]="{'color': 'var(--p-text-muted)'}"></i>
+            <div class="flex-1">
+              <span class="font-semibold text-sm">Nivel de Formación:</span>
+              <span class="ml-2 text-sm">{{ nivelFormacionLabel }}</span>
+            </div>
+          </div>
+
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-chevron-right text-xs" [style]="{'color': 'var(--p-text-muted)'}"></i>
+            <div class="flex-1">
+              <span class="font-semibold text-sm">Categoría Escalafón:</span>
+              <span class="ml-2 text-sm">{{ categoriaEscalafonLabel }}</span>
+            </div>
+          </div>
+
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-chevron-right text-xs" [style]="{'color': 'var(--p-text-muted)'}"></i>
+            <div class="flex-1">
+              <span class="font-semibold text-sm">Tipo de Dedicación:</span>
+              <span class="ml-2 text-sm">{{ tipoDedicacionLabel }}</span>
+            </div>
+          </div>
+
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-chevron-right text-xs" [style]="{'color': 'var(--p-text-muted)'}"></i>
+            <div class="flex-1">
+              <span class="font-semibold text-sm">Tipo de Vinculación:</span>
+              <span class="ml-2 text-sm">{{ tipoVinculacionLabel }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-column align-items-center justify-content-center p-4 border-round"
+           [style]="{
+             'background': 'linear-gradient(135deg, #0068AD 0%, #4FC3F7 100%)',
+             'min-width': '200px'
+           }">
+        <div class="mb-3">
+          <p-avatar
+            shape="circle"
+            size="xlarge"
+            styleClass="shadow-4"
+            [style]="{
+              'width': '120px',
+              'height': '120px',
+              'border': '4px solid white',
+              'background': fotoPerfilUrl ? 'transparent' : 'rgba(255, 255, 255, 0.2)',
+              'color': 'white'
+            }">
+            <img *ngIf="fotoPerfilUrl" 
+                 [src]="fotoPerfilUrl" 
+                 alt="Foto de perfil" 
+                 class="w-full h-full object-cover" />
+            <i *ngIf="!fotoPerfilUrl" class="pi pi-user" style="font-size: 3rem;"></i>
+          </p-avatar>
+        </div>
+
+        <div class="text-center text-white">
+          <div class="text-sm font-semibold mb-1 opacity-90">AÑO:</div>
+          <div class="text-2xl font-bold mb-3">{{ anio }}</div>
+          
+          <div class="text-sm font-semibold mb-1 opacity-90">PERIODO ACADÉMICO:</div>
+          <div class="text-2xl font-bold">{{ periodo }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end">
+      <p-button
+        label="Cerrar"
+        icon="pi pi-times"
+        severity="secondary"
+        [text]="true"
+        (onClick)="cerrarModal()">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>

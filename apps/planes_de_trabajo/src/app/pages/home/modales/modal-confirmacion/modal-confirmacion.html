@@ -1,0 +1,37 @@
+<p-dialog [(visible)]="visible" [modal]="true" [closable]="true" [draggable]="false" [resizable]="false"
+  styleClass="confirmation-dialog" [style]="{ width: '450px' }" (onHide)="onClose()">
+
+  <ng-template pTemplate="header">
+    <div class="dialog-header">
+      <div class="header-icon" [ngClass]="'icon-' + severidad">
+        <i class="pi" [ngClass]="{
+          'pi-check-circle': severidad === 'success',
+          'pi-exclamation-triangle': severidad === 'warn',
+          'pi-info-circle': severidad === 'info',
+          'pi-times-circle': severidad === 'danger'
+        }"></i>
+      </div>
+      <span class="dialog-title">{{titulo}}</span>
+    </div>
+  </ng-template>
+
+  <div class="dialog-content">
+    <p class="confirmation-message">
+      {{mensaje}}
+    </p>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button type="button" pButton [label]="textoCancelar" class="p-button-outlined p-button-secondary"
+        [style]="{'color': 'var(--p-text-color) !important', 'border-color': 'var(--p-text-color) !important', 'background': 'transparent !important'}"
+        (click)="onCancelarClick()">
+      </button>
+
+      <button type="button" pButton [label]="textoConfirmar" [class]="'p-button-' + severidad"
+        [style]="{'color': '#ffffff !important', 'background': severidad === 'success' ? 'var(--p-button-success-background) !important' : (severidad === 'danger' ? 'var(--p-button-danger-background) !important' : (severidad === 'warn' ? 'var(--p-button-warn-background) !important' : 'var(--p-button-info-background) !important')), 'border-color': severidad === 'success' ? 'var(--p-button-success-border-color) !important' : (severidad === 'danger' ? 'var(--p-button-danger-border-color) !important' : (severidad === 'warn' ? 'var(--p-button-warn-border-color) !important' : 'var(--p-button-info-border-color) !important'))}"
+        (click)="onConfirmarClick()">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

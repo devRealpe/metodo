@@ -1,0 +1,204 @@
+<p-toast></p-toast>
+<div class="surface-ground min-h-screen">
+  <div class="container mx-auto px-2 sm:px-4 py-4">
+    <p-card 
+      class="relative h-full border-none shadow-3"
+      [style]="{
+                'background': 'var(--p-surface-50)',
+                'border-radius': '16px',
+                'border': '2px solid var(--p-surface-200)'
+              }">
+
+  <div>
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-semibold">
+        Documentos de Soporte Adicionales
+      </h3>
+      <p-button 
+        icon="pi pi-home" 
+        label="Ir al Inicio" 
+        size="small"
+        [outlined]="true"
+        styleClass="border-round-xl text-sm font-medium shadow-2"
+        routerLink="/app/inicio"
+        pTooltip="Ir a la página de inicio"
+        tooltipPosition="left">
+      </p-button>
+    </div>
+
+    <div class="flex justify-center mb-4">
+      <p-button (click)="showDialog()" label="Agregar Documento de Soporte"></p-button>
+    </div>
+
+    <p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [style]="{ width: '700px', height: 'full', maxWidth: '95vw' }"
+      [contentStyle]="{ 'overflow-y': 'auto', 'padding': '0' }" [draggable]="false" [resizable]="false"
+      [showHeader]="true" [closable]="false" [dismissableMask]="false" [closeOnEscape]="true" [blockScroll]="true"
+      (onHide)="onDialogHide()">
+      
+      <ng-template pTemplate="header">
+        <div class="flex justify-between items-center w-full">
+          <span class="text-lg font-medium">{{ isEditando ? 'Editar Documento de Soporte' : 'Agregar Documento de Soporte' }}</span>
+          <button 
+            type="button" 
+            pButton 
+            pRipple 
+            icon="pi pi-times" 
+            (click)="onDialogHide()" 
+            [disabled]="isEditando && !hasFileAttached()"
+            [pTooltip]="isEditando && !hasFileAttached() ? 'No puede cerrar sin archivo. Debe cargar un archivo de soporte.' : ''"
+            tooltipPosition="left"
+            [class.opacity-50]="isEditando && !hasFileAttached()"
+            [class.cursor-not-allowed]="isEditando && !hasFileAttached()"
+            class="p-dialog-header-close [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible hover:[&_.pi]:!opacity-100 hover:[&_i]:!opacity-100">
+          </button>
+        </div>
+      </ng-template>
+      <form [formGroup]="editForm" (ngSubmit)="!isLoading && !isSubmitting && guardarRegistro()" class="p-6 space-y-6">
+        <div class="grid grid-cols-1 gap-6">
+          <div>
+            <app-select-component 
+              label="Tipo de Soporte"
+              [filter]="true"
+              [control]="editForm.get('tipoSoporte')"
+              formControlName="tipoSoporte"
+              [options]="tiposSoporteConIndicador"
+              optionLabel="label"
+              optionValue="value"
+              [customErrorMessages]="errorMessages.tipoSoporte"
+              placeholder="Seleccione tipo de soporte"
+              [required]="true"
+              [loading]="isLoadingDropdowns"
+            ></app-select-component>
+          </div>
+
+          <div class="col-span-full">
+            <h4 class="text-lg font-medium mb-3">
+              Archivo de Soporte 
+              <span class="text-red-500">*</span>
+            </h4>
+            
+            <div *ngIf="isEditingWithoutFile()" class="bg-red-50 border border-red-200 rounded-md p-3 mb-3">
+              <div class="flex items-center gap-2 text-red-700">
+                <i class="pi pi-exclamation-triangle text-lg"></i>
+                <span class="text-sm font-medium">
+                  Debe cargar un archivo antes de cerrar el diálogo. El registro no puede quedar sin soporte.
+                </span>
+              </div>
+            </div>
+            
+            <app-file-attachment
+              #fileAttachment
+              [config]="fileAttachmentConfig"
+              [existingFiles]="existingFiles"
+              [personaId]="personaId || ''"
+              [disabled]="isLoadingDropdowns"
+              [isEditing]="isEditando"
+              (filesUploaded)="onFilesUploaded($event)"
+              (fileDeleted)="onFileDeleted($event)"
+              (fileMarkedForDeletion)="onFileMarkedForDeletion($event)"
+              (uploadError)="onFileAttachmentUploadError($event)"
+              (filePreview)="onFilePreview($event)"
+            ></app-file-attachment>
+            <div *ngIf="fileError" class="mt-2">
+              <p-message 
+                severity="error" 
+                [text]="fileError"
+                size="small" 
+                variant="simple">
+              </p-message>
+            </div>
+            <span>Tamaño máximo: {{ formatFileSize(fileAttachmentConfig.maxFileSize) }}</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+          <p-button 
+            label="Cancelar" 
+            severity="secondary" 
+            (onClick)="onDialogHide()"
+            type="button"
+            [disabled]="isLoading || (isEditando && !hasFileAttached())"
+            [pTooltip]="isEditando && !hasFileAttached() ? 'No puede cancelar sin archivo. Debe cargar un archivo de soporte.' : ''"
+            tooltipPosition="top"
+          ></p-button>
+          <p-button 
+            label="{{ isEditando ? 'Actualizar' : 'Guardar' }}" 
+            type="button"
+            [loading]="isLoading"
+            [disabled]="editForm.invalid || isLoading || isSubmitting || !uploadedFileId"
+            [style]="{'pointer-events': (isLoading || isSubmitting) ? 'none' : 'auto'}"
+            (click)="guardarRegistro()"
+          ></p-button>
+        </div>
+      </form>
+    </p-dialog>
+
+    <div class="mt-6">
+      <div *ngIf="isLoadingInitial" class="flex justify-center items-center py-8">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-spin pi-spinner text-2xl text-blue-500"></i>
+          <span class="text-lg">Cargando documentos de soporte...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoadingInitial">
+        <lib-info-table
+          [data]="tableData"
+          [columns]="tableColumns"
+          [actions]="tableActions"
+          [showTableHeader]="true"
+          [tableHeaderTitle]="'Documentos de Soporte'"
+          [tableHeaderIcon]="'pi pi-file'"
+          [tableHeaderBadge]="'Actualizado'"
+          [showRowNumbers]="true"
+          [paginator]="true"
+          [rows]="rows"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          [showGlobalFilter]="true"
+          [globalFilterFields]="['tipoSoporte']"
+          [emptyIcon]="'pi pi-file-pdf'"
+          [emptyTitle]="'No hay documentos de soporte'"
+          [emptySubtitle]="'Agregue documentos de soporte para continuar'"
+        >
+          <ng-template #customCell let-row let-col="column">
+            <ng-container *ngIf="col.field === 'tipoSoporte'">
+              <div class="flex items-center gap-2">
+                <span>{{ row.tipoSoporte }}</span>
+                <span *ngIf="isDocumentoRequerido(row.tipoSoporte)" 
+                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"
+                      pTooltip="Documento obligatorio"
+                      tooltipPosition="top">
+                  Obligatorio
+                </span>
+              </div>
+            </ng-container>
+            
+            <ng-container *ngIf="col.field === 'archivos'">
+              <div *ngIf="row.archivos && row.archivos.length > 0; else sinArchivos">
+                <div class="flex flex-wrap gap-1">
+                  <button 
+                    *ngFor="let archivo of row.archivos"
+                    (click)="previewArchivoTabla(archivo.id)"
+                    type="button"
+                    class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors cursor-pointer border-none"
+                    [pTooltip]="archivo.nombre"
+                    tooltipPosition="top"
+                  >
+                    <i class="pi pi-file text-xs"></i>
+                    <span>{{ archivo.nombre.length > 15 ? archivo.nombre.substring(0, 15) + '...' : archivo.nombre }}</span>
+                  </button>
+                </div>
+              </div>
+              <ng-template #sinArchivos>
+                <span class="text-gray-500 text-sm italic">Sin archivos</span>
+              </ng-template>
+            </ng-container>
+          </ng-template>
+        </lib-info-table>
+      </div>
+    </div>
+  </div>
+</p-card>
+</div>
+
+<p-confirmDialog></p-confirmDialog>

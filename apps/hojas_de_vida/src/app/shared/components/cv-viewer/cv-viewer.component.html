@@ -1,0 +1,572 @@
+<div *ngIf="loading" class="p-6">
+  <p-skeleton width="100%" height="200px" styleClass="mb-4"></p-skeleton>
+  <p-skeleton width="100%" height="150px" styleClass="mb-4"></p-skeleton>
+  <p-skeleton width="100%" height="150px"></p-skeleton>
+</div>
+
+<div *ngIf="!loading && persona" class="cv-viewer-container">
+  <!-- Encabezado del Perfil -->
+  <p-card styleClass="mb-4">
+    <div class="flex flex-col md:flex-row gap-6">
+      <!-- Avatar y Info Básica -->
+      <div class="flex flex-col items-center gap-3">
+        <p-avatar 
+          [label]="obtenerIniciales()"
+          shape="circle"
+          size="xlarge"
+          [style]="{ 
+            'background-color': '#3B82F6', 
+            'color': 'white',
+            'font-weight': 'bold',
+            'width': '120px',
+            'height': '120px',
+            'font-size': '3rem'
+          }"
+        ></p-avatar>
+        <p-tag 
+          [value]="persona.hojaVidaPresentada ? 'Hoja de Vida Completa' : 'Hoja de Vida Incompleta'" 
+          [severity]="persona.hojaVidaPresentada ? 'success' : 'warn'"
+        ></p-tag>
+      </div>
+
+      <!-- Información Principal -->
+      <div class="flex-1">
+        <h2 class="text-3xl font-bold cv-title mb-2">{{ nombreCompleto }}</h2>
+        <p class="text-xl cv-subtitle mb-4">{{ persona.area || 'Área no especificada' }}</p>
+        
+        <div class="flex flex-wrap gap-2 mb-4">
+          <p-chip 
+            [label]="persona.genero" 
+            icon="pi pi-user"
+            [style]="{ 'background-color': '#EFF6FF', 'color': '#1E40AF' }"
+          ></p-chip>
+          <p-chip 
+            [label]="edad + ' años'" 
+            icon="pi pi-calendar"
+            [style]="{ 'background-color': '#F0FDF4', 'color': '#166534' }"
+          ></p-chip>
+          <p-chip 
+            [label]="persona.estadoCivil" 
+            icon="pi pi-heart"
+            [style]="{ 'background-color': '#FEF2F2', 'color': '#991B1B' }"
+          ></p-chip>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 cv-text">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-id-card cv-icon-primary"></i>
+            <span class="font-semibold">{{ persona.tipoDocumento }}:</span>
+            <span>{{ persona.identificacion }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="pi pi-envelope cv-icon-primary"></i>
+            <span class="font-semibold">Email:</span>
+            <span>{{ persona.correo }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="pi pi-phone cv-icon-primary"></i>
+            <span class="font-semibold">Celular:</span>
+            <span>{{ persona.celular1 }}</span>
+          </div>
+          <div class="flex items-center gap-2" *ngIf="persona.celular2">
+            <i class="pi pi-phone cv-icon-primary"></i>
+            <span class="font-semibold">Celular 2:</span>
+            <span>{{ persona.celular2 }}</span>
+          </div>
+          <div class="flex items-center gap-2" *ngIf="persona.telefono">
+            <i class="pi pi-phone cv-icon-primary"></i>
+            <span class="font-semibold">Teléfono:</span>
+            <span>{{ persona.telefono }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Secciones de Información -->
+  <div class="grid grid-cols-1 gap-4">
+    
+    <!-- Información Personal -->
+    <p-fieldset legend="Información Personal" [toggleable]="true">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Nacionalidad</label>
+          <p class="cv-text">{{ persona.nacionalidad }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Etnia</label>
+          <p class="cv-text">{{ persona.etnia }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Fecha de Nacimiento</label>
+          <p class="cv-text">{{ formatearFecha(persona.fechaNacimiento) }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Lugar de Nacimiento</label>
+          <p class="cv-text">{{ persona.ciudadNacimiento }}, {{ persona.departamentoNacimiento }}, {{ persona.paisNacimiento }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Expedición Documento</label>
+          <p class="cv-text">{{ persona.ciudadExpedicion }}, {{ formatearFecha(persona.fechaExpedicion) }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Discapacidad</label>
+          <p class="cv-text">{{ persona.discapacidad }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Víctima del Conflicto</label>
+          <p-tag [value]="persona.victimaConflicto ? 'Sí' : 'No'" [severity]="persona.victimaConflicto ? 'warn' : 'success'"></p-tag>
+        </div>
+        <div class="info-item" *ngIf="persona.libretaMilitar">
+          <label class="font-semibold cv-label text-sm">Libreta Militar</label>
+          <p class="cv-text">{{ persona.libretaMilitar }}</p>
+        </div>
+        <div class="info-item" *ngIf="persona.estrato">
+          <label class="font-semibold cv-label text-sm">Estrato</label>
+          <p class="cv-text">{{ persona.estrato }}</p>
+        </div>
+      </div>
+    </p-fieldset>
+
+    <!-- Información de Residencia -->
+    <p-fieldset legend="Información de Residencia" [toggleable]="true">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">País</label>
+          <p class="cv-text">{{ persona.paisResidencia }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Departamento</label>
+          <p class="cv-text">{{ persona.departamentoResidencia }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Ciudad</label>
+          <p class="cv-text">{{ persona.ciudadResidencia }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Barrio</label>
+          <p class="cv-text">{{ persona.barrio }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Dirección</label>
+          <p class="cv-text">{{ persona.direccion }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Sector</label>
+          <p class="cv-text">{{ persona.sector }}</p>
+        </div>
+      </div>
+    </p-fieldset>
+
+    <!-- Información Laboral -->
+    <p-fieldset legend="Información Laboral" [toggleable]="true">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Área de Interés</label>
+          <p class="cv-text">{{ persona.area }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Aspiración Salarial</label>
+          <p class="cv-text">{{ formatearSalario(persona.aspiracionSalario) }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Trabaja Actualmente</label>
+          <p-tag [value]="persona.trabajoActual ? 'Sí' : 'No'" [severity]="persona.trabajoActual ? 'success' : 'info'"></p-tag>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Trabaja en la Universidad</label>
+          <p-tag [value]="persona.trabajaUniversidad ? 'Sí' : 'No'" [severity]="persona.trabajaUniversidad ? 'success' : 'info'"></p-tag>
+        </div>
+        <div class="info-item" *ngIf="persona.cargoUniversidad">
+          <label class="font-semibold cv-label text-sm">Cargo en la Universidad</label>
+          <p class="cv-text">{{ persona.cargoUniversidad }}</p>
+        </div>
+        <div class="info-item" *ngIf="persona.dependencia">
+          <label class="font-semibold cv-label text-sm">Dependencia</label>
+          <p class="cv-text">{{ persona.dependencia }}</p>
+        </div>
+        <div class="info-item">
+          <label class="font-semibold cv-label text-sm">Egresado de la Universidad</label>
+          <p-tag [value]="persona.egresadoUniversidad ? 'Sí' : 'No'" [severity]="persona.egresadoUniversidad ? 'success' : 'info'"></p-tag>
+        </div>
+        <div class="info-item" *ngIf="persona.filiacionPolitica">
+          <label class="font-semibold cv-label text-sm">Filiación Política</label>
+          <p class="cv-text">{{ persona.filiacionPolitica }}</p>
+        </div>
+      </div>
+    </p-fieldset>
+
+    <!-- Información Académica -->
+    <p-fieldset legend="Formación Académica" [toggleable]="true">
+      <ng-container *ngIf="persona.informacionAcademica && persona.informacionAcademica.length > 0; else sinAcademica">
+        <div *ngFor="let academica of persona.informacionAcademica; let i = index; let last = last" class="mb-6 last:mb-0">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl cv-badge-number flex items-center justify-center">
+            <span class="text-lg font-bold cv-icon-primary">{{ i + 1 }}</span>
+          </div>
+          <h4 class="text-lg font-bold cv-text">Título Académico</h4>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-0 md:pl-13">
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Tipo de Título</label>
+            <p class="cv-text">{{ academica.tipoTitulo || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Título</label>
+            <p class="cv-text">{{ academica.titulo || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">En curso</label>
+            <p class="cv-text">{{ academica.enCurso ? 'Sí' : 'No' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Modalidad</label>
+            <p class="cv-text">{{ academica.modalidad || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Institución</label>
+            <p class="cv-text">{{ academica.institucion || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Fecha de Graduación</label>
+            <p class="cv-text">{{ formatearFecha(academica.fechaGrado) }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Tarjeta Profesional</label>
+            <p class="cv-text">{{ academica.tarjetaProfesional ? 'Sí' : 'No' }}</p>
+          </div>
+        </div>
+        <div *ngIf="academica.archivos && academica.archivos.length > 0" class="mt-4 pl-0 md:pl-13">
+          <label class="font-semibold text-gray-600 text-sm mb-2 block">Archivos Adjuntos</label>
+          <div class="flex flex-wrap gap-2">
+            <p-chip 
+              *ngFor="let archivo of academica.archivos" 
+              [label]="archivo.nombre || 'Archivo'" 
+              icon="pi pi-file"
+              styleClass="cv-badge cv-text"
+            ></p-chip>
+          </div>
+        </div>
+        <div *ngIf="!last" class="mt-6 border-t cv-divider"></div>
+      </div>
+      </ng-container>
+      <ng-template #sinAcademica>
+        <div class="cv-info-box rounded-xl p-6">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-info-circle text-xl"></i>
+            <span class="font-medium">No hay información académica disponible.</span>
+          </div>
+        </div>
+      </ng-template>
+    </p-fieldset>
+
+    <!-- Experiencia Laboral -->
+    <p-fieldset legend="Experiencia Laboral" [toggleable]="true">
+      <ng-container *ngIf="persona.informacionLaboral && persona.informacionLaboral.length > 0; else sinLaboral">
+        <div *ngFor="let laboral of persona.informacionLaboral; let i = index; let last = last" class="mb-6 last:mb-0">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+            <span class="text-lg font-bold text-green-600">{{ i + 1 }}</span>
+          </div>
+          <h4 class="text-lg font-bold cv-text">Experiencia Laboral</h4>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-0 md:pl-13">
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Tipo de Experiencia</label>
+            <p class="cv-text">{{ laboral.tipo_experiencia || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Empresa</label>
+            <p class="cv-text">{{ laboral.nombreEmpresa || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Fecha de Inicio</label>
+            <p class="cv-text">{{ formatearFecha(laboral.fechaInicio) }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Fecha de Fin</label>
+            <p class="cv-text">{{ formatearFecha(laboral.fechaFin) }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">País</label>
+            <p class="cv-text">{{ laboral.pais || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Ciudad</label>
+            <p class="cv-text">{{ laboral.ciudad || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Dirección</label>
+            <p class="cv-text">{{ laboral.direccion || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Celular</label>
+            <p class="cv-text">{{ laboral.celular || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Correo</label>
+            <p class="cv-text">{{ laboral.correo || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Jefe Inmediato</label>
+            <p class="cv-text">{{ laboral.jefeInmediato || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Cargo Desempeñado</label>
+            <p class="cv-text">{{ laboral.cargoDesempenado || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Vigente</label>
+            <p-tag [value]="laboral.vigente ? 'Sí' : 'No'" [severity]="laboral.vigente ? 'success' : 'info'"></p-tag>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Motivo de Retiro</label>
+            <p class="cv-text">{{ laboral.motivoRetiro || 'N/A' }}</p>
+          </div>
+        </div>
+        <div *ngIf="laboral.archivos && laboral.archivos.length > 0" class="mt-4 pl-0 md:pl-13">
+          <label class="font-semibold text-gray-600 text-sm mb-2 block">Archivos Adjuntos</label>
+          <div class="flex flex-wrap gap-2">
+            <p-chip 
+              *ngFor="let archivo of laboral.archivos" 
+              [label]="archivo.nombre || 'Archivo'" 
+              icon="pi pi-file"
+              styleClass="bg-green-50 text-green-700"
+            ></p-chip>
+          </div>
+        </div>
+        <div *ngIf="!last" class="mt-6 border-t cv-divider"></div>
+      </div>
+      </ng-container>
+      <ng-template #sinLaboral>
+        <div class="cv-info-box rounded-xl p-6">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-info-circle text-xl"></i>
+            <span class="font-medium">No hay información laboral disponible.</span>
+          </div>
+        </div>
+      </ng-template>
+    </p-fieldset>
+
+    <!-- Competencias -->
+    <p-fieldset legend="Competencias y Habilidades" [toggleable]="true">
+      <ng-container *ngIf="persona.competencias && persona.competencias.length > 0; else sinCompetencias">
+      <div class="flex flex-wrap gap-3">
+        <div
+          *ngFor="let competencia of persona.competencias"
+          class="px-4 py-2 rounded-xl cv-badge cv-text font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-0.5"
+        >
+          <i class="pi pi-star-fill mr-2"></i>{{ competencia.nombre || competencia }}
+        </div>
+      </div>
+      </ng-container>
+      <ng-template #sinCompetencias>
+        <div class="cv-info-box rounded-xl p-6">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-info-circle text-xl"></i>
+            <span class="font-medium">No hay competencias disponibles.</span>
+          </div>
+        </div>
+      </ng-template>
+    </p-fieldset>
+
+    <!-- Afiliaciones -->
+    <p-fieldset legend="Afiliaciones" [toggleable]="true">
+      <ng-container *ngIf="persona.afiliaciones && persona.afiliaciones.length > 0; else sinAfiliaciones">
+      <div *ngFor="let afiliacion of persona.afiliaciones; let i = index; let last = last" class="mb-6 last:mb-0">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+            <span class="text-lg font-bold text-emerald-600">{{ i + 1 }}</span>
+          </div>
+          <h4 class="text-lg font-bold cv-text">Afiliación</h4>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-0 md:pl-13">
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Tipo</label>
+            <p class="cv-text">{{ afiliacion.tipo || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Administradora</label>
+            <p class="cv-text">{{ afiliacion.administradora || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Fecha de Afiliación</label>
+            <p class="cv-text">{{ formatearFecha(afiliacion.fechaAfiliacion) }}</p>
+          </div>
+        </div>
+        <div *ngIf="afiliacion.archivos && afiliacion.archivos.length > 0" class="mt-4 pl-0 md:pl-13">
+          <label class="font-semibold text-gray-600 text-sm mb-2 block">Archivos Adjuntos</label>
+          <div class="flex flex-wrap gap-2">
+            <p-chip 
+              *ngFor="let archivo of afiliacion.archivos" 
+              [label]="archivo.nombre || 'Archivo'" 
+              icon="pi pi-file"
+              styleClass="bg-emerald-50 text-emerald-700"
+            ></p-chip>
+          </div>
+        </div>
+        <div *ngIf="!last" class="mt-6 border-t cv-divider"></div>
+      </div>
+      </ng-container>
+      <ng-template #sinAfiliaciones>
+        <div class="cv-info-box rounded-xl p-6">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-info-circle text-xl"></i>
+            <span class="font-medium">No hay información de afiliaciones disponibles.</span>
+          </div>
+        </div>
+      </ng-template>
+    </p-fieldset>
+
+    <!-- Referencias -->
+    <p-fieldset legend="Referencias Personales" [toggleable]="true">
+      <ng-container *ngIf="persona.referencias && persona.referencias.length > 0; else sinReferencias">
+      <div *ngFor="let referencia of persona.referencias; let i = index; let last = last" class="mb-6 last:mb-0">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+            <span class="text-lg font-bold text-purple-600">{{ i + 1 }}</span>
+          </div>
+          <h4 class="text-lg font-bold cv-text">Referencia</h4>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-0 md:pl-13">
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Tipo de Referencia</label>
+            <p class="cv-text">{{ referencia.tipo_referencia || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Nombre Completo</label>
+            <p class="cv-text">{{ referencia.nombres }} {{ referencia.apellidos }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Teléfono</label>
+            <p class="cv-text">{{ referencia.telefono || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Celular</label>
+            <p class="cv-text">{{ referencia.celular || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Dirección</label>
+            <p class="cv-text">{{ referencia.direccion || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Ocupación</label>
+            <p class="cv-text">{{ referencia.ocupacion || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Empresa</label>
+            <p class="cv-text">{{ referencia.empresa || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Cargo</label>
+            <p class="cv-text">{{ referencia.cargo || 'N/A' }}</p>
+          </div>
+        </div>
+        <div *ngIf="!last" class="mt-6 border-t cv-divider"></div>
+      </div>
+      </ng-container>
+      <ng-template #sinReferencias>
+        <div class="cv-info-box rounded-xl p-6">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-info-circle text-xl"></i>
+            <span class="font-medium">No hay información de referencias disponibles.</span>
+          </div>
+        </div>
+      </ng-template>
+    </p-fieldset>
+
+    <!-- Información Familiar -->
+    <p-fieldset legend="Información Familiar" [toggleable]="true">
+      <ng-container *ngIf="persona.informacionesFamiliares && persona.informacionesFamiliares.length > 0; else sinFamiliar">
+      <div *ngFor="let familiar of persona.informacionesFamiliares; let i = index; let last = last" class="mb-6 last:mb-0">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+            <span class="text-lg font-bold text-amber-600">{{ i + 1 }}</span>
+          </div>
+          <h4 class="text-lg font-bold cv-text">Familiar</h4>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-0 md:pl-13">
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Nombres</label>
+            <p class="cv-text">{{ familiar.nombres || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Tipo de Documento</label>
+            <p class="cv-text">{{ familiar.tipoDocumento || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Identificación</label>
+            <p class="cv-text">{{ familiar.identificacion || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Fecha de Nacimiento</label>
+            <p class="cv-text">{{ formatearFecha(familiar.fechaNacimiento) }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Ocupación</label>
+            <p class="cv-text">{{ familiar.ocupacion || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Depende Económicamente</label>
+            <p-tag [value]="familiar.dependeEconomicamente ? 'Sí' : 'No'" [severity]="familiar.dependeEconomicamente ? 'warn' : 'success'"></p-tag>
+          </div>
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Parentesco</label>
+            <p class="cv-text">{{ familiar.parentesco || 'N/A' }}</p>
+          </div>
+        </div>
+        <div *ngIf="!last" class="mt-6 border-t cv-divider"></div>
+      </div>
+      </ng-container>
+      <ng-template #sinFamiliar>
+        <div class="cv-info-box rounded-xl p-6">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-info-circle text-xl"></i>
+            <span class="font-medium">No hay información familiar disponible.</span>
+          </div>
+        </div>
+      </ng-template>
+    </p-fieldset>
+
+    <!-- Documentos de Soporte -->
+    <p-fieldset legend="Documentos de Soporte" [toggleable]="true">
+      <ng-container *ngIf="persona.documentosSoporte && persona.documentosSoporte.length > 0; else sinDocumentos">
+      <div *ngFor="let documento of persona.documentosSoporte; let i = index; let last = last" class="mb-6 last:mb-0">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+            <span class="text-lg font-bold text-indigo-600">{{ i + 1 }}</span>
+          </div>
+          <h4 class="text-lg font-bold cv-text">Documento de Soporte</h4>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-0 md:pl-13">
+          <div class="info-item">
+            <label class="font-semibold cv-label text-sm">Tipo de Soporte</label>
+            <p class="cv-text">{{ documento.tipoSoporte || 'N/A' }}</p>
+          </div>
+        </div>
+        <div *ngIf="documento.archivos && documento.archivos.length > 0" class="mt-4 pl-0 md:pl-13">
+          <label class="font-semibold text-gray-600 text-sm mb-2 block">Archivos Adjuntos</label>
+          <div class="flex flex-wrap gap-2">
+            <p-chip 
+              *ngFor="let archivo of documento.archivos" 
+              [label]="archivo.nombre || 'Archivo'" 
+              icon="pi pi-file"
+              styleClass="bg-indigo-50 text-indigo-700"
+            ></p-chip>
+          </div>
+        </div>
+        <div *ngIf="!last" class="mt-6 border-t cv-divider"></div>
+      </div>
+      </ng-container>
+      <ng-template #sinDocumentos>
+        <div class="cv-info-box rounded-xl p-6">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-info-circle text-xl"></i>
+            <span class="font-medium">No hay documentos de soporte disponibles.</span>
+          </div>
+        </div>
+      </ng-template>
+    </p-fieldset>
+
+  </div>
+</div>

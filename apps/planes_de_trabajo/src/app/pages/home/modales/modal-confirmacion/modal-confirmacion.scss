@@ -1,0 +1,135 @@
+:host ::ng-deep .confirmation-dialog {
+  .p-dialog-header {
+    padding: 1.5rem 1.5rem 0 1.5rem !important;
+    border-bottom: none !important;
+    background: var(--p-surface-0) !important;
+    border-top-left-radius: 0.7rem !important;
+    border-top-right-radius: 0.7rem !important;
+  }
+
+  .p-dialog-content {
+    padding: 1.5rem !important;
+    background: var(--p-surface-0) !important;
+  }
+
+  .p-dialog-footer {
+    padding: 0 1.5rem 1.5rem 1.5rem !important;
+    border-top: none !important;
+    background: var(--p-surface-0) !important;
+    border-bottom-left-radius: 0.7rem !important;
+    border-bottom-right-radius: 0.7rem !important;
+  }
+}
+
+.dialog-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1rem !important;
+
+  .header-icon {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    &.icon-success {
+      background: linear-gradient(135deg, #10b981, #059669) !important;
+    }
+
+    &.icon-warn {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    }
+
+    &.icon-info {
+      background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    }
+
+    &.icon-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    }
+
+    i {
+      font-size: 1.5rem;
+      color: var(--p-text-color-0) !important;
+    }
+  }
+
+  .dialog-title {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: var(--p-text-color) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+  }
+}
+
+.dialog-content {
+  text-align: center !important;
+
+  .confirmation-message {
+    color: var(--p-text-color-secondary) !important;
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
+  }
+}
+
+.my-app-dark {
+  :host ::ng-deep .confirmation-dialog {
+    .p-dialog-header {
+      background: var(--p-surface-0) !important;
+      border-bottom: 1px solid var(--glass-border) !important;
+    }
+
+    .p-dialog-content {
+      background: var(--p-surface-0) !important;
+    }
+
+    .p-dialog-footer {
+      background: var(--p-surface-0) !important;
+      border-top: 1px solid var(--glass-border) !important;
+    }
+  }
+
+  .dialog-header {
+    .dialog-title {
+      color: var(--p-text-color) !important;
+    }
+  }
+
+  .dialog-content {
+    .confirmation-message {
+      color: var(--p-text-color-secondary) !important;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  :host ::ng-deep .confirmation-dialog {
+    .p-dialog {
+      width: 95vw !important;
+      margin: 1rem!important;
+    }
+
+    .dialog-header {
+      flex-direction: column !important;
+      gap: 0.5rem !important;
+
+      .header-icon {
+        width: 40px !important;
+        height: 40px !important;
+
+        i {
+          font-size: 1.25rem !important;
+        }
+      }
+
+      .dialog-title {
+        font-size: 1.1rem !important;
+      }
+    }
+  }
+}

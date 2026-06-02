@@ -1,0 +1,38 @@
+$transition-fast: var(--transition-fast);
+
+::ng-deep {
+  .director-content {
+    .professor-actions {
+      .p-button {
+        @media (max-width: 768px) {
+          margin-left: 1.7rem !important;
+          width: 80% !important;
+          max-width: 300px !important;
+        }
+      }
+    }
+  }
+
+  label[_ngcontent-ng-c1814765715] {
+    margin-bottom: 0.2rem !important;
+  }
+}
+
+::ng-deep .modal-observaciones-vicerrectoria {
+  .p-dialog-header{
+    border-top-left-radius: 0.7rem !important;
+    border-top-right-radius: 0.7rem !important;
+    overflow: hidden !important; 
+  }
+
+  .p-dialog-content{
+    border-bottom-left-radius: 1rem !important;
+    border-bottom-right-radius: 1rem !important;
+  }
+
+  .p-dialog-footer {
+    border-bottom-left-radius: 0.7rem !important;
+    border-bottom-right-radius: 0.7rem !important;
+  }
+}
+

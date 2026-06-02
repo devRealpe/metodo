@@ -1,0 +1,122 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="flex flex-col gap-6">
+  <div class="flex items-center gap-4">
+    <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (onClick)="volver()"></p-button>
+    <h2 class="text-2xl font-bold text-[var(--p-text-color)]">Evaluación de Desempeño</h2>
+  </div>
+
+  @if (cargando()) {
+    <p-card>
+      <p-skeleton width="60%" height="24px" styleClass="mb-3"></p-skeleton>
+      <p-skeleton width="40%" height="20px" styleClass="mb-2"></p-skeleton>
+      @for (i of [1,2,3]; track i) {
+        <p-skeleton width="100%" height="80px" styleClass="mb-4"></p-skeleton>
+      }
+    </p-card>
+  } @else if (evaluacion()) {
+    <!-- Info evaluación -->
+    <p-card styleClass="sedu-card">
+      <div class="flex flex-wrap justify-between items-start gap-4">
+        <div>
+          <h3 class="text-lg font-semibold mb-1">{{ evaluacion()!.nombreEvaluado || 'Evaluado' }}</h3>
+          <p class="text-sm text-[var(--p-text-secondary-color)]">
+            <strong>Evaluador:</strong> {{ evaluacion()!.nombreEvaluador }}
+          </p>
+          <p class="text-sm text-[var(--p-text-secondary-color)]">
+            <strong>Versión de formato:</strong> {{ evaluacion()!.formatoVersionId }}
+          </p>
+        </div>
+        <div class="text-right flex flex-col items-end gap-2">
+          <p-tag [value]="evaluacion()!.estado" [severity]="getSeveridadEstado(evaluacion()!.estado)"></p-tag>
+          @if (evaluacion()!.puntajeTotal != null) {
+            <p class="text-2xl font-bold text-[var(--p-primary-color)]">{{ evaluacion()!.puntajeTotal | number:'1.2-2' }}</p>
+            <p class="text-xs text-[var(--p-text-secondary-color)]">Puntaje Total</p>
+          }
+        </div>
+      </div>
+    </p-card>
+
+    @if (evaluacion()!.estado === 'DEVUELTA' && evaluacion()!.observacionGeneral) {
+      <p-card styleClass="border-l-4 border-red-500">
+        <div class="flex gap-3">
+          <i class="pi pi-exclamation-triangle text-red-500 text-xl"></i>
+          <div>
+            <p class="font-semibold text-red-600">Observación de devolución</p>
+            <p class="text-sm mt-1">{{ evaluacion()!.observacionGeneral }}</p>
+          </div>
+        </div>
+      </p-card>
+    }
+
+    @if (secciones().length === 0) {
+      <p-card>
+        <div class="text-center py-8 text-[var(--p-text-secondary-color)]">
+          <i class="pi pi-info-circle text-4xl mb-3"></i>
+          <p>Este formato de evaluación aún no tiene secciones configuradas.</p>
+          <p class="text-sm mt-1">Contacte al administrador para configurarlo.</p>
+        </div>
+      </p-card>
+    } @else {
+      <!-- Secciones e ítems -->
+      <form [formGroup]="form">
+        <div formArrayName="secciones">
+          @for (seccion of secciones(); track seccion.id; let si = $index) {
+            <p-panel [header]="(si + 1) + '. ' + seccion.nombre" [toggleable]="true" styleClass="mb-4">
+              <div [formGroupName]="si">
+                <div formArrayName="items">
+                  @for (item of seccion.items; track item.id; let ii = $index) {
+                    <div [formGroupName]="ii" class="border rounded-lg p-4 mb-3 bg-[var(--p-content-background)]">
+                      <div class="flex justify-between items-start mb-3">
+                        <p class="font-medium">{{ item.orden }}. {{ item.descripcion }}</p>
+                        @if (item.peso != null) {
+                          <span class="text-xs text-[var(--p-text-secondary-color)] ml-2">Peso: {{ item.peso }}%</span>
+                        }
+                      </div>
+
+                      <!-- Opciones de escala -->
+                      <div class="flex flex-wrap gap-4 mb-2">
+                        @for (escala of escalas(); track escala.id) {
+                          <div class="flex items-center gap-2">
+                            <p-radioButton
+                              [inputId]="'item_' + si + '_' + ii + '_' + escala.id"
+                              formControlName="escalaId"
+                              [value]="escala.id"
+                              [disabled]="!esEditable">
+                            </p-radioButton>
+                            <label [for]="'item_' + si + '_' + ii + '_' + escala.id" class="text-sm cursor-pointer">
+                              {{ escala.etiqueta }} ({{ escala.valor }})
+                            </label>
+                          </div>
+                        }
+                      </div>
+
+                      <textarea pInputTextarea formControlName="observacion" [rows]="2" class="w-full"
+                        placeholder="Observación del ítem (opcional)" [readonly]="!esEditable"></textarea>
+                    </div>
+                  }
+                </div>
+              </div>
+            </p-panel>
+          }
+        </div>
+      </form>
+
+      <!-- Acciones -->
+      <div class="flex flex-wrap gap-3 justify-end">
+        @if (esEditable) {
+          <p-button label="Guardar Borrador" icon="pi pi-save" severity="secondary"
+            [loading]="guardando()" (onClick)="guardarBorrador()"></p-button>
+          <p-button label="Firmar y Enviar al Evaluado" icon="pi pi-pen-to-square" severity="primary"
+            [loading]="enviando()" (onClick)="firmarEvaluador()"></p-button>
+        }
+        @if (evaluacion()!.estado === 'FIRMADO_EVALUADO' || evaluacion()!.estado === 'CERRADA') {
+          <p-button label="Plan de Mejora" icon="pi pi-file-edit" severity="help"
+            (onClick)="irAPlanMejoramiento()"></p-button>
+        }
+      </div>
+    }
+  }
+</div>
+

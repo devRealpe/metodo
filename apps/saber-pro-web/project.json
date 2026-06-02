@@ -1,0 +1,153 @@
+{
+  "name": "saber-pro-web",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/saber-pro-web/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/saber-pro-web/browser",
+        "index": "apps/saber-pro-web/src/index.html",
+        "main": "apps/saber-pro-web/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/saber-pro-web/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/saber-pro-web/public"
+          }
+        ],
+        "styles": ["apps/saber-pro-web/src/styles.scss"]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "port": 4211,
+        "publicHost": "http://localhost:4211",
+        "proxyConfig": "apps/saber-pro-web/proxy.conf.js"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "saber-pro-web:build:production"
+        },
+        "development": {
+          "buildTarget": "saber-pro-web:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "saber-pro-web:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../coverage/saber-pro-web"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "saber-pro-web:build",
+        "port": 4200,
+        "spa": true
+      }
+    },
+    "server": {
+      "dependsOn": ["build"],
+      "executor": "@angular-devkit/build-angular:server",
+      "options": {
+        "outputPath": "dist/saber-pro-web/server",
+        "main": "apps/saber-pro-web/src/server.ts",
+        "tsConfig": "apps/saber-pro-web/tsconfig.server.json",
+        "inlineStyleLanguage": "scss"
+      },
+      "configurations": {
+        "production": {
+          "outputHashing": "media"
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "sourceMap": true,
+          "extractLicenses": false,
+          "vendorChunk": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve-ssr": {
+      "continuous": true,
+      "executor": "@angular-devkit/build-angular:ssr-dev-server",
+      "configurations": {
+        "development": {
+          "browserTarget": "saber-pro-web:build:development",
+          "serverTarget": "saber-pro-web:server:development"
+        },
+        "production": {
+          "browserTarget": "saber-pro-web:build:production",
+          "serverTarget": "saber-pro-web:server:production"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "prerender": {
+      "executor": "@angular-devkit/build-angular:prerender",
+      "options": {
+        "routes": ["/"]
+      },
+      "configurations": {
+        "development": {
+          "browserTarget": "saber-pro-web:build:development",
+          "serverTarget": "saber-pro-web:server:development"
+        },
+        "production": {
+          "browserTarget": "saber-pro-web:build:production",
+          "serverTarget": "saber-pro-web:server:production"
+        }
+      },
+      "defaultConfiguration": "production"
+    }
+  }
+}

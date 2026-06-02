@@ -1,0 +1,934 @@
+:host {
+    display: block;
+    padding: 1rem;
+}
+
+/* Container principal responsive */
+.calendar-container {
+    max-width: 100%;
+    margin: 0 auto;
+    overflow-x: hidden; /* Evitar scroll horizontal innecesario */
+    
+    /* Móviles pequeños */
+    @media (max-width: 480px) {
+        min-width: 320px; /* Ancho mínimo para evitar compresión excesiva */
+    }
+}
+
+/* Toolbar simple */
+.p-toolbar {
+    border: 1px solid #e5e7eb;
+    background: white;
+    
+    .p-toolbar-group-left {
+        flex-wrap: wrap;
+        gap: 1rem;
+        width: 100%;
+        
+        @media (max-width: 768px) {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+}
+
+/* Controles responsive */
+:host ::ng-deep .p-autocomplete,
+:host ::ng-deep .p-dropdown,
+:host ::ng-deep app-select-component,
+:host ::ng-deep app-datepicker-component {
+    /* Móviles pequeños */
+    @media (max-width: 480px) {
+        height: 2rem;
+        
+        .p-inputtext,
+        .p-dropdown-label,
+        .p-autocomplete-input {
+            height: 2rem !important;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            font-size: 0.75rem;
+            
+            &:focus {
+                border-color: #3b82f6;
+            }
+        }
+        
+        .p-dropdown-trigger,
+        .p-autocomplete-dropdown {
+            height: 2rem !important;
+            width: 2rem !important;
+        }
+    }
+    
+    /* Móviles y tablets */
+    @media (min-width: 481px) and (max-width: 1024px) {
+        height: 2.25rem;
+        
+        .p-inputtext,
+        .p-dropdown-label,
+        .p-autocomplete-input {
+            height: 2.25rem !important;
+            padding: 0.375rem 0.625rem;
+            border: 1px solid #d1d5db;
+            font-size: 0.875rem;
+            
+            &:focus {
+                border-color: #3b82f6;
+            }
+        }
+        
+        .p-dropdown-trigger,
+        .p-autocomplete-dropdown {
+            height: 2.25rem !important;
+            width: 2.25rem !important;
+        }
+    }
+    
+    /* Desktop */
+    @media (min-width: 1025px) {
+        height: 2.5rem;
+        
+        .p-inputtext,
+        .p-dropdown-label,
+        .p-autocomplete-input {
+            height: 2.5rem !important;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            
+            &:focus {
+                border-color: #3b82f6;
+            }
+        }
+        
+        .p-dropdown-trigger,
+        .p-autocomplete-dropdown {
+            height: 2.5rem !important;
+            width: 2.5rem !important;
+        }
+    }
+}
+
+/* Altura y layout del calendario - Responsive Mejorado */
+.calendar-wrapper {
+    width: 100%;
+    position: relative;
+    
+    /* Móviles muy pequeños (< 375px) - Prioridad en altura */
+    @media (max-width: 374px) {
+        height: calc(100vh - 350px);
+        min-height: 400px;
+        max-height: calc(100vh - 200px);
+    }
+    
+    /* Móviles pequeños (375px - 480px) */
+    @media (min-width: 375px) and (max-width: 480px) {
+        height: calc(100vh - 380px);
+        min-height: 450px;
+        max-height: calc(100vh - 250px);
+    }
+    
+    /* Móviles (480px - 640px) */
+    @media (min-width: 481px) and (max-width: 640px) {
+        height: calc(100vh - 360px);
+        min-height: 480px;
+        max-height: calc(100vh - 280px);
+    }
+    
+    /* Tablets pequeñas (640px - 768px) */
+    @media (min-width: 641px) and (max-width: 768px) {
+        height: calc(100vh - 400px);
+        min-height: 450px;
+    }
+    
+    /* Tablets (768px - 1024px) */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        height: calc(100vh - 350px);
+        min-height: 500px;
+    }
+    
+    /* Desktop pequeño (1024px - 1280px) */
+    @media (min-width: 1025px) and (max-width: 1280px) {
+        height: calc(100vh - 280px);
+        min-height: 550px;
+    }
+    
+    /* Desktop grande (> 1280px) */
+    @media (min-width: 1281px) {
+        height: calc(100vh - 260px);
+        min-height: 600px;
+    }
+}
+
+/* Asegurar que FullCalendar ocupe todo el espacio disponible y sea responsive */
+.calendar-wrapper full-calendar,
+.calendar-wrapper .fc {
+    height: 100% !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+.calendar-wrapper full-calendar ::ng-deep .fc {
+    height: 100% !important;
+}
+
+/* Comportamiento específico para móviles */
+@media (max-width: 768px) {
+    .calendar-wrapper {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+    
+    .calendar-wrapper full-calendar,
+    .calendar-wrapper .fc {
+        min-width: 600px !important; /* Ancho mínimo fijo para móviles */
+    }
+    
+    .calendar-wrapper full-calendar ::ng-deep .fc {
+        min-width: 600px !important;
+    }
+}
+
+/* Comportamiento para tablets y desktop */
+@media (min-width: 769px) {
+    .calendar-wrapper {
+        overflow: hidden;
+    }
+    
+    .calendar-wrapper full-calendar,
+    .calendar-wrapper .fc {
+        min-width: 0;
+    }
+    
+    .calendar-wrapper full-calendar ::ng-deep .fc {
+        min-width: 0 !important;
+    }
+}
+
+/* Responsive adjustments para diferentes dispositivos */
+@media (max-width: 480px) {
+    :host {
+        padding: 0.25rem;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+    :host {
+        padding: 0.5rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    :host {
+        padding: 0.75rem;
+    }
+}
+
+/* ====== Estilos minimalistas ====== */
+
+/* Card simple */
+:host ::ng-deep .p-card {
+    border: 1px solid #e5e7eb;
+    
+    .p-card-header {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        
+        h2, p {
+            margin: 0;
+        }
+    }
+}
+
+/* Scroll simple para el calendario */
+:host ::ng-deep .fc-scroller {
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        
+        &:hover {
+            background: #94a3b8;
+        }
+    }
+}
+
+/* Forzar visibilidad del calendario */
+:host ::ng-deep full-calendar {
+    display: block !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+
+/* Asegurar que el contenido del calendario sea visible */
+:host ::ng-deep .fc-theme-standard {
+    border: 1px solid #e5e7eb;
+}
+
+:host ::ng-deep .fc-scrollgrid {
+    border: 1px solid #e5e7eb;
+}
+
+/* Altura fija para las celdas de tiempo */
+:host ::ng-deep .fc-timegrid-axis {
+    width: 60px;
+}
+
+:host ::ng-deep .fc-col-header-cell {
+    background: #f9fafb;
+    font-weight: 600;
+}
+
+/* Más aire vertical (30m = 3rem) */
+.fc .fc-timegrid-slot {
+    height: 3rem;
+}
+
+.fc .fc-timegrid-axis-cushion {
+    font-size: .8rem;
+}
+
+/* Evitar “amontonado” entre simultáneos */
+.fc .fc-timegrid-event {
+    margin: 3px;
+}
+
+/* Evento: bordes y padding cómodo */
+.fc .fc-timegrid-event,
+.fc .fc-daygrid-event {
+    border-radius: .6rem;
+    padding: .35rem .55rem;
+    font-size: .82rem;
+    line-height: 1.1rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Asegura que el contenido ocupe todo y respete color */
+.fc .fc-event-main {
+    width: 100%;
+}
+
+/* Contenido interno del evento */
+.ev {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .15rem;
+}
+
+.ev-time {
+    font-weight: 800;
+    letter-spacing: .2px;
+}
+
+.ev-sub {
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Nota: eliminamos cualquier estilo de .legend* para evitar conflictos con el tema */
+
+/* ====== FullCalendar: configuración minimalista ====== */
+:host ::ng-deep .fc {
+    font-family: inherit;
+    height: 100% !important;
+    display: block !important;
+}
+
+:host ::ng-deep .fc-view-harness {
+    height: 100% !important;
+}
+
+:host ::ng-deep .fc-timegrid {
+    height: 100% !important;
+}
+
+/* Título del calendario responsive */
+:host ::ng-deep .fc .fc-toolbar-title {
+  font-weight: 600;  
+  color: #374151;
+  line-height: 1.2;
+  
+  /* Móviles pequeños */
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+  
+  /* Móviles */
+  @media (min-width: 481px) and (max-width: 640px) {
+    font-size: 1rem;
+  }
+  
+  /* Tablets pequeñas */
+  @media (min-width: 641px) and (max-width: 768px) {
+    font-size: 1.1rem;
+  }
+  
+  /* Tablets */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    font-size: 1.2rem;
+  }
+  
+  /* Desktop */
+  @media (min-width: 1025px) {
+    font-size: 1.25rem;
+  }
+}
+
+/* Configuración de scroll responsive para 24 horas */
+:host ::ng-deep .fc-scroller {
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    
+    /* Móviles pequeños */
+    @media (max-width: 480px) {
+        max-height: calc(100vh - 500px) !important;
+    }
+    
+    /* Móviles */
+    @media (min-width: 481px) and (max-width: 640px) {
+        max-height: calc(100vh - 470px) !important;
+    }
+    
+    /* Tablets pequeñas */
+    @media (min-width: 641px) and (max-width: 768px) {
+        max-height: calc(100vh - 450px) !important;
+    }
+    
+    /* Tablets */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        max-height: calc(100vh - 400px) !important;
+    }
+    
+    /* Desktop pequeño */
+    @media (min-width: 1025px) and (max-width: 1280px) {
+        max-height: calc(100vh - 350px) !important;
+    }
+    
+    /* Desktop grande */
+    @media (min-width: 1281px) {
+        max-height: calc(100vh - 320px) !important;
+    }
+}
+
+:host ::ng-deep .fc-timegrid-body {
+    overflow: visible !important;
+}
+
+:host ::ng-deep .fc-timegrid-slots {
+    min-height: auto !important;
+}
+
+/* Asegurar que todas las horas se muestren */
+:host ::ng-deep .fc-timegrid-slot {
+    height: 3rem !important;
+    min-height: 3rem !important;
+}
+
+/* Hora actual simple */
+:host ::ng-deep .fc .fc-timegrid-now-indicator-line {
+    border-color: #dc2626;
+}
+
+/* Encabezado del día responsive */
+:host ::ng-deep .fc .fc-col-header-cell-cushion {
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 0.25rem 0.5rem;
+  
+  /* Móviles pequeños */
+  @media (max-width: 480px) {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.3rem;
+  }
+  
+  /* Móviles */
+  @media (min-width: 481px) and (max-width: 640px) {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.4rem;
+  }
+  
+  /* Tablets pequeñas */
+  @media (min-width: 641px) and (max-width: 768px) {
+    font-size: 0.85rem;
+  }
+  
+  /* Tablets */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    font-size: 0.9rem;
+  }
+  
+  /* Desktop */
+  @media (min-width: 1025px) {
+    font-size: 1rem;
+  }
+}
+
+/* ====== FullCalendar: Responsividad completa ====== */
+
+/* Botones de la toolbar del calendario */
+:host ::ng-deep .fc .fc-button {
+  /* Móviles pequeños */
+  @media (max-width: 480px) {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    min-height: 1.8rem;
+  }
+  
+  /* Móviles */
+  @media (min-width: 481px) and (max-width: 640px) {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    min-height: 2rem;
+  }
+  
+  /* Tablets */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Ajustar la toolbar del calendario en móviles */
+:host ::ng-deep .fc .fc-toolbar {
+  /* Móviles pequeños y medianos */
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    
+    .fc-toolbar-chunk {
+      display: flex;
+      justify-content: center;
+      
+      &:first-child {
+        order: 2;
+      }
+      
+      &:nth-child(2) {
+        order: 1;
+      }
+      
+      &:last-child {
+        order: 3;
+      }
+    }
+  }
+  
+  /* Tablets */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    padding: 0.75rem;
+  }
+}
+
+/* Hacer que las vistas de calendario sean más responsivas */
+:host ::ng-deep .fc-view-harness {
+  width: 100% !important;
+  overflow-x: auto;
+  min-width: 300px;
+}
+
+/* Ajustar el ancho de las columnas en vista de semana/día - Optimizado para móviles */
+:host ::ng-deep .fc .fc-timegrid-col {
+  /* Móviles muy pequeños - Más espacio para contenido */
+  @media (max-width: 374px) {
+    min-width: 280px !important; /* Ancho generoso para una sola columna */
+  }
+  
+  /* Móviles pequeños */
+  @media (min-width: 375px) and (max-width: 480px) {
+    min-width: 250px !important;
+  }
+  
+  /* Móviles */
+  @media (min-width: 481px) and (max-width: 640px) {
+    min-width: 200px !important;
+  }
+  
+  /* Tablets */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    min-width: 100px;
+  }
+  
+  /* Desktop */
+  @media (min-width: 1025px) {
+    min-width: 120px;
+  }
+}
+
+/* Eje de tiempo responsive - Más espacio en móviles */
+:host ::ng-deep .fc .fc-timegrid-axis {
+  /* Móviles muy pequeños - Más ancho para mejor legibilidad */
+  @media (max-width: 374px) {
+    width: 55px !important;
+  }
+  
+  /* Móviles pequeños */
+  @media (min-width: 375px) and (max-width: 480px) {
+    width: 50px !important;
+  }
+  
+  /* Móviles */
+  @media (min-width: 481px) and (max-width: 640px) {
+    width: 50px;
+  }
+  
+  /* Tablets y desktop */
+  @media (min-width: 641px) {
+    width: 60px;
+  }
+}
+
+/* Eventos optimizados para mejor legibilidad en móviles */
+:host ::ng-deep .fc .fc-timegrid-event,
+:host ::ng-deep .fc .fc-daygrid-event {
+  /* Móviles muy pequeños - Eventos más grandes y legibles */
+  @media (max-width: 374px) {
+    padding: 0.3rem 0.4rem !important;
+    font-size: 0.7rem !important;
+    line-height: 1rem !important;
+    margin: 2px !important;
+    border-radius: 0.4rem !important;
+    min-height: 1.8rem !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Móviles pequeños */
+  @media (min-width: 375px) and (max-width: 480px) {
+    padding: 0.25rem 0.35rem !important;
+    font-size: 0.68rem !important;
+    line-height: 0.95rem !important;
+    margin: 1.5px !important;
+    border-radius: 0.35rem !important;
+    min-height: 1.6rem !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Móviles */
+  @media (min-width: 481px) and (max-width: 640px) {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    line-height: 1rem;
+    margin: 2px;
+    border-radius: 0.4rem;
+    min-height: 1.4rem;
+  }
+  
+  /* Tablets */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    padding: 0.25rem 0.45rem;
+    font-size: 0.75rem;
+    line-height: 1.05rem;
+  }
+}
+
+/* Texto de los eventos más pequeño en móviles */
+:host ::ng-deep .fc .fc-event-title {
+  /* Móviles pequeños */
+  @media (max-width: 480px) {
+    font-size: 0.65rem;
+    font-weight: 600;
+  }
+  
+  /* Móviles */
+  @media (min-width: 481px) and (max-width: 640px) {
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  
+  /* Tablets */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    font-size: 0.75rem;
+  }
+}
+
+/* Ajustar la altura de las celdas de tiempo - Optimizado para legibilidad */
+:host ::ng-deep .fc .fc-timegrid-slot {
+  /* Móviles muy pequeños - Mayor altura para mejor legibilidad */
+  @media (max-width: 374px) {
+    height: 2.5rem !important;
+    min-height: 2.5rem !important;
+  }
+  
+  /* Móviles pequeños */
+  @media (min-width: 375px) and (max-width: 480px) {
+    height: 2.25rem !important;
+    min-height: 2.25rem !important;
+  }
+  
+  /* Móviles */
+  @media (min-width: 481px) and (max-width: 640px) {
+    height: 2rem !important;
+    min-height: 2rem !important;
+  }
+  
+  /* Tablets */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    height: 2.5rem !important;
+    min-height: 2.5rem !important;
+  }
+  
+  /* Desktop */
+  @media (min-width: 1025px) {
+    height: 3rem !important;
+    min-height: 3rem !important;
+  }
+}
+
+/* Etiquetas de tiempo responsive */
+:host ::ng-deep .fc .fc-timegrid-axis-cushion {
+  /* Móviles pequeños */
+  @media (max-width: 480px) {
+    font-size: 0.6rem;
+    padding: 0.1rem;
+  }
+  
+  /* Móviles */
+  @media (min-width: 481px) and (max-width: 640px) {
+    font-size: 0.7rem;
+    padding: 0.15rem;
+  }
+  
+  /* Tablets */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    font-size: 0.75rem;
+  }
+}
+
+/* ====== Estilos para leyenda mejorada ====== */
+.leyenda-mejorada {
+  .leyenda-busqueda {
+    @media (max-width: 640px) {
+      width: 100%;
+    }
+  }
+  
+  .leyenda-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+    
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+      
+      &:hover {
+        background: #94a3b8;
+      }
+    }
+  }
+}
+
+/* ====== Estilos para vista lista ====== */
+.vista-lista {
+  .grupo-laboratorio {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+  }
+  
+  .evento-item {
+    transition: background-color 0.15s ease;
+    
+    &:hover {
+      background-color: #f9fafb;
+    }
+  }
+  
+  .badge-estado {
+    &.en-curso {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+    
+    &.proxima {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+    
+    &.programada {
+      background-color: #f3f4f6;
+      color: #374151;
+    }
+  }
+}
+
+/* ====== Responsive para filtros avanzados ====== */
+.filtros-avanzados {
+  .filtro-categoria {
+    @media (max-width: 640px) {
+      margin-bottom: 1rem;
+    }
+  }
+  
+  .toggle-vista {
+    .p-button {
+      @media (max-width: 640px) {
+        padding: 0.5rem;
+        min-width: auto;
+      }
+    }
+  }
+}
+
+/* ====== Botones responsive ====== */
+:host ::ng-deep .p-button {
+    &.p-button-sm {
+        /* Móviles pequeños */
+        @media (max-width: 480px) {
+            height: 2rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            min-width: 2rem;
+        }
+        
+        /* Móviles */
+        @media (min-width: 481px) and (max-width: 640px) {
+            height: 2.25rem;
+            padding: 0.375rem 0.625rem;
+            font-size: 0.8rem;
+        }
+        
+        /* Tablets */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            height: 2.25rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.825rem;
+        }
+        
+        /* Desktop */
+        @media (min-width: 1025px) {
+            height: 2.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+    }
+}
+
+/* ====== Animaciones sutiles ====== */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-down {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+/* ====== Mejoras para dispositivos táctiles ====== */
+
+/* Áreas de toque más grandes en móviles */
+@media (max-width: 768px) and (pointer: coarse) {
+  :host ::ng-deep .p-button,
+  :host ::ng-deep .p-dropdown-trigger,
+  :host ::ng-deep .p-autocomplete-dropdown {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Eventos del calendario con área de toque más grande */
+  :host ::ng-deep .fc .fc-timegrid-event {
+    min-height: 1.5rem;
+    touch-action: manipulation;
+  }
+}
+
+/* Mejoras de usabilidad para scroll horizontal en móviles */
+@media (max-width: 640px) {
+  :host ::ng-deep .fc-scroller {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Indicador visual para scroll horizontal */
+  .calendar-wrapper::after {
+    content: '⟵ Desliza para ver más ⟶';
+    position: absolute;
+    bottom: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 0.65rem;
+    pointer-events: none;
+    opacity: 0.7;
+    z-index: 10;
+    white-space: nowrap;
+    animation: fadeInOut 3s ease-in-out infinite;
+  }
+  
+  @keyframes fadeInOut {
+    0%, 50%, 100% { opacity: 0.7; }
+    25%, 75% { opacity: 0.4; }
+  }
+}
+
+/* Estilos específicos para calendario en móviles */
+:host ::ng-deep .mobile-calendar {
+  .fc-timegrid-axis-cushion {
+    font-size: 0.6rem !important;
+    font-weight: 600 !important;
+  }
+  
+  .fc-col-header-cell-cushion {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    padding: 0.4rem 0.2rem !important;
+  }
+  
+  .fc .fc-toolbar-title {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+  }
+  
+  /* Mejor contraste en eventos para móviles */
+  .fc-timegrid-event .fc-event-main {
+    color: #000 !important;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.8) !important;
+  }
+}

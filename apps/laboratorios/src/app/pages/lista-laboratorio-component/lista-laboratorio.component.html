@@ -1,0 +1,370 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<p-card class="w-full max-w-8xl mx-auto" [style]="{
+    'background': 'var(--p-surface-50)',
+    'border': '1px solid var(--p-border)',
+    'box-shadow': 'var(--p-elevation-2)'
+  }">
+  <div class="mb-6">
+    <div class="p-6 rounded-xl border-2 shadow-lg" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+      }">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+          Lista de Laboratorios
+        </h2>
+        <p class="text-sm sm:text-base opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Gestión completa de laboratorios: crear, editar, eliminar y filtrar con exportación de datos
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        <div class="xl:col-span-3">
+          <div class="p-5 rounded-lg border" [style]="{
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }">
+            <div class="flex items-center gap-2 mb-5">
+              <h4 class="text-lg font-semibold m-0" [style]="{ color: 'var(--p-text-color)' }">
+                Criterios de Búsqueda
+              </h4>
+            </div>
+
+            <div class="space-y-5" [formGroup]="filtroForm">
+              <div class="grid grid-cols-1 gap-5">
+                <div>
+                  
+                  <app-input-component id="texto-input" label="Búsqueda General" formControlName="texto" 
+                    [control]="filtroForm.get('texto')" placeholder="Buscar por nombre, descripción..." class="w-full">
+                  </app-input-component>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <app-select-component id="estado-select" label="Estados" formControlName="estado" 
+                    [control]="filtroForm.get('estado')" [options]="opcionesEstado" optionLabel="label" 
+                    optionValue="value" placeholder="Estado" class="w-full">
+                  </app-select-component>
+                </div>
+
+                <div>
+                  <app-select-component id="tipo-select" label="Tipos" formControlName="tipo" 
+                    [control]="filtroForm.get('tipo')" [options]="opcionesTipo" optionLabel="label" 
+                    optionValue="value" placeholder="Tipo" class="w-full">
+                  </app-select-component>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <app-select-component id="sede-select" label="Sedes" formControlName="sede" 
+                    [control]="filtroForm.get('sede')" [options]="opcionesSede" optionLabel="label" 
+                    optionValue="value" placeholder="Sede" class="w-full">
+                  </app-select-component>
+                </div>
+
+                <div>
+                  <app-select-component id="bloque-select" label="Bloques" formControlName="bloque" 
+                    [control]="filtroForm.get('bloque')" [options]="opcionesBloque" optionLabel="label" 
+                    optionValue="value" placeholder="Bloque" class="w-full">
+                  </app-select-component>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="xl:col-span-1">
+          <div class="p-5 rounded-lg border h-full" [style]="{
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }">
+            <div class="flex items-center gap-2 mb-5">
+              <h4 class="text-lg font-semibold m-0" [style]="{ color: 'var(--p-text-color)' }">
+                Acciones
+              </h4>
+            </div>
+
+            <div class="space-y-4">
+              <div class="space-y-3">
+                <button pButton icon="pi pi-filter-slash" label="Limpiar Filtros" severity="secondary" 
+                  [outlined]="true" class="w-full" [style]="{
+                    'height': '2.75rem',
+                    'border-radius': '8px'
+                  }" (click)="limpiarFiltros()">
+                </button>
+
+                <button pButton icon="pi pi-plus" label="Nuevo Laboratorio" class="w-full" [style]="{
+                    'height': '3rem',
+                    'font-weight': '600',
+                    'border-radius': '8px'
+                  }" (click)="crear()">
+                </button>
+              </div>
+
+              <div class="my-4 border-t opacity-20" [style]="{ 'border-color': 'var(--p-border-color)' }"></div>
+
+              <div class="space-y-3">
+                <button pButton label="Exportar Excel" icon="pi pi-file-excel" severity="success" [outlined]="true"
+                  class="w-full" [style]="{
+                    'height': '2.75rem',
+                    'border-radius': '8px'
+                  }" (click)="exportarXLSX()" [disabled]="filtrados.length === 0">
+                </button>
+
+                <button pButton label="Exportar PDF" icon="pi pi-file-pdf" severity="danger" [outlined]="true"
+                  class="w-full" [style]="{
+                    'height': '2.75rem',
+                    'border-radius': '8px'
+                  }" (click)="exportarPDF()" [disabled]="filtrados.length === 0">
+                </button>
+
+                <button pButton label="Exportar CSV" icon="pi pi-download" severity="info" [outlined]="true"
+                  class="w-full" [style]="{
+                    'height': '2.75rem',
+                    'border-radius': '8px'
+                  }" (click)="exportarCSV()" [disabled]="filtrados.length === 0">
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> 
+  <div class="rounded-xl border-2 shadow-lg overflow-hidden" [style]="{
+      'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+      'border-color': 'var(--p-primary-200)',
+      'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+    }">
+    <div class="px-6 py-4 border-b" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+        'border-color': 'var(--p-primary-300)'
+      }">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div>
+            <h3 class="text-xl font-bold text-white m-0">Lista de Laboratorios</h3>
+            <p class="text-white/80 text-sm m-0">
+              {{ filtrados.length }} laboratorios encontrados
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="bg-white/20 px-3 py-1 rounded-full text-white text-sm font-medium">
+            Actualizado
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div *ngIf="cargando"
+        class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm z-10"
+        [style]="{ 'background': 'rgba(255,255,255,0.95)' }">
+        <p-progressSpinner styleClass="w-12 h-12" [style]="{ 'animation-duration': '1s' }"></p-progressSpinner>
+        <p class="mt-4 text-sm font-medium opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Cargando laboratorios...
+        </p>
+      </div>
+
+      <div class="p-4">
+        <p-table [value]="filtrados" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20, 50]"
+          [tableStyle]="{ 'min-width': '980px' }" sortMode="multiple" class="overflow-x-auto" [style]="{
+            '--p-datatable-header-background': 'var(--p-surface-100)',
+            '--p-datatable-header-border-color': 'var(--p-border-color)',
+            '--p-datatable-row-background': 'var(--p-surface-0)',
+            '--p-datatable-row-hover-background': 'var(--p-surface-50)'
+          }">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 60px" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  #
+                </div>
+              </th>
+              <th pSortableColumn="nombre" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Nombre
+                </div>
+                <p-sortIcon field="nombre"></p-sortIcon>
+              </th>
+              <th pSortableColumn="capacidad" class="text-center font-semibold" style="width: 110px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center justify-center gap-2">
+                  Capacidad
+                </div>
+                <p-sortIcon field="capacidad"></p-sortIcon>
+              </th>
+              <th pSortableColumn="estado" class="font-semibold" style="width: 140px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Estado
+                </div>
+                <p-sortIcon field="estado"></p-sortIcon>
+              </th>
+              <th pSortableColumn="tipo" class="font-semibold" style="width: 140px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Tipo
+                </div>
+                <p-sortIcon field="tipo"></p-sortIcon>
+              </th>
+              <th pSortableColumn="ubicacion" class="font-semibold" style="width: 160px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Sede
+                </div>
+                <p-sortIcon field="ubicacion"></p-sortIcon>
+              </th>
+              <th pSortableColumn="bloque" class="font-semibold" style="width: 100px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Bloque
+                </div>
+                <p-sortIcon field="bloque"></p-sortIcon>
+              </th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Descripción
+                </div>
+              </th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-lab let-rowIndex="rowIndex">
+            <tr class="transition-all duration-200 hover:shadow-sm" [style]="{
+                'background': rowIndex % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-25)',
+                'border-bottom': '1px solid var(--p-border-color)'
+              }">
+              <td class="py-4 px-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+                  [style]="{ 'background': 'var(--p-primary-500)' }">
+                  {{ rowIndex + 1 }}
+                </div>
+              </td>
+              
+              <td class="py-4 px-3">
+                <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ lab.nombre }}
+                </div>
+              </td>
+
+              <td class="text-center py-4 px-3">
+                <div class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-semibold" [style]="{
+                    'background': 'var(--p-blue-100)',
+                    'color': 'var(--p-blue-800)'
+                  }">
+                  {{ lab.capacidad }}
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <p-tag [value]="lab.estado" [severity]="colorEstado(lab.estado)" 
+                  [style]="{ 'font-weight': '600' }"></p-tag>
+              </td>
+
+              <td class="py-4 px-3">
+                <span class="font-medium" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ lab.tipo }}
+                </span>
+              </td>
+
+              <td class="py-4 px-3">
+                <span class="font-medium" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ lab.ubicacion }}
+                </span>
+              </td>
+
+              <td class="text-center py-4 px-3">
+                <ng-container *ngIf="lab.bloque; else sinBloque">
+                  <div class="inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs font-mono" [style]="{
+                      'background': 'var(--p-surface-100)',
+                      'border': '1px solid var(--p-border-color)',
+                      'color': 'var(--p-text-color)'
+                    }">
+                    {{ lab.bloque }}
+                  </div>
+                </ng-container>
+                <ng-template #sinBloque>
+                  <span class="opacity-60 italic">—</span>
+                </ng-template>
+              </td>
+
+              <td class="py-4 px-3">
+                <ng-container *ngIf="lab.descripcion; else sinDescripcion">
+                  <div class="max-w-xs truncate cursor-help" [title]="lab.descripcion" 
+                    [pTooltip]="lab.descripcion" tooltipPosition="top">
+                    <span class="text-sm">{{ lab.descripcion }}</span>
+                  </div>
+                </ng-container>
+                <ng-template #sinDescripcion>
+                  <span class="opacity-60 italic">—</span>
+                </ng-template>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8" class="text-center py-12" [style]="{ 
+                  'background': 'var(--p-surface-50)',
+                  'color': 'var(--p-text-color)'
+                }">
+                <div class="flex flex-col items-center gap-4">
+                  <div class="w-16 h-16 rounded-full flex items-center justify-center"
+                    [style]="{ 'background': 'var(--p-surface-200)' }">
+                    <i class="pi pi-building text-2xl opacity-50" [style]="{ color: 'var(--p-text-color)' }"></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-semibold mb-1">No hay laboratorios disponibles</p>
+                    <p class="text-sm opacity-80">Ajuste los filtros para obtener resultados o agregue un nuevo laboratorio</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</p-card>

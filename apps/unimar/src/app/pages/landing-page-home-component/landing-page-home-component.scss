@@ -1,0 +1,591 @@
+// ═══════════════════════════════════════════════════════════
+// SISTEMAS INTEGRADOS — UNIVERSIDAD MARIANA
+// Clean Tech + Glassmorphism · Theme-Adaptive (Light/Dark)
+// PrimeNG + TailwindCSS + SCSS (only what Tailwind can't do)
+// Design tokens, global resets & body styles → styles.scss
+// ═══════════════════════════════════════════════════════════
+
+// ── ANIMATIONS ───────────────────────────────────────────────
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.8; }
+  50%  { transform: scale(1.05); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+@keyframes scroll-wheel {
+  0%   { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(8px); opacity: 0; }
+}
+@keyframes orb-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(40px, -30px) scale(1.08); }
+}
+@keyframes orb-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(-30px, 40px) scale(0.95); }
+}
+@keyframes bar-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes badge-slide {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in         { animation: fadeIn 0.7s ease both; }
+.animate-slide-up        { animation: slideUp 0.9s ease both; animation-delay: 0.15s; }
+.animate-fade-in-delay   { animation: fadeIn 0.7s ease both; animation-delay: 0.35s; }
+.animate-fade-in-delay-2 { animation: fadeIn 0.7s ease both; animation-delay: 0.55s; }
+
+// ── SHARED SECTION STYLES ─────────────────────────────────────
+.section__title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--color-text-heading);
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+// ── PrimeNG p-tag used as section__label ─────────────────────
+::ng-deep .section__label {
+  background: var(--color-cyan-dim) !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
+  color: var(--color-cyan) !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 0.35rem 1rem !important;
+  border-radius: 100px !important;
+}
+
+// ── NAVBAR (p-toolbar) ───────────────────────────────────────
+::ng-deep .navbar {
+  position: fixed !important;
+  top: 0; left: 0; right: 0;
+  z-index: 1000 !important;
+  padding: 1rem 2rem !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  transition: all 0.35s ease;
+  max-width: 1280px;
+  margin: 0 auto;
+
+  &.navbar--scrolled {
+    background: var(--color-navbar-scrolled) !important;
+    backdrop-filter: var(--blur-value) saturate(160%) !important;
+    -webkit-backdrop-filter: var(--blur-value) saturate(160%) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    padding: 0.6rem 2rem !important;
+    box-shadow: 0 4px 40px var(--color-shadow-heavy) !important;
+  }
+}
+
+.brand__icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-violet));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: #fff;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.3);
+
+  &--sm { width: 32px; height: 32px; font-size: 0.85rem; border-radius: 8px; }
+}
+
+// PrimeNG nav button overrides
+::ng-deep {
+  .nav__link {
+    color: var(--color-text-body) !important;
+    font-family: var(--font-body) !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    transition: color 0.2s, background 0.2s !important;
+
+    &:hover {
+      color: var(--color-text-heading) !important;
+      background: var(--color-overlay-subtle) !important;
+    }
+
+    &--active {
+      color: var(--color-cyan) !important;
+      background: var(--color-cyan-dim) !important;
+    }
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-cyan), var(--color-cyan-dark)) !important;
+    border: none !important;
+    color: var(--color-btn-primary-text) !important;
+    font-weight: 700 !important;
+    font-family: var(--font-body) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.75rem 1.75rem !important;
+    box-shadow: 0 0 24px rgba(0, 229, 255, 0.35) !important;
+    transition: all 0.3s ease !important;
+
+    &:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 32px rgba(0, 229, 255, 0.45) !important;
+    }
+  }
+
+  .btn-primary-sm {
+    @extend .btn-primary;
+    padding: 0.5rem 1.25rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 10px !important;
+  }
+
+  .btn-ghost {
+    background: transparent !important;
+    border: 1px solid var(--color-btn-ghost-border) !important;
+    color: var(--color-btn-ghost-text) !important;
+    font-weight: 500 !important;
+    font-family: var(--font-body) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.75rem 1.75rem !important;
+    transition: all 0.3s ease !important;
+
+    &:hover {
+      background: var(--color-overlay-subtle) !important;
+      border-color: var(--color-border-hover) !important;
+      color: var(--color-btn-ghost-hover) !important;
+    }
+  }
+
+  .status-tag {
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.6rem !important;
+    border-radius: 100px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  // p-chip used for system tags
+  .sys-chip {
+    background: var(--color-overlay-subtle) !important;
+    border: 1px solid var(--color-overlay-light) !important;
+    color: var(--color-text-body) !important;
+    font-size: 0.7rem !important;
+    font-weight: 500 !important;
+    padding: 0.15rem 0.55rem !important;
+    border-radius: 100px !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+  }
+
+  // p-panel used for visual dashboard
+  .visual__panel {
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-xl) !important;
+    overflow: hidden !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 40px 80px var(--color-shadow-heavy) !important;
+
+    .p-panel-header {
+      background: var(--color-overlay-medium) !important;
+      border-bottom: 1px solid var(--color-border) !important;
+      padding: 1rem 1.5rem !important;
+    }
+
+    .p-panel-content {
+      padding: 0 !important;
+      background: transparent !important;
+    }
+
+    .p-panel-footer {
+      background: var(--color-overlay-medium) !important;
+      border-top: 1px solid var(--color-border) !important;
+      padding: 0.75rem 1.5rem !important;
+    }
+  }
+
+  // p-card used for bento cards — reset PrimeNG defaults
+  .bento-card {
+    position: relative !important;
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s !important;
+    cursor: pointer;
+
+    .p-card-body { padding: 1.75rem !important; display: flex; flex-direction: column; gap: 0.75rem; height: 100%; }
+
+    &::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--color-overlay-subtle) 0%, transparent 60%);
+      pointer-events: none; border-radius: inherit;
+    }
+
+    &:hover {
+      border-color: var(--color-border-hover) !important;
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px var(--color-shadow-heavy), 0 0 40px var(--color-glow-card) !important;
+
+      .card__glow { opacity: 1; }
+      .cta__arrow { transform: translate(3px, -3px); }
+      .card__icon-wrap { transform: scale(1.08); }
+    }
+
+    // Sizes
+    &--large  { grid-column: span 6; grid-row: span 2; }
+    &--medium { grid-column: span 6; grid-row: span 1; }
+    &--small  { grid-column: span 6; grid-row: span 1; }
+
+    // Color variants
+    &--cyan    { &:hover { border-top-color: var(--color-cyan) !important; box-shadow: 0 20px 60px var(--color-shadow-heavy), 0 0 40px var(--color-cyan-glow) !important; } }
+    &--violet  { &:hover { border-top-color: var(--color-violet) !important; box-shadow: 0 20px 60px var(--color-shadow-heavy), 0 0 40px var(--color-violet-dim) !important; } }
+    &--emerald { &:hover { border-top-color: var(--color-emerald) !important; box-shadow: 0 20px 60px var(--color-shadow-heavy), 0 0 40px var(--color-emerald-dim) !important; } }
+    &--amber   { &:hover { border-top-color: var(--color-amber) !important; } }
+    &--rose    { &:hover { border-top-color: var(--color-rose) !important; } }
+
+    &--feature {
+      grid-column: span 3;
+      background: linear-gradient(135deg, var(--color-cyan-dim) 0%, var(--color-violet-dim) 100%) !important;
+      border-color: var(--color-cyan-dim) !important;
+      cursor: default;
+      &:hover { transform: none; }
+    }
+  }
+
+  // p-divider reset for footer
+  .border-white\/5 {
+    border-color: var(--color-border) !important;
+  }
+
+  // Feature card badge
+  .feature-card__badge {
+    font-size: 0.72rem !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  // Hero badge
+  .hero__badge {
+    background: var(--color-cyan-dim) !important;
+    border: 1px solid rgba(0, 229, 255, 0.2) !important;
+    color: var(--color-cyan) !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    padding: 0.4rem 1.1rem !important;
+    border-radius: 100px !important;
+    letter-spacing: 0.04em !important;
+  }
+}
+
+// ── HERO ─────────────────────────────────────────────────────
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+  background: var(--color-bg);
+
+  &__canvas {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 0;
+  }
+
+  &__orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(100px); pointer-events: none;
+
+    &--1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, var(--color-orb-primary) 0%, transparent 70%);
+      top: -100px; left: -100px;
+      animation: orb-float-1 12s ease-in-out infinite;
+    }
+    &--2 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, var(--color-orb-secondary) 0%, transparent 70%);
+      bottom: -150px; right: -100px;
+      animation: orb-float-2 16s ease-in-out infinite;
+    }
+    &--3 {
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, var(--color-orb-tertiary) 0%, transparent 70%);
+      top: 40%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  &__grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--color-grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-grid-line) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  }
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    color: var(--color-text-heading);
+    margin-bottom: 1.75rem;
+    display: flex; flex-direction: column;
+
+    .title__line--accent {
+      background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-violet) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  }
+
+  &__stats {
+    position: relative; z-index: 2;
+    width: 100%; max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--color-border);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    background-clip: padding-box;
+  }
+}
+
+.badge__dot {
+  width: 7px; height: 7px;
+  background: var(--color-cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--color-cyan);
+  animation: pulse-ring 2.5s ease-in-out infinite;
+  display: inline-block;
+}
+
+.scroll__mouse {
+  width: 22px; height: 34px;
+  border: 1.5px solid var(--color-scroll-border);
+  border-radius: 11px;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 4px;
+
+  .scroll__wheel {
+    width: 4px; height: 6px;
+    background: var(--color-scroll-wheel); border-radius: 2px;
+    animation: scroll-wheel 1.8s ease-in-out infinite;
+  }
+}
+
+.stat__card {
+  background: var(--color-surface);
+  padding: 1.5rem 1.25rem;
+  display: flex; align-items: center; gap: 1rem;
+  transition: background 0.2s;
+  &:hover { background: var(--color-surface-alt); }
+}
+
+// ── SYSTEMS / BENTO GRID ──────────────────────────────────────
+.systems {
+  padding: 7rem 0;
+  background: var(--color-bg);
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: minmax(220px, auto);
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.card__glow {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, var(--color-glow-card) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.4s; pointer-events: none;
+}
+
+.card__icon-wrap {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--color-cyan-dim);
+  border: 1px solid var(--color-cyan-dim);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.25s;
+
+  .bento-card--violet & {
+    background: var(--color-violet-dim); border-color: var(--color-violet-dim);
+    .card__icon { color: var(--color-violet); }
+  }
+  .bento-card--emerald & {
+    background: var(--color-emerald-dim); border-color: var(--color-emerald-dim);
+    .card__icon { color: var(--color-emerald); }
+  }
+  .bento-card--amber & {
+    background: var(--color-amber-dim); border-color: var(--color-amber-dim);
+    .card__icon { color: var(--color-amber); }
+  }
+  .bento-card--rose & {
+    background: var(--color-rose-dim); border-color: var(--color-rose-dim);
+    .card__icon { color: var(--color-rose); }
+  }
+}
+
+.card__icon { font-size: 1.2rem; color: var(--color-cyan); }
+
+.card__title {
+  font-family: var(--font-display);
+  font-size: 1.15rem; font-weight: 700;
+  color: var(--color-text-heading); margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+
+  .bento-card--large & { font-size: 1.5rem; }
+}
+
+.card__cta {
+  display: flex; align-items: center; gap: 0.4rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em; text-transform: uppercase;
+  .bento-card:hover & { color: var(--color-cyan); }
+}
+
+.cta__arrow {
+  transition: transform 0.25s ease;
+}
+
+.feature-card__icon {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, var(--color-cyan-dim), var(--color-violet-dim));
+  border: 1px solid var(--color-cyan-dim);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; color: var(--color-cyan);
+}
+
+// ── ABOUT ────────────────────────────────────────────────────
+.about {
+  padding: 7rem 0;
+  background: var(--color-bg-2);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.feature__icon {
+  width: 36px; height: 36px;
+  background: var(--color-cyan-dim);
+  border: 1px solid var(--color-cyan-dim);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; color: var(--color-cyan);
+  flex-shrink: 0;
+}
+
+// Chart bar animation
+.chart__bar {
+  width: 100%;
+  background: linear-gradient(to top, var(--color-chart-start), var(--color-chart-end));
+  border-radius: 4px 4px 2px 2px;
+  transform-origin: bottom;
+  animation: bar-grow 1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transition: height 0.3s ease;
+
+  @for $i from 1 through 12 {
+    .flex-1:nth-child(#{$i}) & {
+      animation-delay: #{$i * 0.05}s;
+    }
+  }
+}
+
+// Floating badges
+.visual__badge {
+  position: absolute;
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 100px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem; color: var(--color-text-body);
+  backdrop-filter: blur(12px);
+  white-space: nowrap;
+  box-shadow: 0 8px 32px var(--color-shadow);
+
+  .pi { color: var(--color-cyan); font-size: 0.9rem; }
+
+  &--1 { top: -1.5rem; right: -1.5rem; animation: badge-slide 0.8s ease 0.4s both; }
+  &--2 { bottom: -1.5rem; left: -1.5rem; animation: badge-slide 0.8s ease 0.7s both; }
+}
+
+// ── CONTACT ──────────────────────────────────────────────────
+.contact {
+  padding: 7rem 0;
+  background: var(--color-bg);
+  text-align: center;
+  position: relative; overflow: hidden;
+
+  &__orb {
+    position: absolute;
+    width: 600px; height: 600px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, var(--color-orb-secondary) 0%, transparent 65%);
+    filter: blur(60px);
+    pointer-events: none;
+  }
+}
+
+// ── FOOTER ────────────────────────────────────────────────────
+.footer {
+  background: var(--color-bg-2);
+  border-top: 1px solid var(--color-border);
+  padding: 4rem 0 0;
+}
+
+.status__dot {
+  width: 7px; height: 7px;
+  background: var(--color-emerald);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--color-emerald);
+  animation: pulse-ring 2.5s ease-in-out infinite;
+}
+
+// ── RESPONSIVE ───────────────────────────────────────────────
+@media (max-width: 1100px) {
+  .bento-grid {
+    grid-template-columns: repeat(6, 1fr);
+    ::ng-deep .bento-card--large,
+    ::ng-deep .bento-card--medium,
+    ::ng-deep .bento-card--small,
+    ::ng-deep .bento-card--feature { grid-column: span 6 !important; grid-row: span 1 !important; }
+  }
+}
+
+@media (max-width: 768px) {
+  .hero__stats { grid-template-columns: repeat(2, 1fr); }
+
+  .bento-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    ::ng-deep .bento-card { grid-column: span 1 !important; grid-row: span 1 !important; }
+  }
+}
+
+@media (max-width: 480px) {
+  .hero__stats { grid-template-columns: 1fr; }
+}

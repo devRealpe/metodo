@@ -1,0 +1,786 @@
+<div class="p-6 max-w-7xl mx-auto">
+  <p-toast />
+
+  <div class="text-center py-3 px-2">
+    <h1 class="text-3xl font-bold text-gray-800" [style]="{'color':'var(--p-text-color)'}">Hoja de Vida de Producto</h1>
+    <p class="text-gray-600 mt-2" [style]="{'color':'var(--p-text-color)'}">Gestión de hojas de vida de productos y equipos</p>
+  </div>
+
+  <div class="shadow-md p-6 mb-6">
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <div class="mb-8 p-4 bg-gray-50 rounded-lg">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800" [style]="{'color':'var(--p-text-color)'}">Selección de Equipo</h2>
+
+        <div class="mb-4">
+          <label for="tipoEquipo" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">
+            Tipo de Equipo <span class="text-red-500">*</span>
+          </label>
+          <p-select
+            id="tipoEquipo"
+            formControlName="tipoEquipo"
+            [options]="tiposEquipo"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccione tipo de equipo"
+            inputId="tipoEquipo"
+            styleClass="w-full"
+          />
+          <span
+            *ngIf="esInvalido('tipoEquipo')"
+            class="text-red-500 text-sm mt-1 block"
+          >
+            Seleccione un tipo de equipo válido.
+          </span>
+        </div>
+
+        <div class="mb-4" *ngIf="form.get('tipoEquipo')?.value === 'equipo'">
+          <label for="equipoId" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">
+            Maquinaria de laboratorios <span class="text-red-500">*</span>
+          </label>
+          <p-select
+            id="equipoId"
+            formControlName="equipoId"
+            [options]="equipos"
+            optionLabel="nombre"
+            optionValue="id"
+            placeholder="Seleccione un equipo"
+            [filter]="true"
+            filterPlaceholder="Buscar equipo..."
+            inputId="equipoId"
+            styleClass="w-full"
+          >
+            <ng-template pTemplate="item" let-equipo>
+              <div>
+                <div class="font-medium">{{ equipo.nombre }}</div>
+                <div class="text-sm text-gray-600">
+                  {{ equipo.placa || equipo.serial }} | Marca: {{ equipo.marca }} | Modelo: {{ equipo.modelo }}
+                </div>
+              </div>
+            </ng-template>
+          </p-select>
+          <span
+            *ngIf="esInvalido('equipoId')"
+            class="text-red-500 text-sm mt-1 block"
+          >
+            Seleccione un equipo válido.
+          </span>
+        </div>
+
+        <div class="mb-4" *ngIf="form.get('tipoEquipo')?.value === 'equipo_comp'">
+          <label for="equipoComputoId" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">
+            Equipo de Cómputo <span class="text-red-500">*</span>
+          </label>
+          <p-select
+            id="equipoComputoId"
+            formControlName="equipoComputoId"
+            [options]="equiposComputo"
+            optionLabel="nombre"
+            optionValue="id"
+            placeholder="Seleccione un equipo de cómputo"
+            [filter]="true"
+            filterPlaceholder="Buscar equipo de cómputo..."
+            inputId="equipoComputoId"
+            styleClass="w-full"
+          >
+            <ng-template pTemplate="item" let-equipo>
+              <div>
+                <div class="font-medium">{{ equipo.nombre }}</div>
+                <div class="text-sm text-gray-600">
+                  {{ equipo.serial }} | Marca: {{ equipo.marca }} | Modelo: {{ equipo.modelo }}
+                </div>
+              </div>
+            </ng-template>
+          </p-select>
+          <span
+            *ngIf="esInvalido('equipoComputoId')"
+            class="text-red-500 text-sm mt-1 block"
+          >
+            Seleccione un equipo de cómputo válido.
+          </span>
+
+
+        </div>
+
+
+      </div>
+
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2" [style]="{'color':'var(--p-text-color)'}">1. Información Básica</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="relative">
+            <label for="dependencia" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">
+              Dependencia <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="dependencia"
+              type="text"
+              formControlName="dependencia"
+              (input)="filtrarLaboratorios($event)"
+              (focus)="mostrarListaLaboratorios = laboratoriosFiltrados.length > 0"
+              (blur)="ocultarListaLaboratorios()"
+              placeholder="Buscar laboratorio..."
+              class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+
+            <div
+              *ngIf="mostrarListaLaboratorios && laboratoriosFiltrados.length > 0"
+              class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+            >
+              <div
+                *ngFor="let laboratorio of laboratoriosFiltrados"
+                (mousedown)="seleccionarLaboratorio(laboratorio)"
+                class="p-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+              >
+                <div class="font-medium text-gray-900">{{ laboratorio.nombre }}</div>
+                <div class="text-sm text-gray-600" *ngIf="laboratorio.ubicacion">
+                  📍 {{ laboratorio.ubicacion }}
+                </div>
+              </div>
+            </div>
+            
+            <span
+              *ngIf="form.get('dependencia')?.invalid && form.get('dependencia')?.touched"
+              class="text-red-500 text-sm"
+            >
+              Campo requerido
+            </span>
+          </div>
+
+          <div class="relative">
+            <label for="responsable" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">
+              Responsable <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="responsable"
+              type="text"
+              formControlName="responsable"
+              (input)="filtrarUsuarios($event)"
+              (focus)="mostrarListaUsuarios = usuariosFiltrados.length > 0"
+              (blur)="ocultarListaUsuarios()"
+              placeholder="Buscar usuario..."
+              class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+
+            <div
+              *ngIf="mostrarListaUsuarios && usuariosFiltrados.length > 0"
+              class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+            >
+              <div
+                *ngFor="let usuario of usuariosFiltrados"
+                (mousedown)="seleccionarUsuario(usuario)"
+                class="p-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+              >
+                <div class="font-medium text-gray-900">{{ usuario.nombre }}</div>
+                <div class="text-sm text-gray-600">
+                  {{ usuario.identificacion }} | {{ usuario.cargo }}
+                </div>
+              </div>
+            </div>
+            
+            <span
+              *ngIf="form.get('responsable')?.invalid && form.get('responsable')?.touched"
+              class="text-red-500 text-sm"
+            >
+              Campo requerido
+            </span>
+          </div>
+
+          <div>
+            <app-datepicker-component
+              label="Fecha de Elaboración *"
+              id="fechaElaboracion"
+              formControlName="fechaElaboracion"
+              [ngClass]="{ 'p-invalid': form.get('fechaElaboracion')?.invalid && form.get('fechaElaboracion')?.touched }"
+            />
+          </div>
+
+          <div>
+            <app-select-component
+              label="Estado Actual *"
+              id="estadoActual"
+              formControlName="estadoActual"
+              [options]="opcionesEstadoActual"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccione estado"
+              styleClass="w-full"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2" [style]="{'color':'var(--p-text-color)'}">2. Datos del Equipo</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <app-input-component
+              label="Marca"
+              id="marca"
+              formControlName="marca"
+              placeholder="Ingrese marca"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Modelo"
+              id="modelo"
+              formControlName="modelo"
+              placeholder="Ingrese modelo"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Referencia"
+              id="referencia"
+              formControlName="referencia"
+              placeholder="Ingrese referencia"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Número de Serie"
+              id="numeroSerie"
+              formControlName="numeroSerie"
+              placeholder="Ingrese número de serie"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Código de Inventario"
+              id="codigoInventario"
+              formControlName="codigoInventario"
+              placeholder="Ingrese código de inventario"
+            />
+          </div>
+
+          <div class="md:col-span-2">
+            <label for="accesorios" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">Accesorios</label>
+            <textarea
+              id="accesorios"
+              formControlName="accesorios"
+              rows="2"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Ingrese accesorios"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2" [style]="{'color':'var(--p-text-color)'}">3. Datos del Proveedor</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <app-input-component
+              label="Nombre del Proveedor"
+              id="proveedorNombre"
+              formControlName="proveedorNombre"
+              placeholder="Ingrese nombre del proveedor"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Teléfono del Proveedor"
+              id="proveedorTelefono"
+              formControlName="proveedorTelefono"
+              placeholder="Ingrese teléfono"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Costo de Adquisición ($)"
+              id="costoAdquisicion"
+              type="number"
+              formControlName="costoAdquisicion"
+              placeholder="Ingrese costo"
+              (blur)="trasladarCostoAValorEquipo()"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8" *ngIf="form.get('tipoEquipo')?.value === 'equipo'">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2" [style]="{'color':'var(--p-text-color)'}">4. Características Técnicas</h2>
+        
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <label for="caracteristicas" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">Características</label>
+            <textarea
+              id="caracteristicas"
+              formControlName="caracteristicas"
+              rows="3"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+          </div>
+
+          <div>
+            <label for="requisitosFabricante" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">Requisitos del Fabricante</label>
+            <textarea
+              id="requisitosFabricante"
+              formControlName="requisitosFabricante"
+              rows="3"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+          </div>
+
+          <div>
+            <label for="mantIndicadoFab" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">Mantenimiento Indicado por Fabricante</label>
+            <textarea
+              id="mantIndicadoFab"
+              formControlName="mantIndicadoFab"
+              rows="3"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8" *ngIf="form.get('tipoEquipo')?.value === 'equipo'">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2" [style]="{'color':'var(--p-text-color)'}">5. Calibración</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <app-select-component
+              label="Tipo de Calibración"
+              id="calibTipo"
+              formControlName="calibTipo"
+              [options]="opcionesCalibTipo"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccione tipo"
+              styleClass="w-full"
+            />
+          </div>
+
+          <div>
+            <app-select-component
+              label="Periodicidad"
+              id="calibPeriodicidad"
+              formControlName="calibPeriodicidad"
+              [options]="opcionesCalibPeriodicidad"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccione periodicidad"
+              styleClass="w-full"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2" [style]="{'color':'var(--p-text-color)'}">6. Garantía</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <app-input-component
+              label="Meses de Garantía"
+              id="garantiaMeses"
+              type="number"
+              formControlName="garantiaMeses"
+              (change)="calcularGarantiaFin()"
+              placeholder="Ingrese meses"
+            />
+          </div>
+
+          <div>
+            <app-datepicker-component
+              label="Fecha de Inicio"
+              id="garantiaInicio"
+              formControlName="garantiaInicio"
+              (onSelect)="calcularGarantiaFin()"
+            />
+          </div>
+
+          <div>
+            <app-datepicker-component
+              label="Fecha de Fin"
+              id="garantiaFin"
+              formControlName="garantiaFin"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2" [style]="{'color':'var(--p-text-color)'}">7. Depreciación</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <app-input-component
+              label="Año"
+              id="anio"
+              type="number"
+              formControlName="anio"
+              placeholder="Ingrese año"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Valor del Equipo ($)"
+              id="valorEquipo"
+              type="number"
+              formControlName="valorEquipo"
+              (change)="calcularDepreciacion()"
+              placeholder="Ingrese valor"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Vida Útil (años)"
+              id="vidaUtilAnios"
+              type="number"
+              formControlName="vidaUtilAnios"
+              (change)="calcularDepreciacion()"
+              placeholder="Ingrese años"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Valor Residual ($)"
+              id="valorResidual"
+              type="number"
+              formControlName="valorResidual"
+              [readonly]="true"
+              styleClass="bg-gray-50"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Depreciación Anual ($)"
+              id="valorDepreciacionAnual"
+              type="number"
+              formControlName="valorDepreciacionAnual"
+              [readonly]="true"
+              styleClass="bg-gray-50"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Depreciación Mensual ($)"
+              id="valorDepreciacionMensual"
+              type="number"
+              formControlName="valorDepreciacionMensual"
+              [readonly]="true"
+              styleClass="bg-gray-50"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Depreciación Acumulada (5 años) ($)"
+              id="depreciacion"
+              type="number"
+              formControlName="depreciacion"
+              [readonly]="true"
+              styleClass="bg-gray-50"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Valor Actual ($)"
+              id="valorActual"
+              type="number"
+              formControlName="valorActual"
+              placeholder="Ingrese valor actual"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2" [style]="{'color':'var(--p-text-color)'}">8. Historial de Mantenimientos</h2>
+        
+        <div *ngIf="!equipoSeleccionado" class="text-gray-500 text-center py-8">
+          <i class="pi pi-info-circle text-4xl mb-2"></i>
+          <p>Seleccione un equipo para ver su historial de mantenimientos</p>
+        </div>
+
+        <div *ngIf="equipoSeleccionado && cargandoMantenimientos" class="text-center py-8">
+          <i class="pi pi-spin pi-spinner text-4xl text-blue-500"></i>
+          <p class="text-gray-600 mt-2">Cargando mantenimientos...</p>
+        </div>
+
+        <div *ngIf="equipoSeleccionado && !cargandoMantenimientos && mantenimientos.length === 0" 
+             class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+          <i class="pi pi-exclamation-triangle text-yellow-600 text-2xl mb-2"></i>
+          <p class="text-gray-700">Este equipo no tiene mantenimientos registrados</p>
+        </div>
+
+        <div *ngIf="equipoSeleccionado && !cargandoMantenimientos && mantenimientos.length > 0" 
+             class="overflow-x-auto">
+          <p-table 
+            [value]="mantenimientos" 
+            [paginator]="true" 
+            [rows]="5"
+            [rowsPerPageOptions]="[5, 10, 20]"
+            [tableStyle]="{ 'min-width': '60rem' }"
+            styleClass="p-datatable-sm p-datatable-striped">
+            
+            <ng-template pTemplate="header">
+              <tr>
+                <th class="text-left">Fecha Programada</th>
+                <th class="text-left">Tipo</th>
+                <th class="text-left">Estado</th>
+                <th class="text-left">Tipo Servicio</th>
+                <th class="text-left">Técnico/Contratista</th>
+                <th class="text-left">Fecha Ejecución</th>
+                <th class="text-left">Observaciones</th>
+              </tr>
+            </ng-template>
+            
+            <ng-template pTemplate="body" let-mant>
+              <tr>
+                <td>
+                  <span class="font-medium">{{ mant.fechaProgramada | date: 'dd/MM/yyyy' }}</span>
+                </td>
+
+                <td>
+                  <span class="px-2 py-1 rounded text-xs font-semibold"
+                        [ngClass]="{
+                          'bg-blue-100 text-blue-800': mant.tipoMantenimiento === 'preventivo',
+                          'bg-red-100 text-red-800': mant.tipoMantenimiento === 'correctivo',
+                          'bg-purple-100 text-purple-800': mant.tipoMantenimiento === 'calibracion'
+                        }">
+                    {{ mant.tipoMantenimiento | titlecase }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="px-2 py-1 rounded text-xs font-semibold"
+                        [ngClass]="{
+                          'bg-green-100 text-green-800': mant.estado === 'completado',
+                          'bg-yellow-100 text-yellow-800': mant.estado === 'programado',
+                          'bg-blue-100 text-blue-800': mant.estado === 'en_proceso',
+                          'bg-gray-100 text-gray-800': mant.estado === 'cancelado'
+                        }">
+                    {{ mant.estado === 'en_proceso' ? 'En Proceso' : (mant.estado | titlecase) }}
+                  </span>
+                </td>
+                
+                <td>
+                  <span class="text-sm">{{ mant.tipoServicio | titlecase }}</span>
+                </td>
+                
+                <td>
+                  <span class="text-sm" *ngIf="mant.tipoServicio === 'interno'">
+                    {{ mant.tecnicoIdentificacion || 'No asignado' }}
+                  </span>
+                  <span class="text-sm" *ngIf="mant.tipoServicio === 'externo'">
+                    {{ mant.contratistaNombre || 'No especificado' }}
+                  </span>
+                </td>
+                
+                <td>
+                  <span class="text-sm" *ngIf="mant.fechaEjecucion; else sinEjecucion">
+                    {{ mant.fechaEjecucion | date: 'dd/MM/yyyy' }}
+                  </span>
+                  <ng-template #sinEjecucion>
+                    <span class="text-gray-400 text-sm">Pendiente</span>
+                  </ng-template>
+                </td>
+                
+                <td>
+                  <span class="text-sm text-gray-600" *ngIf="mant.observaciones; else sinObservaciones">
+                    {{ mant.observaciones.length > 50 ? (mant.observaciones | slice:0:50) + '...' : mant.observaciones }}
+                  </span>
+                  <ng-template #sinObservaciones>
+                    <span class="text-gray-400 text-sm">Sin observaciones</span>
+                  </ng-template>
+                </td>
+              </tr>
+            </ng-template>
+            
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="7" class="text-center py-4">
+                  No hay mantenimientos registrados para este equipo
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2" [style]="{'color':'var(--p-text-color)'}">9. Información de Uso</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="relative">
+            <label for="usuarioResponsable" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">Usuario Responsable</label>
+            <input
+              id="usuarioResponsable"
+              type="text"
+              formControlName="usuarioResponsable"
+              (input)="filtrarUsuariosUso($event)"
+              (focus)="mostrarListaUsuariosUso = usuariosFiltrados.length > 0"
+              (blur)="ocultarListaUsuariosUso()"
+              placeholder="Buscar usuario..."
+              class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            
+            <div
+              *ngIf="mostrarListaUsuariosUso && usuariosFiltrados.length > 0"
+              class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+            >
+              <div
+                *ngFor="let usuario of usuariosFiltrados"
+                (mousedown)="seleccionarUsuarioUso(usuario)"
+                class="p-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+              >
+                <div class="font-medium text-gray-900">{{ usuario.nombre }}</div>
+                <div class="text-sm text-gray-600">
+                  {{ usuario.identificacion }} | {{ usuario.cargo }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <app-input-component
+              label="Ubicación del Laboratorio"
+              id="laboratorioUbicacion"
+              formControlName="laboratorioUbicacion"
+              placeholder="Ingrese ubicación"
+            />
+          </div>
+
+          <div>
+            <app-input-component
+              label="Proyecto Asociado"
+              id="proyectoAsociado"
+              formControlName="proyectoAsociado"
+              placeholder="Ingrese proyecto"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2" [style]="{'color':'var(--p-text-color)'}">10. Observaciones Generales</h2>
+        
+        <div>
+          <label for="observacionesGenerales" class="block text-sm font-medium text-gray-700 mb-2" [style]="{'color':'var(--p-text-color)'}">Observaciones</label>
+          <textarea
+            id="observacionesGenerales"
+            formControlName="observacionesGenerales"
+            rows="4"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            placeholder="Ingrese observaciones adicionales..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="flex gap-4 justify-end">
+        <button
+          type="button"
+          (click)="cancelar()"
+          class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="cargando"
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+        >
+          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-semibold mb-4 text-gray-800">Hojas de Vida Registradas</h2>
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Código Inventario
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Marca / Modelo
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Dependencia
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Estado
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Fecha Elaboración
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Acciones
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let hoja of hojasDeVida" class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ hoja.codigoInventario || 'N/A' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ hoja.marca }} {{ hoja.modelo }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ hoja.dependencia }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span
+                class="px-2 py-1 text-xs rounded-full"
+                [ngClass]="{
+                  'bg-green-100 text-green-800': hoja.estadoActual === 'Operativo',
+                  'bg-yellow-100 text-yellow-800': hoja.estadoActual === 'En Mantenimiento' || hoja.estadoActual === 'En Calibración',
+                  'bg-red-100 text-red-800': hoja.estadoActual === 'Fuera de Servicio' || hoja.estadoActual === 'Dado de Baja'
+                }"
+              >
+                {{ hoja.estadoActual }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ hoja.fechaElaboracion | date: 'dd/MM/yyyy' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <button
+                (click)="editar(hoja)"
+                class="text-blue-600 hover:text-blue-900 mr-4"
+              >
+                Editar
+              </button>
+              <button
+                (click)="eliminar(hoja)"
+                [disabled]="!isAdmin"
+                class="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                [attr.aria-disabled]="!isAdmin"
+                [title]="isAdmin ? 'Eliminar' : 'Requiere rol de Administrador'"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="hojasDeVida.length === 0">
+            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+              No hay hojas de vida registradas
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

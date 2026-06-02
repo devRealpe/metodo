@@ -1,0 +1,724 @@
+::ng-deep .p-dialog {
+
+  .p-dialog-header {
+    border-top-left-radius: 0.7rem !important;
+    border-top-right-radius: 0.7rem !important;
+    overflow: hidden !important;
+  }
+
+  .p-dialog-content {
+    border-bottom-left-radius: 1rem !important;
+    border-bottom-right-radius: 1rem !important;
+  }
+}
+
+::ng-deep .plan-viewer-dialog {
+  .p-dialog-footer {
+    display: none !important;
+  }
+}
+
+::ng-deep .confirmacion-aprobar-dialog {
+  .p-dialog-footer {
+    display: block !important;
+  }
+  .p-dialog-header-close-icon {
+    display: none !important;
+  }
+}
+
+::ng-deep .rechazo-dialog {
+  .p-dialog-footer {
+    display: block !important;
+  }
+  .p-dialog-header-close-icon {
+    display: none !important;
+  }
+}
+
+::ng-deep .motivo-rechazo-dialog {
+  .p-dialog-footer {
+    display: none !important;
+  }
+  .p-dialog-header-close-icon {
+    display: none !important;
+  }
+}
+
+::ng-deep .confirmacion-cambio-dialog {
+  .p-dialog-footer {
+    display: none !important;
+  }
+  .p-dialog-header-close-icon {
+    display: none !important;
+  }
+}
+
+::ng-deep .confirmacion-aprobar-dialog {
+  .p-dialog-header-close-icon {
+    display: none !important;
+  }
+}
+
+::ng-deep .rechazo-dialog {
+  .p-dialog-header-close-icon {
+    display: none !important;
+  }
+}
+
+::ng-deep .plan-trabajo-viewer {
+
+  .loading-container,
+  .error-container {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 200px !important;
+    text-align: center !important;
+
+    .loading-content,
+    .error-content {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: 1rem !important;
+    }
+  }
+
+  .actividades-lista {
+    .desktop-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      .table-header,
+      .table-row {
+        display: grid;
+        grid-template-columns: 1fr 120px;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--p-surface-200);
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+
+      .table-cell {
+        display: flex;
+        align-items: center;
+        color: var(--p-text-color);
+        font-size: 0.875rem;
+
+        &:first-child {
+          font-weight: 500;
+        }
+
+        &:last-child {
+          justify-content: center;
+
+          .hours-wrapper {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 0.25rem !important;
+            width: 100%;
+          }
+        }
+      }
+
+      .table-header {
+        background: var(--p-surface-100);
+        font-weight: 600;
+        border-radius: 8px 8px 0 0;
+      }
+    }
+  }
+
+  .plan-content {
+    .plan-header {
+      .progress-section {
+        .plan-progress {
+          height: 8px !important;
+          border-radius: 4px !important;
+        }
+      }
+    }
+
+    .secciones-container {
+      .seccion-padre {
+        .seccion-header {
+          margin-bottom: 1rem !important;
+          transition: all 0.3s ease !important;
+
+          &:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+            transform: translateY(-1px) !important;
+          }
+
+          .header-icon {
+
+            transition: all 0.3s ease !important;
+
+            &:hover {
+              opacity: 1 !important;
+              transform: scale(1.1) !important;
+            }
+          }
+        }
+
+        .secciones-hijas {
+          margin-left: 1rem !important;
+          margin-top: 1rem !important;
+
+          .seccion-hijo {
+            margin-bottom: 1rem !important;
+
+            .seccion-hijo-titulo {
+              font-size: 1.125rem !important;
+              font-weight: 600 !important;
+            }
+
+            .seccion-stats {
+              .text-sm {
+                font-size: 0.875rem !important;
+              }
+            }
+
+            .actividades-container {
+              .no-actividades {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 2rem !important;
+                color: var(--p-text-muted) !important;
+                font-style: italic !important;
+              }
+
+              .asignaturas-container {
+                .asignaturas-header {
+                  border-bottom: 2px solid var(--p-surface-200) !important;
+                  padding-bottom: 1rem !important;
+                }
+
+                .asignaturas-table {
+                  .desktop-table {
+                    .table-header {
+                      display: grid !important;
+                      grid-template-columns: 80px 60px 80px 1fr 80px 80px 80px !important;
+                      gap: 1rem !important;
+                      padding: 0.75rem 1rem !important;
+                      background: var(--p-surface-100) !important;
+                      border-radius: 8px 8px 0 0 !important;
+                      font-size: 0.875rem !important;
+                      border-bottom: 1px solid var(--p-surface-200) !important;
+
+                      .table-cell {
+                        color: var(--p-text-color) !important;
+                        font-weight: 600 !important;
+                      }
+                    }
+
+                    .table-row {
+                      display: grid !important;
+                      grid-template-columns: 80px 60px 80px 1fr 80px 80px 80px !important;
+                      gap: 1rem !important;
+                      padding: 0.75rem 1rem !important;
+                      border-bottom: 1px solid var(--p-surface-200) !important;
+                      transition: background-color 0.2s ease !important;
+
+                      &:hover {
+                        background: var(--p-surface-50) !important;
+                      }
+
+                      &:last-child {
+                        border-bottom: none !important;
+                        border-radius: 0 0 8px 8px !important;
+                      }
+
+                      .table-cell {
+                        color: var(--p-text-color) !important;
+                        font-size: 0.875rem !important;
+                        display: flex !important;
+                        align-items: center !important;
+
+                        &:nth-child(4) {
+                          font-weight: 500 !important;
+                        }
+                      }
+                    }
+                  }
+
+                  .mobile-cards {
+                    display: none !important;
+                  }
+                }
+              }
+
+              .actividad-item {
+                margin-bottom: 1rem !important;
+                padding: 1rem !important;
+                padding-top: 2.5rem !important;
+                background: var(--p-surface-50) !important;
+                border-radius: 8px !important;
+                border: 1px solid var(--p-surface-200) !important;
+                position: relative !important;
+
+                &:last-child {
+                  margin-bottom: 0 !important;
+                }
+
+                .actividad-header {
+                  display: flex !important;
+                  justify-content: space-between !important;
+                  align-items: flex-start !important;
+                  gap: 1rem !important;
+
+                  .actividad-info {
+                    flex: 1 !important;
+                    margin-right: 1rem !important;
+
+                    .actividad-nombre {
+                      font-size: 1rem !important;
+                      font-weight: 600 !important;
+                      line-height: 1.4 !important;
+                      margin-right: 3rem !important;
+                    }
+
+                    .actividad-descripcion {
+                      font-size: 0.875rem !important;
+                      line-height: 1.4 !important;
+                    }
+                  }
+
+                  .actividad-horas {
+                    position: absolute !important;
+                    top: 1rem !important;
+                    right: 1rem !important;
+                    flex-shrink: 0 !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    align-items: center !important;
+                    gap: 0.25rem !important;
+
+                    .horas-badge {
+                      display: inline-block !important;
+                      font-size: 0.75rem !important;
+                      font-weight: 600 !important;
+                      padding: 0.25rem 0.75rem !important;
+                      border-radius: 20px !important;
+                    }
+                  }
+                }
+
+                .asesorias-container {
+                  .asesorias-header {
+                    margin-bottom: 0.5rem !important;
+                  }
+
+                  .asesoria-item {
+                    padding: 0.25rem 0 !important;
+                    font-size: 0.875rem !important;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .investigacion-container {
+      margin-top: 1rem !important;
+
+      .investigacion-header {
+        border-bottom: 2px solid var(--p-surface-200) !important;
+        padding-bottom: 1rem !important;
+      }
+
+      .investigacion-table {
+        .desktop-table {
+          @media (min-width: 768px) {
+            .table-header {
+              display: grid !important;
+              grid-template-columns: 90px 80px 2.2fr 90px 2fr 100px !important;
+              gap: 1rem !important;
+              padding: 0.75rem 1rem !important;
+              background: var(--p-surface-100) !important;
+              border-radius: 8px 8px 0 0 !important;
+              font-size: 0.875rem !important;
+              border-bottom: 1px solid var(--p-surface-200) !important;
+
+              .table-cell {
+                color: var(--p-text-color) !important;
+                font-weight: 600 !important;
+              }
+            }
+
+            .table-row {
+              display: grid !important;
+              grid-template-columns: 90px 80px 2.2fr 90px 2fr 100px !important;
+              gap: 1rem !important;
+              padding: 0.75rem 1rem !important;
+              border-bottom: 1px solid var(--p-surface-200) !important;
+              transition: background-color 0.2s ease !important;
+
+              &:hover {
+                background: var(--p-surface-50) !important;
+              }
+
+              &:last-child {
+                border-bottom: none !important;
+                border-radius: 0 0 8px 8px !important;
+              }
+
+              .table-cell {
+                color: var(--p-text-color) !important;
+                font-size: 0.875rem !important;
+                display: flex !important;
+                align-items: center !important;
+
+                &:last-child {
+                  justify-content: center !important;
+                }
+              }
+            }
+          }
+        }
+
+        .mobile-cards {
+          display: none !important;
+
+          @media (max-width: 767px) {
+            display: block !important;
+
+            .investigacion-card {
+              background: var(--p-surface-50) !important;
+              border: 1px solid var(--p-surface-200) !important;
+              border-radius: 12px !important;
+              margin-bottom: 1rem !important;
+              padding: 1rem !important;
+              transition: all 0.2s ease !important;
+
+              &:hover {
+                background: var(--p-surface-100) !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+              }
+
+              &:last-child {
+                margin-bottom: 0 !important;
+              }
+
+              .card-header {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
+                margin-bottom: 1rem !important;
+                gap: 1rem !important;
+
+                .investigacion-nombre {
+                  flex: 1 !important;
+                  font-size: 1rem !important;
+                  font-weight: 600 !important;
+                  color: var(--p-text-color) !important;
+                  margin: 0 !important;
+                  line-height: 1.4 !important;
+                }
+
+                .horas-badge {
+                  flex-shrink: 0 !important;
+                }
+              }
+
+              .card-details {
+                .detail-row {
+                  display: flex !important;
+                  justify-content: space-between !important;
+                  align-items: center !important;
+                  padding: 0.5rem 0 !important;
+                  border-bottom: 1px solid var(--p-surface-200) !important;
+
+                  &:last-child {
+                    border-bottom: none !important;
+                  }
+
+                  .detail-label {
+                    font-weight: 600 !important;
+                    color: var(--p-text-muted) !important;
+                    font-size: 0.875rem !important;
+                  }
+
+                  .detail-value {
+                    color: var(--p-text-color) !important;
+                    font-size: 0.875rem !important;
+                    font-weight: 500 !important;
+                    margin-left: 1rem !important;
+                    text-align: right !important;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        @media (max-width: 767px) {
+          .desktop-table {
+            display: none !important;
+          }
+        }
+      }
+    }
+
+    .estado-firmas {
+      transition: all 0.3s ease !important;
+
+      &:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+        transform: translateY(-1px) !important;
+      }
+
+      .header-icon {
+        transition: all 0.3s ease !important;
+
+        &:hover {
+          opacity: 1 !important;
+          transform: scale(1.1) !important;
+        }
+      }
+
+      .firmas-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+        gap: 1rem !important;
+
+        .firma-item {
+          .firma-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 0.75rem !important;
+            background: var(--p-surface-50) !important;
+            border-radius: 8px !important;
+            border: 1px solid var(--p-surface-200) !important;
+
+            .firma-label {
+              font-size: 0.875rem !important;
+              font-weight: 600 !important;
+            }
+          }
+        }
+      }
+    }
+
+    .resumen-final {
+      transition: all 0.3s ease !important;
+
+      &:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+        transform: translateY(-1px) !important;
+      }
+
+      .header-icon {
+        transition: all 0.3s ease !important;
+
+        &:hover {
+          opacity: 1 !important;
+          transform: scale(1.1) !important;
+        }
+      }
+
+      .resumen-stats {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+
+        .stat-item {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          padding: 0.5rem 0 !important;
+          border-bottom: 1px solid var(--p-surface-200) !important;
+
+          &:last-child {
+            border-bottom: none !important;
+          }
+
+          .stat-label {
+            font-size: 0.875rem !important;
+          }
+
+          .stat-value {
+            font-size: 0.875rem !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .plan-trabajo-viewer {
+    .plan-content {
+      .secciones-container {
+        .seccion-padre {
+          .secciones-hijas {
+            .seccion-hijo {
+              .actividades-container {
+                .asignaturas-container {
+                  .asignaturas-table {
+                    .desktop-table {
+                      display: none !important;
+                    }
+
+                    .mobile-cards {
+                      display: block !important;
+
+                      .asignatura-card {
+                        background: var(--p-surface-50) !important;
+                        border: 1px solid var(--p-surface-200) !important;
+                        border-radius: 12px !important;
+                        margin-bottom: 1rem !important;
+                        padding: 1rem !important;
+                        transition: all 0.2s ease !important;
+
+                        &:hover {
+                          background: var(--p-surface-100) !important;
+                          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+                        }
+
+                        &:last-child {
+                          margin-bottom: 0 !important;
+                        }
+
+                        .card-header {
+                          display: flex !important;
+                          justify-content: space-between !important;
+                          align-items: flex-start !important;
+                          margin-bottom: 1rem !important;
+                          gap: 1rem !important;
+
+                          .asignatura-nombre {
+                            flex: 1 !important;
+                            font-size: 1rem !important;
+                            font-weight: 600 !important;
+                            color: var(--p-text-color) !important;
+                            margin: 0 !important;
+                            line-height: 1.4 !important;
+                          }
+
+                          .horas-badge {
+                            flex-shrink: 0 !important;
+                          }
+                        }
+
+                        .card-details {
+                          .detail-row {
+                            display: flex !important;
+                            justify-content: space-between !important;
+                            align-items: center !important;
+                            padding: 0.5rem 0 !important;
+                            border-bottom: 1px solid var(--p-surface-200) !important;
+
+                            &:last-child {
+                              border-bottom: none !important;
+                            }
+
+                            .detail-label {
+                              font-weight: 600 !important;
+                              color: var(--p-text-muted) !important;
+                              font-size: 0.875rem !important;
+                            }
+
+                            .detail-value {
+                              color: var(--p-text-color) !important;
+                              font-size: 0.875rem !important;
+                              font-weight: 500 !important;
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+
+                .actividad-item {
+                  .actividad-header {
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    gap: 0.5rem !important;
+
+                    .actividad-horas {
+                      position: static !important;
+                      align-self: flex-end !important;
+                      margin-top: 0.5rem !important;
+                      display: flex !important;
+                      flex-direction: column !important;
+                      align-items: center !important;
+                      gap: 0.25rem !important;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .resumen-final {
+        .resumen-content {
+          .resumen-stats {
+            .stat-item {
+              flex-direction: column !important;
+              align-items: flex-start !important;
+              gap: 0.25rem !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.my-app-dark {
+  .plan-trabajo-viewer {
+    .plan-content {
+      .secciones-container {
+        .seccion-padre {
+          .seccion-header {
+            border-bottom-color: var(--glass-border) !important;
+          }
+
+          .secciones-hijas {
+            .seccion-hijo {
+              .actividades-container {
+                .actividad-item {
+                  background: var(--p-surface-100) !important;
+                  border-color: var(--glass-border) !important;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .p-button {
+        &.p-button-text {
+          color: var(--p-text-color) !important;
+
+          &:hover {
+            background: var(--p-surface-100) !important;
+          }
+        }
+      }
+
+      .resumen-final {
+        .resumen-content {
+          .resumen-stats {
+            .stat-item {
+              border-bottom-color: var(--glass-border) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,355 @@
+﻿<p-toast position="top-right"></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="w-full max-w-8xl mx-auto" [style]="{ 'background': 'transparent', 'padding': '1.5rem' }">
+
+  <!-- Criterios de busqueda -->
+  <div class="mb-6">
+    <div class="p-6 rounded-xl border-2 shadow-lg" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+      }">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+          Lista de Reservas de Equipos
+        </h2>
+        <p class="text-sm sm:text-base opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Listado de reservas de equipos de laboratorio
+        </p>
+      </div>
+
+      <div class="p-5 rounded-lg border" [style]="{
+          'background': 'var(--p-surface-0)',
+          'border-color': 'var(--p-border-color)'
+        }">
+        <div class="flex items-center justify-between mb-5">
+          <h4 class="text-lg font-semibold m-0" [style]="{ color: 'var(--p-text-color)' }">
+            Criterios de Busqueda
+          </h4>
+          <button pButton label="Limpiar Filtros" icon="pi pi-times" severity="secondary" [outlined]="true"
+            [style]="{ 'height': '2.5rem', 'border-radius': '8px' }"
+            (click)="limpiarFiltros()"
+            [disabled]="!hayFiltrosActivos">
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">Solicitante</p>
+            <app-input-component type="text" [ngModel]="filtroSolicitante()" (ngModelChange)="filtroSolicitante.set($event)" placeholder="Buscar por nombre o ID" class="w-full"></app-input-component>
+          </div>
+          <div>
+            <p class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">Fecha</p>
+            <app-input-component type="text" [ngModel]="filtroFecha()" (ngModelChange)="filtroFecha.set($event)" placeholder="YYYY-MM-DD" class="w-full"></app-input-component>
+          </div>
+          <div>
+            <app-select-component
+              label="Laboratorio"
+              [ngModel]="filtroLaboratorio()"
+              (ngModelChange)="filtroLaboratorio.set($event)"
+              [options]="laboratorioOpciones"
+              [filter]="true"
+              class="w-full">
+            </app-select-component>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="rounded-xl border-2 shadow-lg overflow-hidden" [style]="{
+      'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+      'border-color': 'var(--p-primary-200)',
+      'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+    }">
+
+    <div class="px-6 py-4 border-b" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+        'border-color': 'var(--p-primary-300)'
+      }">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-xl font-bold text-white m-0">Reservas de equipos</h3>
+          <p class="text-white/80 text-sm m-0">{{ reservasFiltradas().length }} reserva(s) encontrada(s)</p>
+        </div>
+        <span class="bg-white/20 px-3 py-1 rounded-full text-white text-sm font-medium">Actualizado</span>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div *ngIf="cargandoLista"
+        class="absolute inset-0 flex flex-col items-center justify-center z-10"
+        [style]="{ 'background': 'rgba(255,255,255,0.95)' }">
+        <p-progressSpinner styleClass="w-12 h-12" [style]="{ 'animation-duration': '1s' }"></p-progressSpinner>
+        <p class="mt-4 text-sm font-medium opacity-80" [style]="{ color: 'var(--p-text-color)' }">Cargando reservas...</p>
+      </div>
+
+      <div class="p-4">
+        <p-table
+          [value]="reservasFiltradas()"
+          [loading]="cargandoLista"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[10, 25, 50]"
+          [tableStyle]="{ 'min-width': '900px' }"
+          sortMode="multiple"
+          class="overflow-x-auto">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="identificacion" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Solicitante <p-sortIcon field="identificacion"></p-sortIcon>
+              </th>
+              <th pSortableColumn="fecha" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Fecha <p-sortIcon field="fecha"></p-sortIcon>
+              </th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">Laboratorio</th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">Hora fin</th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">Equipos</th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">Asistentes</th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">Acciones</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-r let-rowIndex="rowIndex">
+            <tr class="transition-all duration-200 hover:shadow-sm" [style]="{
+                'background': rowIndex % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-25)',
+                'border-bottom': '1px solid var(--p-border-color)'
+              }">
+
+              <td class="py-4 px-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                    [style]="{ 'background': 'var(--p-primary-500)' }">
+                    {{ getNombreUsuario(r.identificacion).charAt(0) }}
+                  </div>
+                  <div>
+                    <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">{{ getNombreUsuario(r.identificacion) }}</div>
+                    <div class="text-xs opacity-60" [style]="{ color: 'var(--p-text-color)' }">{{ r.identificacion }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <span class="font-medium" [style]="{ color: 'var(--p-text-color)' }">{{ r.fecha }}</span>
+              </td>
+
+              <td class="py-4 px-3 text-sm" [style]="{ color: 'var(--p-text-color)' }">{{ getLaboratorioDeReserva(r) }}</td>
+
+              <td class="py-4 px-3 text-sm font-mono" [style]="{ color: 'var(--p-text-color)' }">{{ formatTimeDisplay(r.horaFin) }}</td>
+
+              <td class="py-4 px-3">
+                <span *ngIf="!r.detalles?.length" class="opacity-40 italic text-sm">Sin equipos</span>
+                <div class="flex flex-wrap gap-1">
+                  <span *ngFor="let d of r.detalles"
+                    class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border"
+                    [style]="{ 'border-color': 'var(--p-primary-300)', 'background': 'var(--p-primary-50)', 'color': 'var(--p-primary-700)' }">
+                    <i class="pi pi-desktop" style="font-size: 0.65rem"></i>
+                    {{ d.equipoUnidad?.equipoAlmacen?.nombre ?? 'Equipo' }}
+                    <span *ngIf="d.equipoUnidad?.placa" class="opacity-70">&middot; {{ d.equipoUnidad?.placa }}</span>
+                  </span>
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <span *ngIf="!r.asistentes?.length" class="opacity-40 italic text-sm">Sin asistentes</span>
+                <div class="flex flex-wrap gap-1">
+                  <span *ngFor="let a of r.asistentes"
+                    class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border"
+                    [style]="{ 'border-color': 'var(--p-surface-400)', 'background': 'var(--p-surface-100)', 'color': 'var(--p-text-color)' }">
+                    <i class="pi pi-user" style="font-size: 0.65rem"></i>
+                    {{ getNombreUsuario(a.identificacion) }}
+                  </span>
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <div class="flex gap-1">
+                  <button pButton type="button" icon="pi pi-pencil"
+                    class="p-button-rounded p-button-text p-button-info"
+                    pTooltip="Editar reserva"
+                    (click)="abrirEdicion(r)">
+                  </button>
+                  <button pButton type="button" icon="pi pi-replay"
+                    class="p-button-rounded p-button-text p-button-success"
+                    pTooltip="Registrar devolución"
+                    *ngIf="!r.devuelta"
+                    (click)="navegarADevolucion(r.id)">
+                  </button>
+                  <button pButton type="button" icon="pi pi-trash"
+                    class="p-button-rounded p-button-text p-button-danger"
+                    pTooltip="Eliminar reserva"
+                    (click)="confirmarEliminar(r)">
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7" class="text-center py-12" [style]="{ 'background': 'var(--p-surface-50)', 'color': 'var(--p-text-color)' }">
+                <div class="flex flex-col items-center gap-4">
+                  <div class="w-16 h-16 rounded-full flex items-center justify-center" [style]="{ 'background': 'var(--p-surface-200)' }">
+                    <i class="pi pi-inbox text-2xl opacity-50"></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-semibold mb-1">No hay reservas registradas</p>
+                    <p class="text-sm opacity-80">Ajuste los filtros o registre una reserva de equipo</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de edicion -->
+<p-dialog
+  header="Editar Reserva"
+  [(visible)]="mostrarModal"
+  [modal]="true"
+  [style]="{ width: '700px', maxWidth: '95vw' }"
+  [contentStyle]="{ overflow: 'visible' }"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [blockScroll]="true"
+  [baseZIndex]="10000"
+  [breakpoints]="{ '960px': '90vw', '640px': '95vw' }">
+
+  <form [formGroup]="editForm" (ngSubmit)="guardarEdicion()" class="space-y-4 overflow-visible pt-2">
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <app-select-component label="Solicitante *" formControlName="identificacion" [options]="usuarioOpciones" [filter]="true"
+          [ngClass]="{ 'p-invalid': esInvalidoEdit('identificacion') }">
+        </app-select-component>
+        <small *ngIf="esInvalidoEdit('identificacion')" class="text-red-500 text-xs mt-1 block">El solicitante es requerido.</small>
+      </div>
+      <div>
+        <app-datepicker-component label="Fecha *" formControlName="fecha" type="date"></app-datepicker-component>
+        <small *ngIf="esInvalidoEdit('fecha')" class="text-red-500 text-xs mt-1 block">La fecha es requerida.</small>
+      </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <p class="block text-sm font-medium mb-1" [style]="{ color: 'var(--p-text-color)' }">Hora inicio *</p>
+        <p-datepicker [(ngModel)]="horaInicioDate" [timeOnly]="true" hourFormat="12"
+          (ngModelChange)="onHoraInicioChange($event)" [ngModelOptions]="{standalone: true}"
+          styleClass="w-full" inputStyleClass="w-full">
+        </p-datepicker>
+        <small *ngIf="esInvalidoEdit('horaInicio')" class="text-red-500 text-xs mt-1 block">La hora de inicio es requerida.</small>
+      </div>
+      <div>
+        <p class="block text-sm font-medium mb-1" [style]="{ color: 'var(--p-text-color)' }">Hora fin *</p>
+        <p-datepicker [(ngModel)]="horaFinDate" [timeOnly]="true" hourFormat="12"
+          (ngModelChange)="onHoraFinChange($event)" [ngModelOptions]="{standalone: true}"
+          styleClass="w-full" inputStyleClass="w-full">
+        </p-datepicker>
+        <small *ngIf="esInvalidoEdit('horaFin')" class="text-red-500 text-xs mt-1 block">La hora de fin es requerida.</small>
+      </div>
+    </div>
+
+    <p-divider></p-divider>
+
+    <div>
+      <app-select-component label="Laboratorio (para cambiar equipos)" formControlName="laboratorioId"
+        [options]="laboratorioOpciones" [filter]="true">
+      </app-select-component>
+      <small class="text-xs opacity-50 mt-1 block" [style]="{ color: 'var(--p-text-color)' }">
+        Seleccione un laboratorio para ver y cambiar los equipos reservados.
+      </small>
+    </div>
+
+    <div *ngIf="laboratorioSeleccionado">
+      <p class="text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+        Equipos disponibles
+        <span *ngIf="equiposSeleccionadosIds.size > 0" class="ml-1 opacity-60">({{ equiposSeleccionadosIds.size }} seleccionados)</span>
+      </p>
+      <p *ngIf="cargandoEquipos" class="text-xs opacity-60" [style]="{ color: 'var(--p-text-color)' }">Cargando equipos...</p>
+      <div class="flex flex-wrap gap-2">
+        <button *ngFor="let eq of equiposDisponibles" type="button"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all cursor-pointer"
+          [style]="estaSeleccionado(eq.equipoUnidad!.id)
+            ? { 'border-color': 'var(--p-primary-500)', 'background': 'var(--p-primary-50)', 'color': 'var(--p-primary-700)', 'font-weight': '500' }
+            : { 'border-color': 'var(--p-border-color)', 'background': 'var(--p-surface-50)', 'color': 'var(--p-text-color)' }"
+          (click)="toggleEquipo(eq.equipoUnidad!.id)">
+          <i class="pi" [ngClass]="estaSeleccionado(eq.equipoUnidad!.id) ? 'pi-check-circle' : 'pi-plus-circle'"></i>
+          <span class="font-medium">{{ eq.equipoAlmacen.nombre }}</span>
+          <span *ngIf="eq.equipoUnidad?.placa" class="opacity-70">&middot; {{ eq.equipoUnidad?.placa }}</span>
+        </button>
+      </div>
+    </div>
+
+    <p-divider></p-divider>
+
+    <p class="font-semibold text-sm m-0" [style]="{ color: 'var(--p-text-color)' }">
+      Estudiantes beneficiados
+      <span *ngIf="asistentesList.length > 0" class="ml-1 opacity-60">({{ asistentesList.length }})</span>
+    </p>
+
+    <div class="grid gap-3 sm:grid-cols-[1fr_auto] items-center">
+      <app-select-component label="Agregar asistente" formControlName="asistente" [options]="asistenteOpciones" [filter]="true">
+      </app-select-component>
+      <div class="flex items-center pb-1">
+        <p-button label="Agregar" icon="pi pi-user-plus" size="small" type="button"
+          [disabled]="!editForm.get('asistente')?.value" (onClick)="agregarAsistente()">
+        </p-button>
+      </div>
+    </div>
+
+    <div *ngIf="asistentesList.length > 0" class="flex flex-wrap gap-2">
+      <div *ngFor="let id of asistentesList; let i = index"
+        class="flex items-center gap-2 px-3 py-1 rounded-full border text-sm"
+        [style]="{ 'border-color': 'var(--p-border-color)', 'background': 'var(--p-surface-100)', 'color': 'var(--p-text-color)' }">
+        <span>{{ getNombreUsuario(id) }}</span>
+        <button type="button" (click)="eliminarAsistente(i)" class="hover:text-red-500 transition-colors" [style]="{ color: 'var(--p-text-color)' }">
+          <i class="pi pi-times" style="font-size: 0.7rem"></i>
+        </button>
+      </div>
+    </div>
+    <p *ngIf="asistentesList.length === 0" class="text-sm opacity-50 text-center py-1" [style]="{ color: 'var(--p-text-color)' }">Sin asistentes</p>
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button pButton type="button" label="Cancelar" class="p-button-text p-button-secondary"
+        (click)="mostrarModal = false" [disabled]="guardandoEdicion">
+      </button>
+      <button pButton type="button" label="Guardar" icon="pi pi-check"
+        [loading]="guardandoEdicion" [disabled]="editForm.invalid || guardandoEdicion"
+        (click)="guardarEdicion()">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

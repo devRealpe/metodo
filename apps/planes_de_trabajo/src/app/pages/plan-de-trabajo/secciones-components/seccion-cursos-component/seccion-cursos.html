@@ -1,0 +1,90 @@
+<div class="table-content" [style]="{ padding: '1rem' }">
+
+  <div
+    [style]="{ background: 'var(--p-surface-50)', border: '3px solid var(--p-surface-200)', 'border-radius': '8px', overflow: 'hidden' }">
+
+    <div [style]="{ background: '#0068AD', color: 'white', padding: '1.5rem' }">
+      <h3 class="text-lg font-semibold mb-0">
+        {{ seccionHijo.nombre }}
+      </h3>
+    </div>
+
+    <div [style]="{ padding: '1.5rem' }">
+
+      <div *ngIf="loading()" class="flex justify-content-center align-items-center p-4">
+        <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+      </div>
+
+      <div *ngIf="error()" class="alert alert-error p-3 mb-3">
+        {{ error() }}
+      </div>
+
+      <p-table *ngIf="!loading() && !error()" [value]="cursos()" styleClass="p-datatable-sm"
+        [style]="{ color: 'var(--p-text-color)', background: 'var(--p-surface-50)' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Codigo de Curso
+            </th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Grupo
+            </th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Semestre
+            </th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Nombre del Curso
+            </th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Número de Estudiantes
+            </th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Créditos
+            </th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Horas Presenciales
+            </th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-curso>
+          <tr class="detail-row" [style.background]="'var(--p-surface-50)'"
+            [style.transition]="'background-color 0.2s'">
+            <td style="text-align: center">{{ curso.codAsignatura }}</td>
+            <td style="text-align: center">{{ curso.grupo }}</td>
+            <td style="text-align: center">{{ curso.semestre }}</td>
+            <td style="text-align: center">{{ curso.nomAsignatura }}</td>
+            <td style="text-align: center">{{ curso.numEstudiantes }}</td>
+            <td style="text-align: center">{{ curso.numCreditos }}</td>
+            <td style="text-align: center">
+              <p class="font-bold">{{ curso.horasPresenciales }}</p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <p-table *ngIf="!loading() && !error()" [showGridlines]="true" styleClass="p-datatable-sm"
+        [tableStyle]="{ 'width': 'auto', 'margin-left': 'auto' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd; width: 7rem;">
+              <p class="font-bold">Subtotal</p>
+            </th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd; width: 5rem;">
+              <p class="font-bold">{{ subtotal() }}</p>
+            </th>
+          </tr>
+        </ng-template>
+      </p-table>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,658 @@
+<p-toast />
+<div class="p-4 sm:p-6 animate-fade-in">
+  <!-- Page Header -->
+  <div class="mb-6 sm:mb-8 animate-fade-in-down">
+    <h1
+      class="text-3xl sm:text-4xl font-bold"
+      [style]="{'color': 'var(--p-text-color)'}"
+    >
+      <i
+        class="pi pi-briefcase mr-3"
+        [style]="{'color': 'var(--p-primary-500)'}"
+      ></i>
+      Planes de Trabajo - Gestión Humana<span *ngIf="selectedFacultad()">
+        - {{ selectedFacultadNombre() }}</span
+      >
+    </h1>
+  </div>
+
+  <!-- Filters Card -->
+  <p-card
+    class="mb-6 shadow-md hover:shadow-lg transition-shadow duration-300"
+    [style]="{ 'background': 'var(--p-surface-50)', 'border': '2px solid var(--p-surface-200)', 'border-radius': '12px'}"
+  >
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Column 1 -->
+      <div class="flex flex-col gap-4">
+        <div>
+          <label
+            class="block text-sm font-semibold mb-2"
+            [style]="{'color': 'var(--p-text-color)'}"
+          >
+            <i
+              class="pi pi-calendar mr-2 text-lg"
+              [style]="{'color': 'var(--p-primary-500)'}"
+            ></i>
+            Periodo Académico <span class="text-red-500">*</span>
+          </label>
+          <div class="flex gap-2 items-center">
+            <p-select
+              [options]="periodosAcademicos()"
+              [(ngModel)]="periodoSeleccionado"
+              (onChange)="onCambioPeriodo($event.value)"
+              placeholder="Seleccione un periodo"
+              optionLabel="label"
+              [filter]="false"
+              styleClass="flex-1"
+              [style]="{'background': 'var(--p-surface-0)', 'border': '1px solid var(--p-surface-300)'}"
+            >
+              <ng-template #selectedItem let-selectedOption>
+                <div *ngIf="selectedOption">
+                  <i
+                    class="pi pi-calendar-plus text-blue-600 dark:text-blue-400"
+                    [style]="{'margin-right': '1rem'}"
+                  ></i>
+                  <span class="font-semibold">{{ selectedOption.label }}</span>
+                </div>
+              </ng-template>
+
+              <ng-template let-periodo #item>
+                <div>
+                  <i
+                    class="pi pi-calendar text-blue-500 dark:text-blue-300"
+                    [style]="{'margin-right': '1rem'}"
+                  ></i>
+                  <span>{{ periodo.label }}</span>
+                </div>
+              </ng-template>
+            </p-select>
+            <button
+              *ngIf="hasPeriodo()"
+              pButton
+              icon="pi pi-times"
+              [text]="true"
+              (click)="limpiarPeriodo()"
+              pTooltip="Limpiar periodo"
+              tooltipPosition="top"
+              [style]="{'color': 'var(--p-text-muted-color)'}"
+              class="p-button-sm"
+            ></button>
+          </div>
+        </div>
+
+        <div>
+          <label
+            class="block text-sm font-semibold mb-2"
+            [style]="{'color': 'var(--p-text-color)'}"
+          >
+            <i
+              class="pi pi-user mr-2 text-lg"
+              [style]="{'color': 'var(--p-primary-500)'}"
+            ></i>
+            Buscar por Nombre
+          </label>
+          <div class="flex gap-2 items-center">
+            <input
+              pInputText
+              type="text"
+              [ngModel]="nombreCompleto()"
+              (ngModelChange)="nombreCompleto.set($event)"
+              [disabled]="!periodoSeleccionado()"
+              placeholder="Nombre del profesor..."
+              class="flex-1"
+              [style]="{
+                'background': 'var(--p-surface-0)',
+                'border': '1px solid var(--p-surface-300)',
+                'color': 'var(--p-text-color)',
+                'padding': '0.75rem'
+              }"
+            />
+            <button
+              *ngIf="hasNombre()"
+              pButton
+              icon="pi pi-times"
+              [text]="true"
+              (click)="limpiarNombre()"
+              pTooltip="Limpiar nombre"
+              tooltipPosition="top"
+              [style]="{'color': 'var(--p-text-muted-color)'}"
+              class="p-button-sm"
+            ></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 2 -->
+      <div class="flex flex-col gap-4">
+        <div>
+          <label
+            class="block text-sm font-semibold mb-2"
+            [style]="{'color': 'var(--p-text-color)'}"
+          >
+            <i
+              class="pi pi-building mr-2 text-lg"
+              [style]="{'color': 'var(--p-primary-500)'}"
+            ></i>
+            Buscar Por Facultad
+          </label>
+          <div class="flex gap-2 items-center">
+            <p-select
+              [options]="facultadOptions()"
+              [(ngModel)]="selectedFacultad"
+              (onChange)="onFacultadChange($event.value)"
+              [filter]="true"
+              [disabled]="!periodoSeleccionado()"
+              placeholder="Seleccione una facultad"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="flex-1"
+              [style]="{'background': 'var(--p-surface-0)', 'border': '1px solid var(--p-surface-300)'}"
+            >
+            </p-select>
+            <button
+              *ngIf="hasFacultad()"
+              pButton
+              icon="pi pi-times"
+              [text]="true"
+              (click)="limpiarFacultad()"
+              pTooltip="Limpiar facultad"
+              tooltipPosition="top"
+              [style]="{'color': 'var(--p-text-muted-color)'}"
+              class="p-button-sm"
+            ></button>
+          </div>
+        </div>
+
+        <div>
+          <label
+            class="block text-sm font-semibold mb-2"
+            [style]="{'color': 'var(--p-text-color)'}"
+          >
+            <i
+              class="pi pi-id-card mr-2 text-lg"
+              [style]="{'color': 'var(--p-primary-500)'}"
+            ></i>
+            Buscar por Identificación
+          </label>
+          <div class="flex gap-2 items-center">
+            <input
+              pInputText
+              type="text"
+              [ngModel]="numIdentificacion()"
+              (input)="validateNumber($event)"
+              [disabled]="!periodoSeleccionado()"
+              placeholder="Número de identificación..."
+              class="flex-1"
+              [style]="{
+                'background': 'var(--p-surface-0)',
+                'border': onlyNumbers() ? '1px solid var(--p-surface-300)' : '1px solid red',
+                'color': 'var(--p-text-color)',
+                'padding': '0.75rem'
+              }"
+            />
+            <small
+              *ngIf="!onlyNumbers()"
+              class="text-red-500 font-semibold animate-fade-in block mt-1 absolute -bottom-5 left-0 text-xs"
+            >
+              <i class="pi pi-exclamation-triangle mr-1"></i> Solo se permiten
+              números
+            </small>
+            <button
+              *ngIf="hasIdentificacion()"
+              pButton
+              icon="pi pi-times"
+              [text]="true"
+              (click)="limpiarIdentificacion()"
+              pTooltip="Limpiar identificación"
+              tooltipPosition="top"
+              [style]="{'color': 'var(--p-text-muted-color)'}"
+              class="p-button-sm"
+            ></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 3 -->
+      <div>
+        <label
+          class="block text-sm font-semibold mb-2"
+          [style]="{'color': 'var(--p-text-color)'}"
+        >
+          <i
+            class="pi pi-book mr-2 text-lg"
+            [style]="{'color': 'var(--p-primary-500)'}"
+          ></i>
+          Buscar Por Programa
+        </label>
+        <div class="flex gap-2 items-center">
+          <p-select
+            [options]="programaOptions()"
+            [(ngModel)]="selectedPrograma"
+            (onChange)="onProgramaChange($event.value)"
+            [filter]="true"
+            [disabled]="!periodoSeleccionado() || !selectedFacultad()"
+            placeholder="Seleccione un programa"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="flex-1"
+            [style]="{'background': 'var(--p-surface-0)', 'border': '1px solid var(--p-surface-300)'}"
+          >
+          </p-select>
+          <button
+            *ngIf="hasPrograma()"
+            pButton
+            icon="pi pi-times"
+            [text]="true"
+            (click)="limpiarPrograma()"
+            pTooltip="Limpiar programa"
+            tooltipPosition="top"
+            [style]="{'color': 'var(--p-text-muted-color)'}"
+            class="p-button-sm"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div
+      class="flex flex-col sm:flex-row gap-3 mt-6 pt-4 justify-end items-center border-t"
+      [style]="{'border-color': 'var(--p-surface-300)'}"
+    >
+      <div class="flex gap-2 w-full sm:w-auto">
+        <button
+          pButton
+          label="Limpiar filtros"
+          icon="pi pi-filter-slash"
+          [text]="true"
+          (click)="limpiarFiltros()"
+          class="font-semibold"
+          [style]="{'color': 'var(--p-primary-600)'}"
+        ></button>
+        <button
+          pButton
+          label="Exportar ZIP"
+          [icon]="isExporting ? 'pi pi-spin pi-spinner' : 'pi pi-folder-open'"
+          [disabled]="!periodoSeleccionado() || displayUsers().length === 0 || isExporting"
+          (click)="onExportarZIPClick()"
+          class="font-semibold"
+          [style]="{'background': 'var(--p-primary-600)', 'color': 'white', 'border-radius': '8px'}"
+        ></button>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Table Container -->
+  <div
+    class="rounded-xl overflow-hidden shadow-lg animate-slide-up"
+    style="
+      background: var(--p-surface-50);
+      border: 2px solid var(--p-surface-200);
+    "
+  >
+    <!-- Table Header -->
+    <div class="p-6 text-white" style="background: var(--p-primary-600)">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+      >
+        <h3 class="text-xl font-semibold m-0 flex items-center">
+          <i class="pi pi-users mr-3 text-2xl"></i>
+          Lista de profesores{{ selectedPrograma() ? ' - ' + selectedPrograma()
+          : '' }}
+        </h3>
+        <p
+          *ngIf="periodoSeleccionado() && !isLoadingPlans() && displayUsers().length > 0"
+          class="text-base font-bold m-0 flex items-center opacity-90"
+        >
+          <i class="pi pi-info-circle mr-2"></i>
+          Mostrando
+          <span class="mx-1">{{ paginationInfo().first }}</span> -
+          <span class="mx-1">{{ paginationInfo().last }}</span> de
+          <span class="mx-1">{{ paginationInfo().total }}</span>
+          profesores
+        </p>
+      </div>
+    </div>
+
+    <!-- Table Content -->
+    <div class="p-6">
+      <!-- Empty State: No Period Selected -->
+      <div *ngIf="!periodoSeleccionado()" class="text-center py-12">
+        <i
+          class="pi pi-calendar-plus text-6xl mb-4 block"
+          [style]="{'color': 'var(--p-primary-400)'}"
+        ></i>
+        <p
+          class="text-xl font-semibold mb-2"
+          [style]="{'color': 'var(--p-text-color)'}"
+        >
+          Seleccione un periodo académico
+        </p>
+        <p class="text-sm" [style]="{'color': 'var(--p-text-muted)'}">
+          Por favor seleccione un periodo para ver los planes de trabajo
+        </p>
+      </div>
+
+      <!-- Loading State -->
+      <div
+        *ngIf="periodoSeleccionado() && isLoadingPlans()"
+        class="text-center py-12"
+      >
+        <i
+          class="pi pi-spin pi-spinner text-6xl mb-4 block"
+          [style]="{'color': 'var(--p-primary-500)'}"
+        ></i>
+        <p
+          class="text-xl font-semibold mb-2"
+          [style]="{'color': 'var(--p-text-color)'}"
+        >
+          Cargando planes de trabajo...
+        </p>
+        <p class="text-sm" [style]="{'color': 'var(--p-text-muted)'}">
+          Por favor espere mientras se cargan los datos
+        </p>
+      </div>
+
+      <!-- Empty State: No Results -->
+      <div
+        *ngIf="periodoSeleccionado() && !isLoadingPlans() && displayUsers().length === 0"
+        class="text-center py-12"
+      >
+        <i
+          [class]="hasActiveFilters() ? 'pi pi-filter-slash' : 'pi pi-inbox'"
+          class="text-6xl mb-4 block"
+          [style]="{'color': 'var(--p-text-muted)'}"
+        ></i>
+        <p
+          class="text-xl font-semibold mb-2"
+          [style]="{'color': 'var(--p-text-color)'}"
+        >
+          {{ hasActiveFilters() ? 'No se encontraron resultados' : 'No hay
+          planes de trabajo' }}
+        </p>
+        <p
+          *ngIf="!hasActiveFilters()"
+          class="text-sm"
+          [style]="{'color': 'var(--p-text-muted)'}"
+        >
+          No se encontraron planes de trabajo para el periodo seleccionado
+        </p>
+      </div>
+
+      <!-- Data Table -->
+      <p-table
+        *ngIf="periodoSeleccionado() && !isLoadingPlans() && displayUsers().length > 0"
+        [value]="displayUsers()"
+        [paginator]="true"
+        [rows]="rowsPerPage()"
+        [first]="first()"
+        [rowsPerPageOptions]="[5, 10, 20, 50]"
+        [showCurrentPageReport]="false"
+        [responsiveLayout]="'scroll'"
+        (onPage)="onPageChange($event)"
+        styleClass="p-datatable-sm"
+        [style]="{'color': 'var(--p-text-color)', 'background': 'var(--p-surface-50)', '--p-paginator-background': 'var(--p-surface-50)', '--p-paginator-border-width': '0', '--p-paginator-border-top-width': '1px', '--p-paginator-border-color': 'var(--p-surface-200)', '--p-paginator-border-radius': '0 0 12px 12px', '--p-paginator-padding': '1rem', '--p-paginator-gap': '0.125rem', '--p-paginator-item-min-width': '2.25rem', '--p-paginator-item-height': '2.25rem', '--p-paginator-item-border-radius': '50%', '--p-paginator-item-border-width': '0', '--p-paginator-item-padding': '0', '--p-paginator-item-margin': '0 0.125rem', '--p-paginator-item-background': 'transparent', '--p-paginator-item-color': 'var(--p-surface-600)', '--p-paginator-item-hover-background': '#0068AD', '--p-paginator-item-hover-color': 'white', '--p-paginator-item-focus-background': '#0068AD', '--p-paginator-item-focus-color': 'white', '--p-paginator-item-selected-background': 'var(--p-primary-500)', '--p-paginator-item-selected-color': 'var(--p-surface-0)', '--p-paginator-item-selected-hover-background': 'var(--p-primary-600)', '--p-paginator-item-selected-hover-color': 'var(--p-surface-0)', '--p-paginator-item-font-weight': '600', '--p-paginator-nav-button-background': 'var(--p-surface-0)', '--p-paginator-nav-button-color': 'var(--p-primary-500)', '--p-paginator-nav-button-border-width': '0', '--p-paginator-nav-button-border-radius': '50%', '--p-paginator-nav-button-hover-background': 'var(--p-primary-500)', '--p-paginator-nav-button-hover-color': 'var(--p-surface-0)', '--p-paginator-nav-button-focus-background': 'var(--p-primary-500)', '--p-paginator-nav-button-focus-color': 'var(--p-surface-0)', '--p-paginator-nav-button-disabled-background': 'var(--p-surface-100)', '--p-paginator-nav-button-disabled-color': 'var(--p-surface-400)', '--p-paginator-current-page-report-color': 'var(--p-surface-600)', '--p-paginator-dropdown-border-radius': '12px', '--p-paginator-dropdown-border-width': '2px', '--p-paginator-dropdown-border-color': 'var(--p-surface-200)', '--p-paginator-dropdown-hover-border-color': 'var(--p-primary-500)', '--p-paginator-dropdown-background': 'var(--p-surface-0)', '--p-paginator-dropdown-color': 'var(--p-text-color)', 'box-shadow': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'}"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th
+              style="
+                background: var(--p-surface-50);
+                color: var(--p-text-color);
+                text-align: center;
+                border-bottom: 2px solid var(--p-surface-300);
+                font-weight: 600;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding: 1rem;
+              "
+            >
+              Identificación
+            </th>
+            <th
+              style="
+                background: var(--p-surface-50);
+                color: var(--p-text-color);
+                text-align: center;
+                border-bottom: 2px solid var(--p-surface-300);
+                font-weight: 600;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding: 1rem;
+              "
+            >
+              Programa
+            </th>
+            <th
+              style="
+                background: var(--p-surface-50);
+                color: var(--p-text-color);
+                text-align: center;
+                border-bottom: 2px solid var(--p-surface-300);
+                font-weight: 600;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding: 1rem;
+              "
+            >
+              Nombres
+            </th>
+            <th
+              style="
+                background: var(--p-surface-50);
+                color: var(--p-text-color);
+                text-align: center;
+                border-bottom: 2px solid var(--p-surface-300);
+                font-weight: 600;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding: 1rem;
+              "
+            >
+              Apellidos
+            </th>
+            <th
+              style="
+                background: var(--p-surface-50);
+                color: var(--p-text-color);
+                text-align: center;
+                border-bottom: 2px solid var(--p-surface-300);
+                font-weight: 600;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding: 1rem;
+              "
+            >
+              Cargo
+            </th>
+            <th
+              style="
+                background: var(--p-surface-50);
+                color: var(--p-text-color);
+                text-align: center;
+                border-bottom: 2px solid var(--p-surface-300);
+                font-weight: 600;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding: 1rem;
+              "
+            >
+              Estado del Plan de trabajo
+            </th>
+            <th
+              style="
+                background: var(--p-surface-50);
+                color: var(--p-text-color);
+                text-align: center;
+                border-bottom: 2px solid var(--p-surface-300);
+                font-weight: 600;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding: 1rem;
+              "
+            >
+              Acciones
+            </th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-profesor>
+          <tr
+            class="transition-all duration-200 hover:bg-surface-100"
+            [style]="{'background': 'var(--p-surface-50)'}"
+          >
+            <td
+              style="
+                text-align: center;
+                padding: 0.75rem;
+                border-bottom: 1px solid var(--p-surface-200);
+              "
+            >
+              {{ profesor.numIdentificacion }}
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 0.75rem;
+                border-bottom: 1px solid var(--p-surface-200);
+              "
+            >
+              {{ profesor.programa }}
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 0.75rem;
+                border-bottom: 1px solid var(--p-surface-200);
+              "
+            >
+              {{ profesor.nombres }}
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 0.75rem;
+                border-bottom: 1px solid var(--p-surface-200);
+              "
+            >
+              {{ profesor.apellidos }}
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 0.75rem;
+                border-bottom: 1px solid var(--p-surface-200);
+              "
+            >
+              {{ profesor.cargo }}
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 0.75rem;
+                border-bottom: 1px solid var(--p-surface-200);
+              "
+            >
+              <p-tag
+                [value]="getEstadoProfesor(profesor)"
+                [severity]="getSeverityEstado(profesor)"
+                styleClass="text-xs font-semibold"
+              />
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 0.75rem;
+                border-bottom: 1px solid var(--p-surface-200);
+              "
+            >
+              <div class="flex gap-2 justify-center items-center">
+                <button
+                  pButton
+                  icon="pi pi-eye"
+                  class="p-button-sm"
+                  [style]="{ 
+                    'background': 'var(--p-surface-100)', 
+                    'border': '1px solid var(--p-surface-300)', 
+                    'color': 'var(--p-text-color)',
+                    'min-width': '36px',
+                    'height': '36px',
+                    'border-radius': '8px'
+                  }"
+                  pTooltip="Ver plan de trabajo"
+                  tooltipPosition="top"
+                  (click)="onVer(profesor); $event.stopPropagation()"
+                ></button>
+                <button
+                  pButton
+                  icon="pi pi-download"
+                  class="p-button-sm"
+                  [style]="{
+                    'background': 'var(--p-primary-600)',
+                    'border': '1px solid var(--p-primary-500)',
+                    'color': 'white',
+                    'min-width': '36px',
+                    'height': '36px',
+                    'border-radius': '8px'
+                  }"
+                  pTooltip="Descargar PDF"
+                  tooltipPosition="top"
+                  (click)="onDescargar(profesor); $event.stopPropagation()"
+                ></button>
+                <button
+                  pButton
+                  icon="pi pi-file-word"
+                  class="p-button-sm"
+                  [style]="{
+                    'background': 'var(--p-blue-600)',
+                    'border': '1px solid var(--p-blue-500)',
+                    'color': 'white',
+                    'min-width': '36px',
+                    'height': '36px',
+                    'border-radius': '8px'
+                  }"
+                  pTooltip="Descargar Word"
+                  tooltipPosition="top"
+                  (click)="onDescargarWord(profesor); $event.stopPropagation()"
+                ></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <!-- Plan Viewer Dialog -->
+  <p-dialog
+    [visible]="showPlanViewer"
+    (visibleChange)="showPlanViewer = $event"
+    [modal]="true"
+    [closable]="true"
+    [dismissableMask]="true"
+    [style]="{ width: '95vw', 'max-width': '1200px', 'background': 'var(--p-surface-50)' }"
+    header="Plan de Trabajo"
+    (onHide)="onCerrarPlanViewer()"
+  >
+    <app-plan-trabajo-viewer
+      *ngIf="planTrabajoIdViewer() && profesorIdViewer()"
+      [planDeTrabajoId]="planTrabajoIdViewer()!"
+      [profesorId]="profesorIdViewer()!"
+    >
+    </app-plan-trabajo-viewer>
+    <ng-template pTemplate="footer">
+      <p-button
+        label="Cerrar"
+        icon="pi pi-times"
+        severity="secondary"
+        (click)="onCerrarPlanViewer()"
+      />
+    </ng-template>
+  </p-dialog>
+</div>

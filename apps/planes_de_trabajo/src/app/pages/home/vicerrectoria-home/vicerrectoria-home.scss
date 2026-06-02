@@ -1,0 +1,53 @@
+$transition-fast: var(--transition-fast);
+
+::ng-deep .p-dialog {
+  .p-dialog-footer {
+     border-bottom-left-radius: 0.7rem !important;
+    border-bottom-right-radius: 0.7rem !important;
+  }
+  
+  .p-dialog-header{
+    border-top-left-radius: 0.7rem !important;
+    border-top-right-radius: 0.7rem !important;
+    overflow: hidden !important; 
+  }
+}
+
+ ::ng-deep .p-dialog-footer .p-button {
+  border-radius: var(--radius-lg) !important;
+  font-weight: 600 !important;
+  transition: all $transition-fast;
+  padding: 0.625rem 1.25rem !important;
+  border-radius: 0.5rem !important;
+
+  &.p-button-outlined.p-button-secondary {
+    border-color: var(--p-surface-border) !important;
+    color: white !important;
+    background: transparent !important;
+
+    &:enabled:hover {
+      border-color: rgb(180, 180, 180) !important;
+    }
+  }
+
+  &.p-button-success {
+    background: var(--secondary-green) !important;
+    border-color: var(--secondary-green) !important;
+    color: white !important;
+
+    &:enabled:hover {
+      background: var(--secondary-green-dark) !important;
+      border-color: var(--secondary-green-dark) !important;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md) !important;
+    }
+
+    &:enabled:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.6 !important;
+      cursor: not-allowed !important;
+    }
+}}

@@ -1,0 +1,152 @@
+<div class="w-full overflow-x-hidden">
+    <div class="w-full max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
+
+        <div class="text-center py-3 px-2">
+            <h2 class="text-xl sm:text-2xl font-bold mb-1" [style]="{'color':'var(--p-text-color)'}">
+                {{ tituloPagina }}
+            </h2>
+            <p class="text-sm sm:text-base" [style]="{'color':'var(--p-text-muted-color, var(--p-surface-600))'}">
+                {{ loading ? 'Cargando información del laboratorio...' : 'Actualiza la información del laboratorio' }}
+            </p>
+        </div>
+
+        <div *ngIf="loading" class="text-center py-8">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-8 max-w-md mx-auto">
+                <i class="pi pi-spin pi-spinner text-4xl text-blue-500 mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Cargando información...</h3>
+                <p class="text-sm text-gray-500">Por favor espere mientras cargamos los datos del laboratorio</p>
+            </div>
+        </div>
+
+        <form *ngIf="!loading && selectedLab" [formGroup]="form" (ngSubmit)="guardar()" class="grid gap-4">
+
+            <div class="min-w-0">
+                <app-input-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                    label="Nombre del laboratorio *" id="nombre" formControlName="nombre"
+                    placeholder="Ej: Laboratorio de Química" [ngClass]="{ 'p-invalid': campoInvalido('nombre') }">
+                </app-input-component>
+
+                <small *ngIf="campoInvalido('nombre')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                    {{ obtenerError('nombre') }}
+                </small>
+
+                <small class="text-xs sm:text-sm text-gray-500 mt-1 block">
+                    Entre 3 y 100 caracteres
+                </small>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div class="min-w-0">
+                    <app-input-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                        label="Capacidad máxima *" id="capacidad" type="number" formControlName="capacidad"
+                        placeholder="Ej: 30" [ngClass]="{ 'p-invalid': campoInvalido('capacidad') }">
+                    </app-input-component>
+
+                    <small *ngIf="campoInvalido('capacidad')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                        {{ obtenerError('capacidad') }}
+                    </small>
+
+                    <small class="text-xs sm:text-sm text-gray-500 mt-1 block">
+                        Entre 1 y 200 personas
+                    </small>
+                </div>
+
+                <div class="min-w-0">
+                    <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                        label="Estado del laboratorio *" id="estado" formControlName="estado" [options]="estadoOptions"
+                        optionLabel="label" optionValue="value" placeholder="Seleccione el estado" 
+                        [ngClass]="{ 'p-invalid': campoInvalido('estado') }">
+                    </app-select-component>
+
+                    <small *ngIf="campoInvalido('estado')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                        {{ obtenerError('estado') }}
+                    </small>
+                </div>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div class="min-w-0">
+                    <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                        label="Tipo de laboratorio *" id="tipo" formControlName="tipo" [options]="tipoOptions"
+                        optionLabel="label" optionValue="value" placeholder="Seleccione el tipo"
+                        [ngClass]="{ 'p-invalid': campoInvalido('tipo') }">
+                    </app-select-component>
+
+                    <small *ngIf="campoInvalido('tipo')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                        {{ obtenerError('tipo') }}
+                    </small>
+                </div>
+
+                <div class="min-w-0">
+                    <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                        label="Sede *" id="sede" formControlName="sede" [options]="sedeOptions"
+                        optionLabel="label" optionValue="value" placeholder="Seleccione la sede"
+                        [ngClass]="{ 'p-invalid': campoInvalido('sede') }">
+                    </app-select-component>
+
+                    <small *ngIf="campoInvalido('sede')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                        {{ obtenerError('sede') }}
+                    </small>
+                </div>
+
+                <div class="min-w-0">
+                    <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                        label="Bloque" id="bloque" formControlName="bloque" [options]="bloqueOptions"
+                        optionLabel="label" optionValue="value" placeholder="Seleccione el bloque (opcional)"
+                        [ngClass]="{ 'p-invalid': campoInvalido('bloque') }">
+                    </app-select-component>
+
+                    <small *ngIf="campoInvalido('bloque')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                        {{ obtenerError('bloque') }}
+                    </small>
+
+                    <small class="text-xs sm:text-sm text-gray-500 mt-1 block">
+                        Máximo 50 caracteres (opcional)
+                    </small>
+                </div>
+            </div>
+
+            <div class="min-w-0">
+                <app-textarea-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                    label="Descripción del laboratorio" id="descripcion" formControlName="descripcion"
+                    placeholder="Describa las características, equipos y propósito del laboratorio..." [rows]="4"
+                    [ngClass]="{ 'p-invalid': campoInvalido('descripcion') }">
+                </app-textarea-component>
+
+                <small *ngIf="campoInvalido('descripcion')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                    {{ obtenerError('descripcion') }}
+                </small>
+
+                <small class="text-xs sm:text-sm text-gray-500 mt-1 block">
+                    Máximo 500 caracteres (opcional)
+                </small>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2 justify-between items-stretch sm:items-center">
+                <p-button label="Cancelar" severity="secondary" icon="pi pi-times" class="w-full sm:w-auto"
+                    [disabled]="saving" (onClick)="cancelar()">
+                </p-button>
+
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <p-button label="Guardar Cambios" icon="pi pi-check" class="w-full sm:w-auto"
+                        [loading]="saving" [disabled]="form.invalid || loading" (onClick)="guardar()">
+                    </p-button>
+                </div>
+            </div>
+
+        </form>
+
+        <div *ngIf="!loading && !selectedLab" class="text-center py-8">
+            <div class="bg-orange-50 border border-orange-200 rounded-lg p-8 max-w-md mx-auto">
+                <i class="pi pi-exclamation-triangle text-4xl text-orange-500 mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Laboratorio no encontrado</h3>
+                <p class="text-sm text-gray-600 mb-6">El laboratorio especificado no existe o no se pudo cargar sus datos.</p>
+                <p-button label="Volver a la lista" icon="pi pi-arrow-left" severity="secondary" class="w-full sm:w-auto"
+                    (onClick)="volver()">
+                </p-button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p-toast position="top-right" key="edicion-laboratorio"></p-toast>

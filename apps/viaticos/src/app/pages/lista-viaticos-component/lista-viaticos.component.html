@@ -1,0 +1,1766 @@
+<p-toast></p-toast>
+<p-confirmDialog [style]="{width: '450px'}" [baseZIndex]="10000" styleClass="compact-confirm-dialog">
+  <ng-template pTemplate="message" let-message>
+    <div class="flex flex-col items-center w-full gap-3 border-b-1 surface-border pb-3">
+      <i [class]="message.icon" class="text-6xl text-primary-500"></i>
+      <p class="text-center text-base font-medium">{{ message.message }}</p>
+    </div>
+  </ng-template>
+</p-confirmDialog>
+
+<div class="mb-4">
+  <p-button
+    label="Volver a Inicio"
+    icon="pi pi-arrow-left"
+    severity="secondary"
+    (onClick)="volverAInicio()"
+    [outlined]="true"
+    styleClass="w-auto">
+  </p-button>
+</div>
+
+<!-- Diálogo de detalle de solicitud -->
+<p-dialog
+  [(visible)]="mostrarDialogoDetalle"
+  [modal]="true"
+  [style]="{ width: '95vw', maxWidth: '1200px' }"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+>
+  <ng-template pTemplate="header">
+    <div class="w-full">
+      <div class="text-center">
+        <h2 class="text-xl font-bold m-0 mb-1" [style]="{ color: 'white' }">
+          GESTIÓN DE TALENTO HUMANO
+        </h2>
+        <h3 class="text-lg font-bold m-0" [style]="{ color: 'white' }">
+          AUTORIZACIÓN DE VIÁTICOS A TRABAJADORES
+        </h3>
+        <div class="text-xs mt-2 opacity-70" [style]="{ color: 'white' }">
+          Código: {{ solicitudSeleccionada?.codigoSolicitud || 'N/A' }} | 
+          Versión: 1.0 | 
+          Fecha: {{ solicitudSeleccionada?.fechaElaboracion | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <div *ngIf="solicitudSeleccionada" class="p-0">
+    <!-- Encabezado: Fecha de Solicitud -->
+    <div class="overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <table class="w-full" [style]="{ 'border-collapse': 'collapse' }">
+        <tr>
+          <td 
+            class="p-3 font-bold text-center border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-100)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            FECHA DE SOLICITUD
+          </td>
+          <td 
+            class="p-3 text-center font-medium border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            DÍA: {{ solicitudSeleccionada.fechaElaboracion | date:'dd' }}
+          </td>
+          <td 
+            class="p-3 text-center font-medium border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            MES: {{ solicitudSeleccionada.fechaElaboracion | date:'MM' }}
+          </td>
+          <td 
+            class="p-3 text-center font-medium border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            AÑO: {{ solicitudSeleccionada.fechaElaboracion | date:'yyyy' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Sección: INFORMACIÓN DEL TRABAJADOR -->
+    <div class="mt-4 overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <div 
+        class="p-3 font-bold text-white text-center"
+        [style]="{ 'background': '#2c5f8d' }"
+      >
+        INFORMACIÓN DEL TRABAJADOR
+      </div>
+      <table class="w-full" [style]="{ 'border-collapse': 'collapse' }">
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            APELLIDOS Y NOMBRES
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ obtenerNombreCompleto(solicitudSeleccionada) }}
+          </td>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            IDENTIFICACIÓN
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ solicitudSeleccionada.nit }}
+          </td>
+        </tr>
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CARGO
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ solicitudSeleccionada.cargo || 'No especificado' }}
+          </td>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            TIPO DE VIÁTICOS
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            <p-tag 
+              [value]="solicitudSeleccionada.tipoViaticos === 'permanente' ? 'Permanente' : 'Ocasional'"
+              [severity]="solicitudSeleccionada.tipoViaticos === 'permanente' ? 'info' : 'warn'"
+            ></p-tag>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Sección: DESCRIPCIÓN DE VIÁTICOS -->
+    <div class="mt-4 overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <div 
+        class="p-3 font-bold text-white text-center"
+        [style]="{ 'background': '#2c5f8d' }"
+      >
+        DESCRIPCIÓN DE VIÁTICOS
+      </div>
+      <table class="w-full" [style]="{ 'border-collapse': 'collapse' }">
+        <tr>
+          <td 
+            class="p-3 font-semibold border text-left"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CIUDAD DE ORIGEN
+          </td>
+          <td 
+            class="p-3 border text-left"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ obtenerNombreUbicacion(solicitudSeleccionada.municipioSalida) }}
+          </td>
+          <td 
+            class="p-3 font-semibold border text-left"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            FECHA DE SALIDA
+          </td>
+          <td 
+            class="p-3 border text-left"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ solicitudSeleccionada.fechaSalida | date:'dd/MM/yyyy' }}
+          </td>
+        </tr>
+        <tr>
+          <td 
+            class="p-3 font-semibold border text-left"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CIUDAD DESTINO
+          </td>
+          <td 
+            class="p-3 border text-left"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ obtenerNombreUbicacion(solicitudSeleccionada.destinos?.[0]?.municipio ?? undefined) }}
+          </td>
+          <td 
+            class="p-3 font-semibold border text-left"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            FECHA DE LLEGADA
+          </td>
+          <td 
+            class="p-3 border text-left"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ (solicitudSeleccionada.destinos && solicitudSeleccionada.destinos.length > 0 ? solicitudSeleccionada.destinos[0].fechaLlegada : null) | date:'dd/MM/yyyy' }}
+          </td>
+        </tr>
+        
+        <!-- Destinos adicionales (si hay más de 1) -->
+        <ng-container *ngIf="solicitudSeleccionada.destinos && solicitudSeleccionada.destinos.length > 1">
+          <tr *ngFor="let destino of solicitudSeleccionada.destinos.slice(1); let i = index">
+            <td 
+              class="p-3 font-semibold border text-left"
+              [style]="{ 
+                'background': 'var(--p-surface-50)',
+                'border-color': 'var(--p-border-color)'
+              }"
+            >
+              CIUDAD DESTINO {{ i + 2 }}
+            </td>
+            <td 
+              class="p-3 border text-left"
+              [style]="{ 
+                'background': 'var(--p-surface-0)',
+                'border-color': 'var(--p-border-color)'
+              }"
+            >
+              {{ obtenerNombreUbicacion(destino.municipio) }}
+            </td>
+            <td 
+              class="p-3 font-semibold border text-left"
+              [style]="{ 
+                'background': 'var(--p-surface-50)',
+                'border-color': 'var(--p-border-color)'
+              }"
+            >
+              FECHA DE LLEGADA {{ i + 2 }}
+            </td>
+            <td 
+              class="p-3 border text-left"
+              [style]="{ 
+                'background': 'var(--p-surface-0)',
+                'border-color': 'var(--p-border-color)'
+              }"
+            >
+              {{ destino.fechaLlegada | date:'dd/MM/yyyy' }}
+            </td>
+          </tr>
+        </ng-container>
+        
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CONCEPTO DEL VIAJE
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ obtenerSoloConcepto(solicitudSeleccionada.conceptoViaje) }}
+          </td>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            FUENTE FUNCIÓN
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ (solicitudSeleccionada.centrosCosto && solicitudSeleccionada.centrosCosto.length > 0 ? solicitudSeleccionada.centrosCosto[0].fuenteFuncion : undefined) || 'No especificado' }}
+          </td>
+        </tr>
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CENTRO DE COSTO
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ obtenerCodigosCentrosCosto() }}
+          </td>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            NOMBRE C. COSTO
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ (solicitudSeleccionada.centrosCosto && solicitudSeleccionada.centrosCosto.length > 0 ? solicitudSeleccionada.centrosCosto[0].nombreCentroCosto : undefined) || 'No especificado' }}
+          </td>
+        </tr>
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            MOTIVO DE VIAJE
+          </td>
+          <td 
+            class="p-3 border"
+            colspan="3"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)',
+              'min-height': '60px'
+            }"
+          >
+            {{ solicitudSeleccionada.motivoViaje || 'No especificado' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Sección: Conceptos de Liquidación -->
+    <div class="mt-4 overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <div 
+        class="p-3 font-bold text-white text-center"
+        [style]="{ 'background': '#2c5f8d' }"
+      >
+        CONCEPTOS DE LIQUIDACIÓN
+      </div>
+      
+      <!-- Loading -->
+      <div *ngIf="cargandoConceptos" class="flex justify-center items-center p-6">
+        <p-progressSpinner [style]="{ width: '40px', height: '40px' }" strokeWidth="4"></p-progressSpinner>
+        <span class="ml-3 opacity-70">Cargando conceptos...</span>
+      </div>
+
+      <!-- Tabla de conceptos -->
+      <div *ngIf="!cargandoConceptos && conceptosLiquidacion.length > 0" class="overflow-x-auto">
+        <table class="w-full" [style]="{ 'border-collapse': 'collapse' }">
+          <thead>
+            <tr [style]="{ 'background': 'var(--p-surface-100)' }">
+              <th class="p-3 border text-left font-semibold" [style]="{ 'border-color': 'var(--p-border-color)' }">
+                Concepto
+              </th>
+              <th class="p-3 border text-right font-semibold" [style]="{ 'border-color': 'var(--p-border-color)', 'width': '200px' }">
+                Subtotal
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let concepto of conceptosLiquidacion" [style]="{ 'background': 'var(--p-surface-0)' }">
+              <td class="p-3 border" [style]="{ 'border-color': 'var(--p-border-color)' }">
+                {{ concepto.conceptoNombre }}
+              </td>
+              <td class="p-3 border text-right font-semibold" [style]="{ 'border-color': 'var(--p-border-color)' }">
+                {{ concepto.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}
+              </td>
+            </tr>
+            <tr [style]="{ 'background': 'var(--p-surface-100)' }">
+              <td class="p-3 border text-right font-bold" [style]="{ 'border-color': 'var(--p-border-color)' }">
+                TOTAL CONCEPTOS:
+              </td>
+              <td class="p-3 border text-right font-bold" [style]="{ 'border-color': 'var(--p-border-color)', 'color': 'var(--p-green-700)' }">
+                {{ calcularTotalConceptos() | currency:'COP':'symbol-narrow':'1.0-0' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Sin conceptos -->
+      <div *ngIf="!cargandoConceptos && conceptosLiquidacion.length === 0" class="p-6 text-center opacity-70">
+        <i class="pi pi-info-circle text-2xl mb-2"></i>
+        <p class="m-0">No hay conceptos de liquidación registrados</p>
+      </div>
+    </div>
+
+    <!-- Sección: Valor Total de Viáticos -->
+    <div class="mt-4 overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <div 
+        class="p-3 font-bold text-white text-center"
+        [style]="{ 'background': '#2c5f8d' }"
+      >
+        VALOR TOTAL DE VIÁTICOS
+      </div>
+      <div 
+        class="p-6 text-center"
+        [style]="{ 
+          'background': 'var(--p-green-50)'
+        }"
+      >
+        <p class="text-sm font-semibold mb-2 opacity-70">Monto Total Autorizado</p>
+        <p 
+          class="text-4xl font-bold m-0"
+          [style]="{ color: 'var(--p-green-700)' }"
+        >
+          {{ solicitudSeleccionada.valorTotalViaticos | currency:'COP':'symbol-narrow':'1.0-0' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Sección: Estado -->
+    <div class="mt-4 overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <table class="w-full" [style]="{ 'border-collapse': 'collapse' }">
+        <tr>
+          <td 
+            class="p-3 font-semibold border text-center"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            ESTADO ACTUAL
+          </td>
+          <td 
+            class="p-3 border text-center"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            <p-tag 
+              [value]="obtenerTextoEstado(solicitudSeleccionada.estado!)"
+              [severity]="obtenerSeveridadEstado(solicitudSeleccionada.estado!)"
+              [style]="{ 'font-size': '1rem', 'padding': '0.5rem 1rem' }"
+            ></p-tag>
+          </td>
+        </tr>
+        <tr *ngIf="solicitudSeleccionada.observaciones">
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            OBSERVACIONES
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ solicitudSeleccionada.observaciones }}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 p-4 border-t" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <p-button
+        label="Cerrar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="cerrarDialogoDetalle()"
+        styleClass="min-w-[120px]"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-card
+  class="w-full max-w-8xl mx-auto"
+  [style]="{
+    'background': 'var(--p-surface-50)',
+    'border': '1px solid var(--p-border)',
+    'box-shadow': 'var(--p-elevation-2)'
+  }"
+>
+
+
+  <!-- Panel de Filtros y Controles -->
+  <div class="mb-6">
+    <div
+      class="p-6 rounded-xl border-2 shadow-lg"
+      [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+      }"
+    >
+      <!-- Encabezado del panel -->
+      <div class="text-center mb-6">
+        <h2
+          class="text-2xl sm:text-3xl font-bold mb-2"
+          [style]="{ color: 'var(--p-text-color)' }"
+        >
+          Solicitudes de Viáticos Pendientes
+        </h2>
+        <p
+          class="text-sm sm:text-base opacity-80"
+          [style]="{ color: 'var(--p-text-color)' }"
+        >
+          Gestión de solicitudes de viáticos de tu equipo: revisar y consultar detalles
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        <!-- Columna 1: Filtros Principales -->
+        <div class="xl:col-span-3">
+          <div
+            class="p-5 rounded-lg border"
+            [style]="{
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            <div class="flex items-center gap-2 mb-5">
+              <h4
+                class="text-lg font-semibold m-0"
+                [style]="{ color: 'var(--p-text-color)' }"
+              >
+                Criterios de Búsqueda
+              </h4>
+            </div>
+
+            <div class="space-y-5" [formGroup]="filtroForm">
+              <!-- Buscar - Ocupa toda la fila -->
+              <div class="grid grid-cols-1 gap-5">
+                <div>
+                  <label for="texto-input" class="block text-sm font-medium mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                    Búsqueda General
+                  </label>
+                  <input
+                    pInputText
+                    id="texto-input"
+                    formControlName="texto"
+                    placeholder="Buscar por nombre, Identificación, código..."
+                    class="w-full"
+                  />
+                </div>
+              </div>
+
+              <!-- Selectores en 3 columnas -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Estado -->
+                <div>
+                  <label for="estado-select" class="block text-sm font-medium mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                    Estado
+                  </label>
+                  <p-select
+                    id="estado-select"
+                    formControlName="estado"
+                    [options]="opcionesEstado"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Todos los estados"
+                    class="w-full"
+                    [showClear]="true"
+                  ></p-select>
+                </div>
+
+                <!-- Tipo -->
+                <div>
+                  <label for="tipo-select" class="block text-sm font-medium mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                    Tipo de Viáticos
+                  </label>
+                  <p-select
+                    id="tipo-select"
+                    formControlName="tipoViaticos"
+                    [options]="opcionesTipo"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Todos los tipos"
+                    class="w-full"
+                    [showClear]="true"
+                  ></p-select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna 2: Panel de Acciones -->
+        <div class="xl:col-span-1">
+          <div
+            class="p-4 rounded-lg border h-full"
+            [style]="{
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            <div class="flex items-center gap-2 mb-4">
+              <h4
+                class="text-base font-semibold m-0"
+                [style]="{ color: 'var(--p-text-color)' }"
+              >
+                Acciones
+              </h4>
+            </div>
+
+            <div class="space-y-3">
+              <!-- Botón Limpiar Filtros -->
+              <button
+                pButton
+                label="Limpiar Filtros"
+                icon="pi pi-filter-slash"
+                class="w-full p-button-outlined p-button-secondary"
+                (click)="limpiarFiltros()"
+                aria-label="Limpiar todos los filtros aplicados"
+              >
+                <span class="sr-only">Limpiar Filtros</span>
+              </button>
+
+              <!-- Botón Actualizar Lista -->
+              <button
+                pButton
+                label="Actualizar Lista"
+                icon="pi pi-refresh"
+                class="w-full p-button-lg"
+                [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+                  'border': 'none',
+                  'color': 'white'
+                }"
+                (click)="cargarSolicitudes()"
+                [disabled]="cargando"
+                aria-label="Actualizar la lista de solicitudes"
+              >
+                <span class="sr-only">Actualizar Lista</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tarjetas KPI de Estadísticas -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <!-- Total -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-blue-600/50': filtroForm.get('estado')?.value === '',
+        'ring-2 ring-blue-600/25': filtroForm.get('estado')?.value !== ''
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('')"
+      (keydown.enter)="filtrarPorEstado('')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Total Solicitudes</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.total }}</p>
+        </div>
+        <div class="w-16 h-16 bg-blue-200 dark:bg-blue-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-chart-line text-blue-600 dark:text-blue-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aprobadas -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-green-600/50': filtroForm.get('estado')?.value === 'aprobado',
+        'ring-2 ring-green-600/25': filtroForm.get('estado')?.value !== 'aprobado'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('aprobado')"
+      (keydown.enter)="filtrarPorEstado('aprobado')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Aprobadas</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.aprobadas }}</p>
+        </div>
+        <div class="w-16 h-16 bg-green-200 dark:bg-green-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-check-circle text-green-600 dark:text-green-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pendientes -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-yellow-600/50': filtroForm.get('estado')?.value === 'pendiente',
+        'ring-2 ring-yellow-600/25': filtroForm.get('estado')?.value !== 'pendiente'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('pendiente')"
+      (keydown.enter)="filtrarPorEstado('pendiente')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Pendientes</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.pendientes }}</p>
+        </div>
+        <div class="w-16 h-16 bg-yellow-200 dark:bg-yellow-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-clock text-yellow-600 dark:text-yellow-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rechazadas -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-red-600/50': filtroForm.get('estado')?.value === 'rechazado',
+        'ring-2 ring-red-600/25': filtroForm.get('estado')?.value !== 'rechazado'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('rechazado')"
+      (keydown.enter)="filtrarPorEstado('rechazado')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Rechazadas</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.rechazadas }}</p>
+        </div>
+        <div class="w-16 h-16 bg-red-200 dark:bg-red-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-times-circle text-red-600 dark:text-red-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagadas -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-purple-600/50': filtroForm.get('estado')?.value === 'pagado',
+        'ring-2 ring-purple-600/25': filtroForm.get('estado')?.value !== 'pagado'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('pagado')"
+      (keydown.enter)="filtrarPorEstado('pagado')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Pagadas</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.pagadas }}</p>
+        </div>
+        <div class="w-16 h-16 bg-purple-200 dark:bg-purple-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-money-bill text-purple-600 dark:text-purple-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Resultados -->
+  <div
+    class="rounded-xl border-2 shadow-lg overflow-hidden"
+    [style]="{
+      'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+      'border-color': 'var(--p-primary-200)',
+      'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+    }"
+  >
+    <!-- Encabezado de la tabla -->
+    <div
+      class="px-6 py-4 border-b"
+      [style]="{
+        'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+        'border-color': 'var(--p-primary-300)'
+      }"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div>
+            <h3 class="text-xl font-bold text-white m-0">Lista de Solicitudes</h3>
+            <p class="text-white/80 text-sm m-0">
+              {{ filtradas.length }} solicitudes encontradas
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span
+            class="bg-white/20 px-3 py-1 rounded-full text-white text-sm font-medium"
+          >
+            Actualizado
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido de la tabla -->
+    <div class="relative">
+      <!-- Loading overlay -->
+      <div
+        *ngIf="cargando"
+        class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm z-10"
+        [style]="{ 'background': 'rgba(255,255,255,0.95)' }"
+      >
+        <p-progressSpinner
+          styleClass="w-12 h-12"
+          [style]="{ 'animation-duration': '1s' }"
+        ></p-progressSpinner>
+        <p
+          class="mt-4 text-sm font-medium opacity-80"
+          [style]="{ color: 'var(--p-text-color)' }"
+        >
+          Cargando solicitudes...
+        </p>
+      </div>
+
+      <div class="p-4">
+        <p-table
+          [value]="filtradas"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[10, 20, 50]"
+          [tableStyle]="{ 'min-width': '1200px' }"
+          sortMode="multiple"
+          class="overflow-x-auto"
+          [style]="{
+            '--p-datatable-header-background': 'var(--p-surface-100)',
+            '--p-datatable-header-border-color': 'var(--p-border-color)',
+            '--p-datatable-row-background': 'var(--p-surface-0)',
+            '--p-datatable-row-hover-background': 'var(--p-surface-50)'
+          }"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th
+                style="width: 60px"
+                class="font-semibold"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">#</div>
+              </th>
+              <th
+                pSortableColumn="codigoSolicitud"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Código</div>
+                <p-sortIcon field="codigoSolicitud"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="primerNombre"
+                class="font-semibold"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Solicitante</div>
+                <p-sortIcon field="primerNombre"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="tipoViatico"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Tipo</div>
+                <p-sortIcon field="tipoViatico"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="municipioDestino"
+                class="font-semibold"
+                style="width: 180px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Destino</div>
+                <p-sortIcon field="municipioDestino"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="fechaSalida"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Fecha Salida</div>
+                <p-sortIcon field="fechaSalida"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="valorTotalViaticos"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Valor Total</div>
+                <p-sortIcon field="valorTotalViaticos"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="estado"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Estado</div>
+                <p-sortIcon field="estado"></p-sortIcon>
+              </th>
+              <th
+                class="text-right font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center justify-end gap-2">Acciones</div>
+              </th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-solicitud let-rowIndex="rowIndex">
+            <tr
+              class="transition-all duration-200 hover:shadow-sm"
+              [style]="{
+                'background':
+                  rowIndex % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-25)',
+                'border-bottom': '1px solid var(--p-border-color)'
+              }"
+            >
+              <td class="py-4 px-3">
+                <div
+                  class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+                  [style]="{ 'background': 'var(--p-primary-500)' }"
+                >
+                  {{ rowIndex + 1 }}
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <div
+                  class="font-medium text-sm"
+                  [style]="{ color: 'var(--p-text-color)' }"
+                >
+                  {{ solicitud.codigoSolicitud || 'N/A' }}
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <div
+                  class="font-medium"
+                  [style]="{ color: 'var(--p-text-color)' }"
+                >
+                  {{ obtenerNombreCompleto(solicitud) }}
+                </div>
+                <div class="text-xs opacity-70">
+                  {{ solicitud.cargo || 'Sin cargo' }}
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <p-tag
+                  [value]="solicitud.tipoViatico === 'permanente' ? 'Permanente' : 'Ocasional'"
+                  [severity]="solicitud.tipoViatico === 'permanente' ? 'info' : 'warn'"
+                  [style]="{ 'font-weight': '600' }"
+                ></p-tag>
+              </td>
+
+              <td class="py-4 px-3">
+                <div class="font-medium text-sm" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ obtenerDestinoCompleto(solicitud) }}
+                </div>
+                <div 
+                  class="text-xs opacity-70 cursor-pointer hover:opacity-100 hover:underline text-primary-600"
+                  *ngIf="solicitud.destinos && solicitud.destinos.length > 1"
+                  [pTooltip]="obtenerTooltipDestinos(solicitud)"
+                  tooltipPosition="top"
+                  [escape]="false"
+                  [style]="{ 'font-weight': '500' }"
+                >
+                  <i class="pi pi-map-marker text-xs mr-1"></i>
+                  +{{ solicitud.destinos.length - 1 }} destino(s) más
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <span *ngIf="solicitud.fechaSalida" class="text-sm">
+                  {{ solicitud.fechaSalida | date : 'dd/MM/yyyy' }}
+                </span>
+                <span *ngIf="!solicitud.fechaSalida" class="opacity-60 italic"
+                  >No disponible</span
+                >
+              </td>
+
+              <td class="py-4 px-3">
+                <span class="font-semibold text-sm">
+                  {{ solicitud.valorTotalViaticos | currency:'COP':'symbol-narrow':'1.0-0' }}
+                </span>
+              </td>
+
+              <td class="py-4 px-3">
+                <p-tag
+                  [value]="obtenerTextoEstado(solicitud.estado!)"
+                  [severity]="obtenerSeveridadEstado(solicitud.estado!)"
+                  [style]="{ 'font-weight': '600' }"
+                ></p-tag>
+              </td>
+
+              <td class="text-right py-4 px-3">
+                <div class="flex items-center justify-end gap-1">
+                  <button
+                    pButton
+                    pRipple
+                    icon="pi pi-eye"
+                    class="p-button-text p-button-sm p-button-rounded"
+                    (click)="verDetalle(solicitud)"
+                    pTooltip="Ver detalle"
+                    tooltipPosition="top"
+                    [style]="{ color: 'var(--p-primary-500)' }"
+                  >
+                    <span class="sr-only">Ver detalle</span>
+                  </button>
+
+                  <!-- Botón para ver archivos adjuntos -->
+                  <button
+                    pButton
+                    pRipple
+                    [icon]="tieneArchivos(solicitud) ? 'pi pi-file-check' : 'pi pi-paperclip'"
+                    class="p-button-text p-button-sm p-button-rounded"
+                    (click)="verArchivos(solicitud)"
+                    [pTooltip]="tieneArchivos(solicitud) ? 'Ver archivos (' + contarArchivos(solicitud) + ')' : 'Ver archivos adjuntos'"
+                    tooltipPosition="top"
+                    [style]="{ color: tieneArchivos(solicitud) ? 'var(--p-green-600)' : 'var(--p-text-color)' }"
+                  >
+                    <span class="sr-only">Ver archivos</span>
+                  </button>
+                  
+                  <!-- Botón de Gestionar Aprobaciones -->
+                  <button
+                    *ngIf="!tieneAprobaciones(solicitud)"
+                    pButton
+                    pRipple
+                    icon="pi pi-plus-circle"
+                    class="p-button-text p-button-sm p-button-rounded"
+                    (click)="abrirDialogInicializar(solicitud)"
+                    pTooltip="Inicializar Aprobaciones"
+                    tooltipPosition="top"
+                    [style]="{ color: 'var(--p-primary-600)' }"
+                  >
+                    <span class="sr-only">Inicializar Aprobaciones</span>
+                  </button>
+                  
+                  <button
+                    *ngIf="tieneAprobaciones(solicitud)"
+                    pButton
+                    pRipple
+                    icon="pi pi-list-check"
+                    class="p-button-text p-button-sm p-button-rounded"
+                    (click)="abrirDialogNivelesAprobacion(solicitud)"
+                    pTooltip="Ver Niveles de Aprobación"
+                    tooltipPosition="top"
+                    [style]="{ color: 'var(--p-purple-600)' }"
+                  >
+                    <span class="sr-only">Ver Aprobaciones</span>
+                  </button>
+
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td
+                colspan="9"
+                class="text-center py-12"
+                [style]="{
+                  'background': 'var(--p-surface-50)',
+                  'color': 'var(--p-text-color)'
+                }"
+              >
+                <div class="flex flex-col items-center gap-4">
+                  <div
+                    class="w-16 h-16 rounded-full flex items-center justify-center"
+                    [style]="{ 'background': 'var(--p-surface-200)' }"
+                  >
+                    <i
+                      class="pi pi-inbox text-2xl opacity-50"
+                      [style]="{ color: 'var(--p-text-color)' }"
+                    ></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-semibold mb-1">
+                      No hay solicitudes disponibles
+                    </p>
+                    <p class="text-sm opacity-80">
+                      Ajuste los filtros para obtener resultados
+                    </p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</p-card>
+
+<!-- ========== DIÁLOGOS DE APROBACIONES ========== -->
+
+<!-- DIÁLOGO 1: Inicializar Aprobaciones -->
+<p-dialog
+  [(visible)]="mostrarDialogoInicializar"
+  [header]="'Inicializar Aprobaciones - ' + solicitudSeleccionada?.codigoSolicitud"
+  [modal]="true"
+  [style]="{ width: '600px' }"
+  [closable]="true"
+>
+  <div class="dialog-content">
+    <div class="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg">
+      <div class="flex items-start gap-3">
+        <i class="pi pi-info-circle text-blue-600 text-2xl mt-1"></i>
+        <div>
+          <h5 class="text-blue-900 font-bold mb-2">Inicialización Automática de Aprobaciones</h5>
+          <p class="text-blue-800 text-sm mb-2">
+            El sistema creará automáticamente los niveles de aprobación necesarios según el cargo del solicitante:
+          </p>
+          <ul class="text-blue-700 text-sm list-disc ml-5 space-y-1">
+            <li><strong>Cargo:</strong> {{ solicitudSeleccionada?.cargo || 'No especificado' }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+      <div class="flex items-start gap-3">
+        <i class="pi pi-exclamation-triangle text-yellow-600 text-xl mt-1"></i>
+        <div class="text-sm text-yellow-800">
+          <p class="font-semibold mb-1">Nota importante:</p>
+          <p>Los niveles de aprobación y aprobadores se determinarán automáticamente basándose en la configuración del sistema para el cargo "{{ solicitudSeleccionada?.cargo }}".</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+      <h6 class="font-semibold text-gray-700 mb-3">
+        <i class="pi pi-check-circle text-green-600 mr-2"></i>
+        Proceso de Inicialización
+      </h6>
+      <ol class="text-sm text-gray-700 space-y-2 ml-5 list-decimal">
+        <li>Se consultará la configuración de aprobadores para el cargo especificado</li>
+        <li>Se crearán los niveles de aprobación necesarios (pueden ser 3, 4 o 5 niveles)</li>
+        <li>Cada nivel quedará pendiente de asignación de aprobador</li>
+        <li>Los aprobadores deberán ser asignados posteriormente</li>
+      </ol>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancelar"
+      icon="pi pi-times"
+      severity="secondary"
+      (onClick)="cancelarInicializar()"
+    />
+    <p-button
+      label="Inicializar Aprobaciones"
+      icon="pi pi-check"
+      severity="success"
+      (onClick)="inicializarAprobaciones()"
+      [loading]="cargando"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- DIÁLOGO 2: Ver Niveles de Aprobación -->
+<p-dialog
+  [(visible)]="mostrarDialogoNivelesAprobacion"
+  [header]="'Niveles de Aprobación - ' + solicitudSeleccionada?.codigoSolicitud"
+  [modal]="true"
+  [style]="{ width: '800px', maxWidth: '95vw' }"
+  [closable]="true"
+  (onHide)="cerrarDialogoNivelesAprobacion()"
+>
+  <div class="dialog-content">
+    <div class="mb-4 p-3 bg-blue-50 border-l-4 border-blue-500 rounded">
+      <div class="flex items-center gap-2">
+        <i class="pi pi-info-circle text-blue-600"></i>
+        <div>
+          <div class="font-semibold text-blue-900">Información del Solicitante</div>
+          <div class="text-sm text-blue-800 mt-1" *ngIf="solicitudSeleccionada">
+            {{ obtenerNombreCompleto(solicitudSeleccionada) }} - {{ solicitudSeleccionada.nit }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="cargando" class="text-center py-8">
+      <p-progressSpinner styleClass="w-12 h-12" />
+      <p class="mt-3 text-gray-600">Cargando niveles de aprobación...</p>
+    </div>
+
+    <div *ngIf="!cargando && solicitudSeleccionada" class="niveles-container space-y-4">
+      <div *ngFor="let aprobacion of getAprobaciones(solicitudSeleccionada.codigoSolicitud || '')" 
+           class="nivel-card border-2 rounded-lg overflow-hidden"
+           [class.border-green-500]="aprobacion.estado === 'aprobado'"
+           [class.border-red-500]="aprobacion.estado === 'rechazado'"
+           [class.border-yellow-500]="aprobacion.estado === 'pendiente'"
+           [class.border-gray-300]="aprobacion.estado !== 'aprobado' && aprobacion.estado !== 'rechazado' && aprobacion.estado !== 'pendiente'">
+        
+        <div class="nivel-header p-4 flex items-center justify-between"
+             [class.bg-green-50]="aprobacion.estado === 'aprobado'"
+             [class.bg-red-50]="aprobacion.estado === 'rechazado'"
+             [class.bg-yellow-50]="aprobacion.estado === 'pendiente'"
+             [class.bg-gray-50]="aprobacion.estado !== 'aprobado' && aprobacion.estado !== 'rechazado' && aprobacion.estado !== 'pendiente'">
+          <div class="flex items-center gap-3">
+            <i [class]="getIconoNivel(aprobacion.nivelAprobacion)" 
+               class="text-2xl"
+               [class.text-green-600]="aprobacion.estado === 'aprobado'"
+               [class.text-red-600]="aprobacion.estado === 'rechazado'"
+               [class.text-yellow-600]="aprobacion.estado === 'pendiente'"></i>
+            <div>
+              <div class="font-bold text-gray-800">
+                Nivel {{ aprobacion.nivelAprobacion }}: {{ aprobacion.aprobadorCargo || 'Pendiente de asignación' }}
+              </div>
+            </div>
+          </div>
+          <p-tag
+            [value]="aprobacion.estado"
+            [severity]="getSeverityEstado(aprobacion.estado)"
+            [style]="{ 'font-weight': '600' }"
+          />
+        </div>
+
+        <div class="nivel-body p-4 bg-white space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <span class="text-sm font-semibold text-gray-600">Aprobador:</span>
+              <div class="text-base" [class.text-gray-900]="aprobacion.aprobadorNombre" [class.text-gray-400]="!aprobacion.aprobadorNombre">
+                {{ aprobacion.aprobadorNombre || 'Sin asignar' }}
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-semibold text-gray-600">Cargo:</span>
+              <div class="text-base text-gray-900">{{ aprobacion.aprobadorCargo || 'Sin cargo' }}</div>
+            </div>
+          </div>
+
+          <div *ngIf="aprobacion.observaciones" class="pt-2 border-t">
+            <span class="text-sm font-semibold text-gray-600">Observaciones:</span>
+            <div class="text-base text-gray-900 mt-1 p-2 bg-gray-50 rounded">{{ aprobacion.observaciones }}</div>
+          </div>
+
+          <div *ngIf="aprobacion.fechaAprobacion" class="pt-2 border-t">
+            <span class="text-sm font-semibold text-gray-600">Fecha de Aprobación:</span>
+            <div class="text-base text-gray-900">{{ aprobacion.fechaAprobacion | date: 'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+
+          <div *ngIf="aprobacion.estado === 'pendiente'" class="pt-3 border-t">
+            <div *ngIf="!aprobacion.aprobadorNombre" class="p-3 bg-yellow-50 border border-yellow-200 rounded flex items-start gap-2">
+              <i class="pi pi-exclamation-triangle text-yellow-600 mt-1"></i>
+              <div class="text-sm text-yellow-800">
+                <p class="font-semibold">Pendiente de asignación de aprobador</p>
+                <p class="mt-1">Este nivel requiere que se asigne un aprobador específico antes de poder aprobar o rechazar.</p>
+              </div>
+            </div>
+            
+            <!-- Mensaje cuando está bloqueado por niveles anteriores -->
+            <div *ngIf="aprobacion.aprobadorNombre && !esSuTurno(aprobacion)" class="p-3 bg-blue-50 border border-blue-200 rounded flex items-start gap-2 mb-3">
+              <i class="pi pi-lock text-blue-600 mt-1"></i>
+              <div class="text-sm text-blue-800">
+                <p class="font-semibold">En espera de niveles anteriores</p>
+                <p class="mt-1">Este nivel se habilitará una vez que los niveles anteriores hayan sido aprobados.</p>
+              </div>
+            </div>
+            
+            <div *ngIf="aprobacion.aprobadorNombre" class="flex gap-2 justify-end">
+                <p-button
+                  label="Aprobar"
+                  icon="pi pi-check"
+                  severity="success"
+                  size="small"
+                  [disabled]="validandoUsuario || !puedeAprobar(aprobacion)"
+                  (onClick)="abrirDialogAprobar(aprobacion)"
+                  [pTooltip]="puedeAprobar(aprobacion) ? 'Aprobar este nivel' : obtenerMensajeValidacion(aprobacion)"
+                />
+                <p-button
+                  label="Rechazar"
+                  icon="pi pi-times"
+                  severity="danger"
+                  size="small"
+                  [disabled]="validandoUsuario || !puedeAprobar(aprobacion)"
+                  (onClick)="abrirDialogRechazar(aprobacion)"
+                  [pTooltip]="puedeAprobar(aprobacion) ? 'Rechazar este nivel' : obtenerMensajeValidacion(aprobacion)"
+                />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="getAprobaciones(solicitudSeleccionada.codigoSolicitud || '').length === 0" 
+           class="text-center py-8 text-gray-500">
+        <i class="pi pi-info-circle text-4xl mb-3 block"></i>
+        <p>No hay niveles de aprobación registrados para esta solicitud.</p>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cerrar"
+      icon="pi pi-times"
+      severity="secondary"
+      [outlined]="true"
+      styleClass="min-w-[120px]"
+      (onClick)="cerrarDialogoNivelesAprobacion()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- DIÁLOGO 3: Aprobar/Rechazar -->
+<p-dialog
+  [(visible)]="mostrarDialogoAprobarRechazar"
+  [header]="
+    accionDialog === 'aprobar'
+      ? 'Aprobar Aprobación - ' + aprobacionSeleccionada?.codigoSolicitud
+      : 'Rechazar Aprobación - ' + aprobacionSeleccionada?.codigoSolicitud
+  "
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [closable]="true"
+  (onHide)="cancelarAccion()"
+>
+  <div class="dialog-content">
+    <div *ngIf="aprobacionSeleccionada" class="space-y-4">
+      <div class="p-4 rounded-lg"
+           [class.bg-green-50]="accionDialog === 'aprobar'"
+           [class.bg-red-50]="accionDialog === 'rechazar'">
+        <div class="space-y-2">
+          <div>
+            <span class="font-semibold text-gray-700">Nivel:</span>
+            <span class="ml-2">{{ aprobacionSeleccionada.nivelAprobacion }} - {{ getNombreNivel(aprobacionSeleccionada.nivelAprobacion) }}</span>
+          </div>
+          <div>
+            <span class="font-semibold text-gray-700">Aprobador:</span>
+            <span class="ml-2">{{ aprobacionSeleccionada.aprobadorNombre }}</span>
+          </div>
+          <div>
+            <span class="font-semibold text-gray-700">Cargo:</span>
+            <span class="ml-2">{{ aprobacionSeleccionada.aprobadorCargo }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="observaciones" class="block mb-2 font-semibold">
+          Observaciones
+          <span *ngIf="accionDialog === 'rechazar'" class="text-red-500 ml-1">*</span>
+        </label>
+        <textarea
+          pTextarea
+          id="observaciones"
+          [(ngModel)]="observaciones"
+          rows="5"
+          [placeholder]="
+            accionDialog === 'aprobar'
+              ? 'Agregar observaciones (opcional)'
+              : 'Debe indicar el motivo del rechazo'
+          "
+          [required]="accionDialog === 'rechazar'"
+          class="w-full"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancelar"
+      icon="pi pi-times"
+      severity="secondary"
+      (onClick)="cancelarAccion()"
+    />
+    <p-button
+      [label]="accionDialog === 'aprobar' ? 'Aprobar' : 'Rechazar'"
+      [icon]="accionDialog === 'aprobar' ? 'pi pi-check' : 'pi pi-times'"
+      [severity]="accionDialog === 'aprobar' ? 'success' : 'danger'"
+      (onClick)="confirmarAccion()"
+      [disabled]="accionDialog === 'rechazar' && !observaciones"
+      [loading]="cargando"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo de Archivos Adjuntos -->
+<p-dialog
+  header="Archivos Adjuntos"
+  [(visible)]="mostrarDialogoArchivos"
+  [modal]="true"
+  [style]="{ width: '800px', maxWidth: '95vw' }"
+  [closable]="true"
+  (onHide)="cerrarDialogoArchivos()"
+>
+  <ng-template pTemplate="header">
+    <div class="flex items-center gap-3">
+      <i class="pi pi-paperclip text-2xl" [style]="{ color: 'var(--p-primary-500)' }"></i>
+      <div>
+        <h3 class="text-xl font-bold m-0" [style]="{ color: 'white' }">
+          Archivos Adjuntos
+        </h3>
+        <p class="text-sm opacity-70 m-0" *ngIf="solicitudSeleccionada" [style]="{ color: 'white' }">
+          Solicitud: {{ solicitudSeleccionada.codigoSolicitud }}
+        </p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="archivos-container">
+    <!-- Loading -->
+    <div *ngIf="cargandoArchivos" class="flex flex-col items-center justify-center py-12">
+      <p-progressSpinner [style]="{ width: '50px', height: '50px' }" strokeWidth="4"></p-progressSpinner>
+      <p class="mt-4 opacity-70">Cargando archivos...</p>
+    </div>
+
+    <!-- Sin archivos -->
+    <div *ngIf="!cargandoArchivos && archivosSolicitud.length === 0" class="text-center py-12">
+      <div class="flex flex-col items-center gap-4">
+        <div
+          class="w-16 h-16 rounded-full flex items-center justify-center"
+          [style]="{ 'background': 'var(--p-surface-200)' }"
+        >
+          <i class="pi pi-inbox text-2xl opacity-50" [style]="{ color: 'var(--p-text-color)' }"></i>
+        </div>
+        <div>
+          <p class="font-semibold text-lg mb-1" [style]="{ color: 'var(--p-text-color)' }">
+            Sin archivos adjuntos
+          </p>
+          <p class="text-sm opacity-70">Esta solicitud no tiene archivos adjuntos</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de archivos -->
+    <div *ngIf="!cargandoArchivos && archivosSolicitud.length > 0" class="space-y-3">
+      <div
+        *ngFor="let archivo of archivosSolicitud; let i = index"
+        class="archivo-item p-4 rounded-lg border transition-all hover:shadow-md"
+        [style]="{
+          'border-color': 'var(--p-border-color)',
+          'background': 'var(--p-surface-0)'
+        }"
+      >
+        <div class="flex items-center gap-4">
+          <!-- Icono del archivo -->
+          <div
+            class="archivo-icono w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+            [style]="{ 'background': 'var(--p-surface-100)' }"
+          >
+            <i
+              [class]="'pi pi-' + obtenerIconoArchivo(archivo) + ' text-2xl'"
+              [style]="{ color: 'var(--p-primary-500)' }"
+            ></i>
+          </div>
+
+          <!-- Información del archivo -->
+          <div class="flex-1 min-w-0">
+            <h4 class="font-semibold text-base mb-1 truncate" [style]="{ color: 'var(--p-text-color)' }">
+              {{ archivo.nombreArchivo }}
+            </h4>
+            <div class="flex items-center gap-3 text-sm opacity-70">
+              <span class="flex items-center gap-1">
+                <i class="pi pi-calendar text-xs"></i>
+                {{ archivo.fechaSubida | date:'dd/MM/yyyy HH:mm' }}
+              </span>
+              <span class="flex items-center gap-1">
+                <i class="pi pi-database text-xs"></i>
+                {{ formatearTamanio(archivo.tamanio) }}
+              </span>
+              <span *ngIf="archivo.tipoArchivo" class="flex items-center gap-1">
+                <i class="pi pi-file text-xs"></i>
+                {{ archivo.tipoArchivo }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="flex gap-2">
+            <!-- Botón de vista previa -->
+            <button
+              *ngIf="esPrevisualizable(archivo.tipoArchivo || '')"
+              pButton
+              pRipple
+              icon="pi pi-eye"
+              class="p-button-rounded p-button-text"
+              (click)="previsualizarArchivo(archivo)"
+              pTooltip="Vista previa"
+              tooltipPosition="left"
+              [style]="{ color: 'var(--p-primary-500)' }"
+            >
+              <span class="sr-only">Vista previa</span>
+            </button>
+
+            <!-- Botón de descarga -->
+            <button
+              pButton
+              pRipple
+              icon="pi pi-download"
+              class="p-button-rounded p-button-text"
+              (click)="descargarArchivo(archivo)"
+              pTooltip="Descargar archivo"
+              tooltipPosition="left"
+              [style]="{ color: 'var(--p-primary-500)' }"
+            >
+              <span class="sr-only">Descargar</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="mt-4 pt-4 border-t" [style]="{ 'border-color': 'var(--p-border-color)' }">
+        <div class="flex items-center justify-between text-sm">
+          <span class="opacity-70">
+            Total de archivos: <strong>{{ archivosSolicitud.length }}</strong>
+          </span>
+          <span class="opacity-70">
+            Tamaño total: <strong>{{ formatearTamanio(calcularTamanioTotal()) }}</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cerrar"
+      icon="pi pi-times"
+      severity="secondary"
+      [outlined]="true"
+      styleClass="min-w-[120px]"
+      (onClick)="cerrarDialogoArchivos()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo de Vista Previa -->
+<p-dialog
+  header="Vista Previa"
+  [(visible)]="mostrarVistaPrevia"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '1200px', height: '90vh' }"
+  [closable]="true"
+  [maximizable]="true"
+  (onHide)="cerrarVistaPrevia()"
+>
+  <ng-template pTemplate="header">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <i class="pi pi-eye text-2xl" [style]="{ color: 'var(--p-primary-500)' }"></i>
+        <i 
+          *ngIf="archivoPrevisualizado"
+          [class]="'pi pi-' + obtenerIconoArchivo(archivoPrevisualizado) + ' text-xl'"
+          [style]="{ color: 'var(--p-primary-500)' }"
+        ></i>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold m-0" [style]="{ color: 'white' }">
+          Vista Previa
+        </h3>
+        <p class="text-sm opacity-70 m-0" *ngIf="archivoPrevisualizado">
+          {{ archivoPrevisualizado.nombreArchivo }}
+        </p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="flex flex-col items-center justify-center" style="height: calc(90vh - 200px);">
+    <!-- Loading -->
+    <div *ngIf="cargandoPrevia" class="flex flex-col items-center justify-center h-full">
+      <p-progressSpinner [style]="{ width: '60px', height: '60px' }" strokeWidth="4"></p-progressSpinner>
+      <p class="mt-4 opacity-70">Cargando vista previa...</p>
+    </div>
+
+    <!-- Vista previa PDF -->
+    <div *ngIf="!cargandoPrevia && archivoPrevisualizado && esPDF(archivoPrevisualizado.tipoArchivo || '')" class="w-full h-full">
+      <iframe
+        [src]="urlVistaPrevia | safeResourceUrl"
+        class="w-full h-full border-0"
+        style="min-height: 500px;"
+      ></iframe>
+    </div>
+
+    <!-- Vista previa Imagen -->
+    <div *ngIf="!cargandoPrevia && archivoPrevisualizado && esImagen(archivoPrevisualizado.tipoArchivo || '')" class="w-full h-full flex items-center justify-center p-4">
+      <img
+        [src]="urlVistaPrevia"
+        [alt]="archivoPrevisualizado.nombreArchivo"
+        class="max-w-full max-h-full object-contain"
+        style="max-height: calc(90vh - 250px);"
+      />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2">
+      <p-button
+        label="Descargar"
+        icon="pi pi-download"
+        severity="secondary"
+        (onClick)="descargarArchivo(archivoPrevisualizado!)"
+        [disabled]="!archivoPrevisualizado"
+      />
+      <p-button
+        label="Cerrar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="min-w-[120px]"
+        (onClick)="cerrarVistaPrevia()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

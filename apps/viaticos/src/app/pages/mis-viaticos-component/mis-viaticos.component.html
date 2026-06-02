@@ -1,0 +1,1196 @@
+<p-toast></p-toast>
+
+<div class="mb-4">
+  <p-button
+    label="Volver a Inicio"
+    icon="pi pi-arrow-left"
+    severity="secondary"
+    (onClick)="volverAInicio()"
+    [outlined]="true"
+    styleClass="w-auto">
+  </p-button>
+</div>
+
+<!-- Tarjeta de información del usuario -->
+<p-card *ngIf="usuarioLogueado" class="mb-4">
+  <div class="flex items-center gap-3">
+    <i class="pi pi-user text-3xl text-primary"></i>
+    <div>
+      <h3 class="text-lg font-bold m-0">Solicitudes Elaboradas por Mí</h3>
+      <p class="text-sm m-0 mt-1" [style]="{ color: 'var(--p-text-secondary-color)' }">
+        <strong>Usuario:</strong> {{ usuarioLogueado.nombre }} 
+        <span class="ml-3"><strong>Identificación:</strong> {{ usuarioLogueado.identificacion }}</span>
+      </p>
+      
+    </div>
+  </div>
+</p-card>
+
+<!-- Diálogo de detalle de solicitud -->
+<p-dialog
+  [(visible)]="mostrarDialogoDetalle"
+  [modal]="true"
+  [style]="{ width: '95vw', maxWidth: '1200px' }"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+>
+  <ng-template pTemplate="header">
+    <div class="w-full">
+      <div class="text-center">
+        <h2 class="text-xl font-bold m-0 mb-1" [style]="{ color: 'white' }">
+          GESTIÓN DE TALENTO HUMANO
+        </h2>
+        <h3 class="text-lg font-bold m-0" [style]="{ color: 'white' }">
+          AUTORIZACIÓN DE VIÁTICOS A TRABAJADORES
+        </h3>
+        <div class="text-xs mt-2 opacity-70" [style]="{ color: 'white' }">
+          Código: {{ solicitudSeleccionada?.codigoSolicitud || 'N/A' }} | 
+          Versión: 1.0 | 
+          Fecha: {{ solicitudSeleccionada?.fechaElaboracion | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <div *ngIf="solicitudSeleccionada" class="p-0">
+    <!-- Encabezado: Fecha de Solicitud -->
+    <div class="overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <table class="w-full" [style]="{ 'border-collapse': 'collapse' }">
+        <tr>
+          <td 
+            class="p-3 font-bold text-center border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-100)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            FECHA DE SOLICITUD
+          </td>
+          <td 
+            class="p-3 text-center font-medium border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            DÍA: {{ solicitudSeleccionada.fechaElaboracion | date:'dd' }}
+          </td>
+          <td 
+            class="p-3 text-center font-medium border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            MES: {{ solicitudSeleccionada.fechaElaboracion | date:'MM' }}
+          </td>
+          <td 
+            class="p-3 text-center font-medium border"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            AÑO: {{ solicitudSeleccionada.fechaElaboracion | date:'yyyy' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Sección: INFORMACIÓN DEL TRABAJADOR -->
+    <div class="mt-4 overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <div 
+        class="p-3 font-bold text-white text-center"
+        [style]="{ 'background': '#2c5f8d' }"
+      >
+        INFORMACIÓN DEL TRABAJADOR
+      </div>
+      <table class="w-full" [style]="{ 'border-collapse': 'collapse' }">
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'width': '30%',
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            APELLIDOS Y NOMBRES
+          </td>
+          <td 
+            class="p-3 border"
+            colspan="3"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ obtenerNombreCompleto(solicitudSeleccionada) }}
+          </td>
+        </tr>
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            IDENTIFICACIÓN
+          </td>
+          <td 
+            class="p-3 border"
+            colspan="3"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ solicitudSeleccionada.nit }}
+          </td>
+        </tr>
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CARGO
+          </td>
+          <td 
+            class="p-3 border"
+            colspan="3"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ solicitudSeleccionada.cargo || 'No especificado' }}
+          </td>
+        </tr>
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CATEGORÍA VIÁTICOS
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ solicitudSeleccionada.categoriaCodigo || 'No especificado' }}
+          </td>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            TIPO DE VIÁTICOS
+          </td>
+          <td 
+            class="p-3 border"
+            colspan="3"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            <p-tag 
+              [value]="solicitudSeleccionada.tipoViaticos === 'permanente' ? 'Permanente' : 'Ocasional'"
+              [severity]="solicitudSeleccionada.tipoViaticos === 'permanente' ? 'info' : 'warn'"
+            ></p-tag>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Sección: DESCRIPCIÓN DE VIÁTICOS -->
+    <div class="mt-4 overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <div 
+        class="p-3 font-bold text-white text-center"
+        [style]="{ 'background': '#2c5f8d' }"
+      >
+        DESCRIPCIÓN DE VIÁTICOS
+      </div>
+      <table class="w-full" [style]="{ 'border-collapse': 'collapse' }">
+        <tr>
+          <td 
+            class="p-3 font-semibold border text-left"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CIUDAD DE ORIGEN
+          </td>
+          <td 
+            class="p-3 border text-left"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ obtenerNombreUbicacion(solicitudSeleccionada.municipioSalida) }}
+          </td>
+          <td 
+            class="p-3 font-semibold border text-left"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            FECHA DE SALIDA
+          </td>
+          <td 
+            class="p-3 border text-left"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ solicitudSeleccionada.fechaSalida | date:'dd/MM/yyyy' }}
+          </td>
+        </tr>
+        <tr>
+          <td 
+            class="p-3 font-semibold border text-left"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CIUDAD DESTINO
+          </td>
+          <td 
+            class="p-3 border text-left"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ obtenerNombreDestino(solicitudSeleccionada.destinos?.[0]) }}
+          </td>
+          <td 
+            class="p-3 font-semibold border text-left"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            FECHA DE LLEGADA
+          </td>
+          <td 
+            class="p-3 border text-left"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ (solicitudSeleccionada.destinos && solicitudSeleccionada.destinos.length > 0 ? solicitudSeleccionada.destinos[0].fechaLlegada : null) | date:'dd/MM/yyyy' }}
+          </td>
+        </tr>
+        
+        <!-- Destinos adicionales (si hay más de 1) -->
+        <ng-container *ngIf="solicitudSeleccionada.destinos && solicitudSeleccionada.destinos.length > 1">
+          <tr *ngFor="let destino of solicitudSeleccionada.destinos.slice(1); let i = index">
+            <td 
+              class="p-3 font-semibold border text-left"
+              [style]="{ 
+                'background': 'var(--p-surface-50)',
+                'border-color': 'var(--p-border-color)'
+              }"
+            >
+              CIUDAD DESTINO {{ i + 2 }}
+            </td>
+            <td 
+              class="p-3 border text-left"
+              [style]="{ 
+                'background': 'var(--p-surface-0)',
+                'border-color': 'var(--p-border-color)'
+              }"
+            >
+              {{ obtenerNombreDestino(destino) }}
+            </td>
+            <td 
+              class="p-3 font-semibold border text-left"
+              [style]="{ 
+                'background': 'var(--p-surface-50)',
+                'border-color': 'var(--p-border-color)'
+              }"
+            >
+              FECHA DE LLEGADA {{ i + 2 }}
+            </td>
+            <td 
+              class="p-3 border text-left"
+              [style]="{ 
+                'background': 'var(--p-surface-0)',
+                'border-color': 'var(--p-border-color)'
+              }"
+            >
+              {{ destino.fechaLlegada | date:'dd/MM/yyyy' }}
+            </td>
+          </tr>
+        </ng-container>
+        
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CONCEPTO DEL VIAJE
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ obtenerSoloConcepto(solicitudSeleccionada.conceptoViaje) }}
+          </td>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            FUENTE FUNCIÓN
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ (solicitudSeleccionada.centrosCosto && solicitudSeleccionada.centrosCosto.length > 0 ? solicitudSeleccionada.centrosCosto[0].fuenteFuncion : undefined) || 'No especificado' }}
+          </td>
+        </tr>
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            CENTRO DE COSTO
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ obtenerCodigosCentrosCosto() }}
+          </td>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            NOMBRE C. COSTO
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ (solicitudSeleccionada.centrosCosto && solicitudSeleccionada.centrosCosto.length > 0 ? solicitudSeleccionada.centrosCosto[0].nombreCentroCosto : undefined) || 'No especificado' }}
+          </td>
+        </tr>
+        <tr>
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            MOTIVO DE VIAJE
+          </td>
+          <td 
+            class="p-3 border"
+            colspan="3"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)',
+              'min-height': '60px'
+            }"
+          >
+            {{ solicitudSeleccionada.motivoViaje || 'No especificado' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Sección: Valor Total de Viáticos -->
+    <div class="mt-4 overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <div 
+        class="p-3 font-bold text-white text-center"
+        [style]="{ 'background': '#2c5f8d' }"
+      >
+        VALOR TOTAL DE VIÁTICOS
+      </div>
+      <div 
+        class="p-6 text-center"
+        [style]="{ 
+          'background': 'var(--p-green-50)'
+        }"
+      >
+        <p class="text-sm font-semibold mb-2 opacity-70">Monto Total Autorizado</p>
+        <p 
+          class="text-4xl font-bold m-0"
+          [style]="{ color: 'var(--p-green-700)' }"
+        >
+          {{ solicitudSeleccionada.valorTotalViaticos | currency:'COP':'symbol-narrow':'1.0-0' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Sección: Estado -->
+    <div class="mt-4 overflow-hidden border-2" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <table class="w-full" [style]="{ 'border-collapse': 'collapse' }">
+        <tr>
+          <td 
+            class="p-3 font-semibold border text-center"
+            [style]="{ 
+              'width': '25%',
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            ESTADO ACTUAL
+          </td>
+          <td 
+            class="p-3 border text-center"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            <p-tag 
+              [value]="obtenerTextoEstado(solicitudSeleccionada.estado!)"
+              [severity]="obtenerSeveridadEstado(solicitudSeleccionada.estado!)"
+              [style]="{ 'font-size': '1rem', 'padding': '0.5rem 1rem' }"
+            ></p-tag>
+          </td>
+        </tr>
+        <tr *ngIf="solicitudSeleccionada.observaciones">
+          <td 
+            class="p-3 font-semibold border"
+            [style]="{ 
+              'background': 'var(--p-surface-50)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            OBSERVACIONES
+          </td>
+          <td 
+            class="p-3 border"
+            [style]="{ 
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            {{ solicitudSeleccionada.observaciones }}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 p-4 border-t" [style]="{ 'border-color': 'var(--p-border-color)' }">
+      <p-button
+        label="Descargar PDF"
+        icon="pi pi-file-pdf"
+        severity="danger"
+        (click)="descargarPDF(solicitudSeleccionada!)"
+        [style]="{ 'min-width': '150px' }"
+      ></p-button>
+      <p-button
+        label="Cerrar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="min-w-[120px]"
+        (onClick)="cerrarDialogoDetalle()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-card
+  class="w-full max-w-8xl mx-auto"
+  [style]="{
+    'background': 'var(--p-surface-50)',
+    'border': '1px solid var(--p-border)',
+    'box-shadow': 'var(--p-elevation-2)'
+  }"
+>
+  <!-- Panel de Filtros y Controles -->
+  <div class="mb-6">
+    <div
+      class="p-6 rounded-xl border-2 shadow-lg"
+      [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+      }"
+    >
+      <!-- Encabezado del panel -->
+      <div class="text-center mb-6">
+        <h2
+          class="text-2xl sm:text-3xl font-bold mb-2"
+          [style]="{ color: 'var(--p-text-color)' }"
+        >
+          Mis Solicitudes de Viáticos
+        </h2>
+        <p
+          class="text-sm sm:text-base opacity-80"
+          [style]="{ color: 'var(--p-text-color)' }"
+        >
+          Consulta el estado y detalles de todas tus solicitudes de viáticos
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        <!-- Columna 1: Filtros Principales -->
+        <div class="xl:col-span-3">
+          <div
+            class="p-5 rounded-lg border"
+            [style]="{
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            <div class="flex items-center gap-2 mb-5">
+              <h4
+                class="text-lg font-semibold m-0"
+                [style]="{ color: 'var(--p-text-color)' }"
+              >
+                Criterios de Búsqueda
+              </h4>
+            </div>
+
+            <div class="space-y-5" [formGroup]="filtroForm">
+              <!-- Buscar - Ocupa toda la fila -->
+              <div class="grid grid-cols-1 gap-5">
+                <div>
+                  <label for="texto-input" class="block text-sm font-medium mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                    Búsqueda General
+                  </label>
+                  <input
+                    pInputText
+                    id="texto-input"
+                    formControlName="texto"
+                    placeholder="Buscar por código ó Identificación"
+                    class="w-full"
+                  />
+                </div>
+              </div>
+
+              <!-- Selectores en 2 columnas -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Estado -->
+                <div>
+                  <label for="estado-select" class="block text-sm font-medium mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                    Estado
+                  </label>
+                  <p-select
+                    id="estado-select"
+                    formControlName="estado"
+                    [options]="opcionesEstado"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Todos los estados"
+                    class="w-full"
+                    [showClear]="true"
+                  ></p-select>
+                </div>
+
+                <!-- Tipo -->
+                <div>
+                  <label for="tipo-select" class="block text-sm font-medium mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                    Tipo de Viáticos
+                  </label>
+                  <p-select
+                    id="tipo-select"
+                    formControlName="tipoViaticos"
+                    [options]="opcionesTipo"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Todos los tipos"
+                    class="w-full"
+                    [showClear]="true"
+                  ></p-select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna 2: Panel de Acciones -->
+        <div class="xl:col-span-1">
+          <div
+            class="p-4 rounded-lg border h-full"
+            [style]="{
+              'background': 'var(--p-surface-0)',
+              'border-color': 'var(--p-border-color)'
+            }"
+          >
+            <div class="flex items-center gap-2 mb-4">
+              <h4
+                class="text-base font-semibold m-0"
+                [style]="{ color: 'var(--p-text-color)' }"
+              >
+                Acciones
+              </h4>
+            </div>
+
+            <div class="space-y-3">
+              <!-- Botón Limpiar Filtros -->
+              <button
+                pButton
+                label="Limpiar Filtros"
+                icon="pi pi-filter-slash"
+                class="w-full p-button-outlined p-button-secondary"
+                (click)="limpiarFiltros()"
+                aria-label="Limpiar todos los filtros aplicados"
+              >
+                <span class="sr-only">Limpiar Filtros</span>
+              </button>
+
+              <!-- Botón Actualizar Lista -->
+              <button
+                pButton
+                label="Actualizar Lista"
+                icon="pi pi-refresh"
+                class="w-full p-button-lg"
+                [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+                  'border': 'none',
+                  'color': 'white'
+                }"
+                (click)="cargarSolicitudes()"
+                [disabled]="cargando"
+                aria-label="Actualizar la lista de solicitudes"
+              >
+                <span class="sr-only">Actualizar Lista</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tarjetas KPI de Estadísticas -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <!-- Total -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-blue-600/50': filtroForm.get('estado')?.value === '',
+        'ring-2 ring-blue-600/25': filtroForm.get('estado')?.value !== ''
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('')"
+      (keydown.enter)="filtrarPorEstado('')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Total</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.total }}</p>
+        </div>
+        <div class="w-16 h-16 bg-blue-200 dark:bg-blue-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-chart-line text-blue-600 dark:text-blue-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aprobadas -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-green-600/50': filtroForm.get('estado')?.value === 'aprobado',
+        'ring-2 ring-green-600/25': filtroForm.get('estado')?.value !== 'aprobado'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('aprobado')"
+      (keydown.enter)="filtrarPorEstado('aprobado')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Aprobadas</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.aprobadas }}</p>
+        </div>
+        <div class="w-16 h-16 bg-green-200 dark:bg-green-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-check-circle text-green-600 dark:text-green-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pendientes -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-yellow-600/50': filtroForm.get('estado')?.value === 'pendiente',
+        'ring-2 ring-yellow-600/25': filtroForm.get('estado')?.value !== 'pendiente'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('pendiente')"
+      (keydown.enter)="filtrarPorEstado('pendiente')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Pendientes</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.pendientes }}</p>
+        </div>
+        <div class="w-16 h-16 bg-yellow-200 dark:bg-yellow-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-clock text-yellow-600 dark:text-yellow-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rechazadas -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-red-600/50': filtroForm.get('estado')?.value === 'rechazado',
+        'ring-2 ring-red-600/25': filtroForm.get('estado')?.value !== 'rechazado'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('rechazado')"
+      (keydown.enter)="filtrarPorEstado('rechazado')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Rechazadas</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.rechazadas }}</p>
+        </div>
+        <div class="w-16 h-16 bg-red-200 dark:bg-red-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-times-circle text-red-600 dark:text-red-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagadas -->
+    <div 
+      [ngClass]="{
+        'bg-surface-0 dark:bg-surface-900 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer': true,
+        'ring-4 ring-purple-600/50': filtroForm.get('estado')?.value === 'pagado',
+        'ring-2 ring-purple-600/25': filtroForm.get('estado')?.value !== 'pagado'
+      }"
+      role="button"
+      tabindex="0"
+      (click)="filtrarPorEstado('pagado')"
+      (keydown.enter)="filtrarPorEstado('pagado')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-normal text-surface-700 dark:text-surface-300 mb-1">Pagadas</p>
+          <p class="text-3xl font-normal text-surface-900 dark:text-surface-0">{{ estadisticas.pagadas }}</p>
+        </div>
+        <div class="w-16 h-16 bg-purple-200 dark:bg-purple-300 rounded-full flex items-center justify-center shadow-lg">
+          <i class="pi pi-money-bill text-purple-600 dark:text-purple-800 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Resultados -->
+  <div
+    class="rounded-xl border-2 shadow-lg overflow-hidden"
+    [style]="{
+      'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+      'border-color': 'var(--p-primary-200)',
+      'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+    }"
+  >
+    <!-- Encabezado de la tabla -->
+    <div
+      class="px-6 py-4 border-b"
+      [style]="{
+        'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+        'border-color': 'var(--p-primary-300)'
+      }"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div>
+            <h3 class="text-xl font-bold text-white m-0">Lista de Solicitudes</h3>
+            <p class="text-white/80 text-sm m-0">
+              {{ filtradas.length }} solicitudes encontradas
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span
+            class="bg-white/20 px-3 py-1 rounded-full text-white text-sm font-medium"
+          >
+            Actualizado
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido de la tabla -->
+    <div class="relative">
+      <!-- Loading overlay -->
+      <div
+        *ngIf="cargando"
+        class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm z-10"
+        [style]="{ 'background': 'rgba(255,255,255,0.95)' }"
+      >
+        <p-progressSpinner
+          styleClass="w-12 h-12"
+          [style]="{ 'animation-duration': '1s' }"
+        ></p-progressSpinner>
+        <p
+          class="mt-4 text-sm font-medium opacity-80"
+          [style]="{ color: 'var(--p-text-color)' }"
+        >
+          Cargando solicitudes...
+        </p>
+      </div>
+
+      <div class="p-4">
+        <p-table
+          [value]="filtradas"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[10, 20, 50]"
+          [tableStyle]="{ 'min-width': '1200px' }"
+          sortMode="multiple"
+          class="overflow-x-auto"
+          [style]="{
+            '--p-datatable-header-background': 'var(--p-surface-100)',
+            '--p-datatable-header-border-color': 'var(--p-border-color)',
+            '--p-datatable-row-background': 'var(--p-surface-0)',
+            '--p-datatable-row-hover-background': 'var(--p-surface-50)'
+          }"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th
+                style="width: 60px"
+                class="font-semibold"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">#</div>
+              </th>
+              <th
+                pSortableColumn="codigoSolicitud"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Código</div>
+                <p-sortIcon field="codigoSolicitud"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="fechaElaboracion"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Fecha Elaboración</div>
+                <p-sortIcon field="fechaElaboracion"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="tipoViatico"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Tipo</div>
+                <p-sortIcon field="tipoViatico"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="municipioDestino"
+                class="font-semibold"
+                style="width: 180px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Destino</div>
+                <p-sortIcon field="municipioDestino"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="fechaSalida"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Fecha Salida</div>
+                <p-sortIcon field="fechaSalida"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="valorTotalViaticos"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Valor Total</div>
+                <p-sortIcon field="valorTotalViaticos"></p-sortIcon>
+              </th>
+              <th
+                pSortableColumn="estado"
+                class="font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center gap-2">Estado</div>
+                <p-sortIcon field="estado"></p-sortIcon>
+              </th>
+              <th
+                class="text-right font-semibold"
+                style="width: 140px"
+                [style]="{
+                  'background':
+                    'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }"
+              >
+                <div class="flex items-center justify-end gap-2">Acciones</div>
+              </th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-solicitud let-rowIndex="rowIndex">
+            <tr
+              class="transition-all duration-200 hover:shadow-sm"
+              [style]="{
+                'background':
+                  rowIndex % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-25)',
+                'border-bottom': '1px solid var(--p-border-color)'
+              }"
+            >
+              <td class="py-4 px-3">
+                <div
+                  class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+                  [style]="{ 'background': 'var(--p-primary-500)' }"
+                >
+                  {{ rowIndex + 1 }}
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <div
+                  class="font-medium text-sm"
+                  [style]="{ color: 'var(--p-text-color)' }"
+                >
+                  {{ solicitud.codigoSolicitud || 'N/A' }}
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <span *ngIf="solicitud.fechaElaboracion" class="text-sm font-medium" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ solicitud.fechaElaboracion | date : 'dd/MM/yyyy' }}
+                </span>
+                <span *ngIf="!solicitud.fechaElaboracion" class="opacity-60 italic text-sm">
+                  No disponible
+                </span>
+              </td>
+
+              <td class="py-4 px-3">
+                <p-tag
+                  [value]="solicitud.tipoViatico === 'permanente' ? 'Permanente' : 'Ocasional'"
+                  [severity]="solicitud.tipoViatico === 'permanente' ? 'info' : 'warn'"
+                  [style]="{ 'font-weight': '600' }"
+                ></p-tag>
+              </td>
+
+              <td class="py-4 px-3">
+                <div class="font-medium text-sm" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ obtenerDestinoCompleto(solicitud) }}
+                </div>
+                <div 
+                  class="text-xs opacity-70 cursor-pointer hover:opacity-100 hover:underline text-primary-600"
+                  *ngIf="solicitud.destinos && solicitud.destinos.length > 1"
+                  [pTooltip]="obtenerTooltipDestinos(solicitud)"
+                  tooltipPosition="top"
+                  [escape]="false"
+                  [style]="{ 'font-weight': '500' }"
+                >
+                  <i class="pi pi-map-marker text-xs mr-1"></i>
+                  +{{ solicitud.destinos.length - 1 }} destino(s) más
+                </div>
+              </td>
+
+              <td class="py-4 px-3">
+                <span *ngIf="solicitud.fechaSalida" class="text-sm">
+                  {{ solicitud.fechaSalida | date : 'dd/MM/yyyy' }}
+                </span>
+                <span *ngIf="!solicitud.fechaSalida" class="opacity-60 italic"
+                  >No disponible</span
+                >
+              </td>
+
+              <td class="py-4 px-3">
+                <span class="font-semibold text-sm">
+                  {{ solicitud.valorTotalViaticos | currency:'COP':'symbol-narrow':'1.0-0' }}
+                </span>
+              </td>
+
+              <td class="py-4 px-3">
+                <p-tag
+                  [value]="obtenerTextoEstado(solicitud.estado!)"
+                  [severity]="obtenerSeveridadEstado(solicitud.estado!)"
+                  [style]="{ 'font-weight': '600' }"
+                ></p-tag>
+              </td>
+
+              <td class="text-right py-4 px-3">
+                <div class="flex items-center justify-end gap-1">
+                  <button
+                    pButton
+                    pRipple
+                    icon="pi pi-eye"
+                    class="p-button-text p-button-sm p-button-rounded"
+                    (click)="verDetalle(solicitud)"
+                    pTooltip="Ver detalle"
+                    tooltipPosition="top"
+                    [style]="{ color: 'var(--p-primary-500)' }"
+                  >
+                    <span class="sr-only">Ver detalle</span>
+                  </button>
+                  
+                  <button
+                    pButton
+                    pRipple
+                    icon="pi pi-file-pdf"
+                    class="p-button-text p-button-sm p-button-rounded"
+                    (click)="descargarPDF(solicitud)"
+                    pTooltip="Descargar PDF"
+                    tooltipPosition="top"
+                    [style]="{ color: 'var(--p-red-600)' }"
+                  >
+                    <span class="sr-only">Descargar PDF</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td
+                colspan="8"
+                class="text-center py-12"
+                [style]="{
+                  'background': 'var(--p-surface-50)',
+                  'color': 'var(--p-text-color)'
+                }"
+              >
+                <div class="flex flex-col items-center gap-4">
+                  <div
+                    class="w-16 h-16 rounded-full flex items-center justify-center"
+                    [style]="{ 'background': 'var(--p-surface-200)' }"
+                  >
+                    <i
+                      class="pi pi-inbox text-2xl opacity-50"
+                      [style]="{ color: 'var(--p-text-color)' }"
+                    ></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-semibold mb-1">
+                      No hay solicitudes disponibles
+                    </p>
+                    <p class="text-sm opacity-80">
+                      Ajuste los filtros para obtener resultados
+                    </p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</p-card>

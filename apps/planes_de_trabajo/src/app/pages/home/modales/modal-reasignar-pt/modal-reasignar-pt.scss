@@ -1,0 +1,30 @@
+.reasignar-pt-dialog {
+  .dialog-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--p-surface-border);
+  }
+
+  .header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+    &.icon-help {
+      background: var(--p-help-100);
+      color: var(--p-help-600);
+    }
+  }
+
+  .dialog-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--p-text-color);
+    margin: 0;
+  }
+}

@@ -1,0 +1,198 @@
+<p-toast></p-toast>
+
+<p-card class="unimar-card-main" [style]="{
+  'background': 'var(--p-surface-50)'
+}">
+  <div class="w-[90%] mx-auto rounded-2xl p-6 mb-4">
+    <div class="mb-4">
+      <!-- PrimeNG Breadcrumb -->
+      <p-breadcrumb class="custom-breadcrumb" [model]="breadcrumbItems" [home]="breadcrumbHome" 
+        [style]="{'background': 'transparent !important', 'border': 'none !important'}"></p-breadcrumb>
+
+      <!-- Header -->
+      <div class="flex items-center gap-4">
+        <div class="flex-1">
+          <h1 class="text-4xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+            Candidatos Seleccionados - Fase 3
+          </h1>
+          <p class="mt-2" [style]="{'color': 'var(--p-text-muted)'}" *ngIf="oferta">
+            {{ oferta.cargoRequerido }} - {{ oferta.numeroConvocatoria }}
+          </p>
+          <p class="mt-2" [style]="{'color': 'var(--p-text-muted)'}" *ngIf="!oferta">
+            Todos los candidatos en Fase 3
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado de la oferta -->
+  <div *ngIf="oferta" class="w-[90%] mx-auto mb-6">
+    <p-card [style]="{'background': 'var(--p-green-50)', 'border-color': 'var(--p-green-200)'}">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-check-circle" [style]="{'color': 'var(--p-green-600)', 'font-size': '1.5rem'}"></i>
+          <div>
+            <span class="font-semibold" [style]="{'color': 'var(--p-green-700)'}">Fase 3: Candidatos Seleccionados</span>
+            <div class="text-sm mt-1" [style]="{'color': 'var(--p-green-600)'}">
+              Estos candidatos pasaron todas las fases del proceso de selección
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="flex justify-center items-center py-8">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Mensaje si no hay seleccionados -->
+  <div *ngIf="!loading && seleccionados.length === 0" class="w-[90%] mx-auto">
+    <p-card class="text-center p-8">
+      <i class="pi pi-inbox" [style]="{'color': 'var(--p-text-secondary)', 'font-size': '4rem'}"></i>
+      <p class="text-xl mt-4" [style]="{'color': 'var(--p-text-color)'}">No hay candidatos en Fase 3</p>
+      <p [style]="{'color': 'var(--p-text-muted)'}">Los candidatos seleccionados desde Fase 2 aparecerán aquí</p>
+    </p-card>
+  </div>
+
+  <!-- Tabla de candidatos en Fase 3 -->
+  <div *ngIf="!loading && seleccionados.length > 0" class="w-[90%] mx-auto">
+    <lib-info-table [data]="seleccionadosMapeados" [columns]="columns" [actions]="actions">
+      <ng-template #customCell let-row="row" let-column="column">
+        <ng-container [ngSwitch]="column.field">
+          
+          <ng-container *ngSwitchCase="'candidato'">
+            <div class="flex items-center gap-3">
+              <lib-image-viewer
+                [imageUrl]="getFotoUrl(row)"
+                [alt]="'Foto de ' + row.candidato"
+                width="40px"
+                height="40px"
+                [rounded]="true"
+                [initials]="getInitials(row.candidato)"
+                [dialogTitle]="'Foto de ' + row.candidato"
+                placeholderText="" />
+              <div>
+                <div class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">
+                  {{ row.candidato }}
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+        </ng-container>
+      </ng-template>
+    </lib-info-table>
+  </div>
+
+</p-card>
+
+<!-- Modal: Detalle de Selección -->
+<p-dialog [(visible)]="mostrarDetalleSeleccion" 
+          [header]="'Información del Candidato - Fase 3'" 
+          [modal]="true"
+          [closable]="true" 
+          [style]="{
+            width: '700px',
+            'background': 'var(--p-surface-0)',
+            'border': '1px solid var(--p-border)'
+          }" 
+          [draggable]="false" 
+          [resizable]="false">
+
+  <div *ngIf="seleccionadoActual" class="space-y-4">
+
+    <!-- Información del candidato -->
+    <p-card class="mb-4" 
+            [style]="{'border-left': '4px solid var(--p-primary-color)', 'background': 'var(--p-surface-0)'}" 
+            *ngIf="seleccionadoActual.postulacion">
+      <ng-template pTemplate="header">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-user" [style]="{'color': 'var(--p-text-color)'}"></i>
+          <span [style]="{'color': 'var(--p-text-color)'}">{{ seleccionadoActual.postulacion.nombreCompleto || seleccionadoActual.postulacion.nombres }}</span>
+        </div>
+      </ng-template>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">Tipo Documento:</span>
+          <div [style]="{'color': 'var(--p-text-color)'}">{{ seleccionadoActual.postulacion.tipoDocumento || 'N/A' }}</div>
+        </div>
+        <div>
+          <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">Número Documento:</span>
+          <div [style]="{'color': 'var(--p-text-color)', 'font-family': 'monospace'}">{{ seleccionadoActual.postulacion.identificacion || seleccionadoActual.postulacion.numeroDocumento || 'N/A' }}</div>
+        </div>
+        <div>
+          <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">Puntaje Final:</span>
+          <div [style]="{'color': 'var(--p-text-color)', 'font-weight': 'bold'}">
+            {{ seleccionadoActual.postulacion.puntajeFinal != null ? (seleccionadoActual.postulacion.puntajeFinal | number:'1.1-1') : '-' }}
+          </div>
+        </div>
+        <div>
+          <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">Estado:</span>
+          <p-tag value="Fase 3" severity="success"></p-tag>
+        </div>
+      </div>
+    </p-card>
+
+    <div class="border-t pt-4" [style]="{'border-color': 'var(--p-border)'}">
+
+      <!-- Fechas -->
+      <p-card class="mb-4" [style]="{'border-left': '4px solid var(--p-blue-500)', 'background': 'var(--p-surface-0)'}">
+        <ng-template pTemplate="header">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-calendar" [style]="{'color': 'var(--p-text-color)'}"></i>
+            <span [style]="{'color': 'var(--p-text-color)'}">Historial de Selección</span>
+          </div>
+        </ng-template>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">Seleccionado Fase 2:</span>
+            <div [style]="{'color': 'var(--p-text-color)'}">{{ formatFecha(seleccionadoActual.fechaSeleccion) }}</div>
+          </div>
+          <div>
+            <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">Seleccionado Fase 3:</span>
+            <div [style]="{'color': 'var(--p-text-color)'}">{{ formatFecha(seleccionadoActual.fechaSeleccionFase3) }}</div>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Seleccionado Por -->
+      <p-card class="mb-4" [style]="{'border-left': '4px solid var(--p-green-500)', 'background': 'var(--p-surface-0)'}">
+        <ng-template pTemplate="header">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-user" [style]="{'color': 'var(--p-text-color)'}"></i>
+            <span [style]="{'color': 'var(--p-text-color)'}">Seleccionado Por</span>
+          </div>
+        </ng-template>
+        <div [style]="{'color': 'var(--p-text-color)'}">
+          {{ obtenerNombreCompleto(seleccionadoActual.seleccionadoPor) }}
+        </div>
+      </p-card>
+
+      <!-- Motivo/Comentario -->
+      <p-card *ngIf="seleccionadoActual.motivo" class="mb-4" [style]="{'border-left': '4px solid var(--p-orange-500)', 'background': 'var(--p-surface-0)'}">
+        <ng-template pTemplate="header">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-comment" [style]="{'color': 'var(--p-text-color)'}"></i>
+            <span [style]="{'color': 'var(--p-text-color)'}">Motivo/Comentario</span>
+          </div>
+        </ng-template>
+        <p [style]="{'color': 'var(--p-text-color)', 'white-space': 'pre-wrap'}">{{ seleccionadoActual.motivo }}</p>
+      </p-card>
+
+    </div>
+
+  </div>
+
+  <!-- Footer con botones -->
+  <div class="flex justify-end gap-2 pt-4 border-t mt-4" [style]="{'border-color': 'var(--p-border)'}">
+    <p-button label="Cerrar" 
+              icon="pi pi-times" 
+              severity="secondary" 
+              [outlined]="true"
+              (onClick)="cerrarDetalleSeleccion()">
+    </p-button>
+  </div>
+</p-dialog>

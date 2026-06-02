@@ -1,0 +1,41 @@
+<p-dialog [(visible)]="visible" [modal]="true" [closable]="false" [dismissableMask]="true" [closeOnEscape]="true"
+  [draggable]="false" [resizable]="false" styleClass="observaciones-dialog"
+  [style]="{ width: '90%', maxWidth: '800px' }" (onHide)="onClose()">
+
+  <ng-template pTemplate="header">
+    <div class="dialog-header w-full text-center">
+      <span class="dialog-title">AGREGAR OBSERVACIONES</span>
+      <button pButton type="button" icon="pi pi-times" class="p-button-rounded p-button-text custom-close-button"
+        (click)="onClose()" aria-label="Cerrar"></button>
+    </div>
+  </ng-template>
+
+  <div class="dialog-content">
+    <label class="block text-sm font-medium mb-3 text-center" style="color: var(--p-text-color)">
+      Por favor, ingrese sus observaciones para los planes de trabajo que se descargarán a continuación
+      <span style="color: var(--p-text-muted-color)"> (obligatorio)</span>
+    </label>
+
+    <textarea pTextarea [(ngModel)]="observaciones" placeholder="Observaciones" [rows]="6" [autoResize]="false"
+      class="w-full" [maxlength]="250" style="min-height: 150px; font-size: max(0.875rem, 16px);">
+    </textarea>
+
+    <div class="flex justify-between items-center mt-2 text-xs" style="color: var(--p-text-muted-color)">
+      <span *ngIf="observaciones.length === 0" style="color:#dc3545; font-weight: 500;">
+        Este campo es obligatorio
+      </span>
+      <span *ngIf="observaciones.length > 0"></span>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button type="button" pButton label="Cancelar" severity="danger" (click)="onCancelarClick()">
+      </button>
+
+      <button type="button" pButton label="Descargar" severity="success" [disabled]="!observaciones.trim()"
+        (click)="onConfirmarClick()">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

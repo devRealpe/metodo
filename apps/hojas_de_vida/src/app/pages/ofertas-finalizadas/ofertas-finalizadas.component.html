@@ -1,0 +1,97 @@
+<p-toast></p-toast>
+
+<p-card class="unimar-card-main" [style]="{
+  'background': 'var(--p-surface-50)'
+}">
+  <div class="w-[90%] mx-auto rounded-2xl p-6 mb-4">
+    <div class="mb-4">
+      <!-- PrimeNG Breadcrumb -->
+      <p-breadcrumb class="custom-breadcrumb" [model]="breadcrumbItems" [home]="breadcrumbHome" 
+        [style]="{'background': 'transparent !important', 'border': 'none !important'}"></p-breadcrumb>
+
+      <!-- Header -->
+      <div class="flex items-center gap-4">
+        <div class="flex-1">
+          <h1 class="text-4xl font-bold" [style]="{'color': 'var(--p-primary-color)'}">
+            Ofertas Finalizadas
+          </h1>
+          <p class="mt-2" [style]="{'color': 'var(--p-text-muted)'}">
+            Selecciona una oferta para ver los candidatos seleccionados para entrevista
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de búsqueda -->
+    <div class="mb-4">
+      <app-input-component
+        id="filtro-busqueda"
+        placeholder="Buscar por cargo, oferta laboral, departamento o tipo..."
+        [(ngModel)]="filtroTexto"
+        (ngModelChange)="onFiltroChange()"
+        class="w-full"
+      >
+        <i class="pi pi-search" slot="prefix"></i>
+      </app-input-component>
+    </div>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="flex justify-center items-center py-8">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Mensaje si no hay ofertas -->
+  <div *ngIf="!loading && ofertasFinalizadas.length === 0" class="w-[90%] mx-auto">
+    <p-card class="text-center p-8">
+      <i class="pi pi-inbox" [style]="{'color': 'var(--p-text-secondary)', 'font-size': '4rem'}"></i>
+      <p class="text-xl mt-4" [style]="{'color': 'var(--p-text-color)'}">No hay ofertas finalizadas</p>
+      <p [style]="{'color': 'var(--p-text-muted)'}">Las ofertas deben estar cerradas para gestionar entrevistas</p>
+    </p-card>
+  </div>
+
+  <!-- Tabla de ofertas finalizadas con lib-info-table -->
+  <div *ngIf="!loading && ofertasFinalizadas.length > 0" class="w-[90%] mx-auto">
+    <lib-info-table [data]="ofertasFinalizadas" [columns]="columns" [actions]="actions">
+      <ng-template #customCell let-row="row" let-column="column">
+        <ng-container [ngSwitch]="column.field">
+          
+          <ng-container *ngSwitchCase="'numeroConvocatoria'">
+            <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">
+              {{ row.numeroConvocatoria || 'Sin número' }}
+            </span>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'cargoRequerido'">
+            <span class="font-semibold" [style]="{'color': 'var(--p-text-color)'}">
+              {{ row.cargoRequerido || 'Sin cargo' }}
+            </span>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'tipoConvocatoria'">
+            <p-tag [value]="formatearTipoConvocatoria(row.tipoConvocatoria)" severity="info"></p-tag>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'departamentoSolicitante'">
+            <span [style]="{'color': 'var(--p-text-color)'}">
+              {{ row.departamentoSolicitante || 'Sin departamento' }}
+            </span>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'fechaPublicacion'">
+            <div class="text-sm" [style]="{'color': 'var(--p-text-color)'}">
+              {{ formatFechaCorta(row.fechaPublicacion) }}
+            </div>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'fechaCierre'">
+            <div class="text-sm" [style]="{'color': 'var(--p-text-color)'}">
+              {{ formatFechaCorta(row.fechaCierre) }}
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-template>
+    </lib-info-table>
+  </div>
+
+</p-card>

@@ -1,0 +1,180 @@
+$transition-fast: var(--transition-fast);
+
+:host ::ng-deep {
+  .novedad-dialog {
+    .p-dialog {
+      background: var(--p-surface-0) !important;
+      border-radius: 0.7rem !important;
+    }
+
+    .p-dialog-header {
+      background: var(--p-primary-600) !important;
+      color: white;
+      padding: 1.5rem;
+      border-top-left-radius: 0.7rem !important;
+      border-top-right-radius: 0.7rem !important;
+      border-bottom-left-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
+      overflow: hidden !important;
+    }
+
+    .p-dialog-footer {
+      padding: 1rem 1.5rem !important;
+      border-top-left-radius: 0 !important;
+      border-top-right-radius: 0 !important;
+      border-bottom-left-radius: 0.7rem !important;
+      border-bottom-right-radius: 0.7rem !important;
+    }
+
+    .p-dialog-content {
+      padding: 1.5rem;
+      background: var(--p-surface-0) !important;
+      border-radius: 0 !important;
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dialog-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .info-card {
+      .pi {
+        font-size: 1rem;
+      }
+    }
+
+    .cancel-button {
+      color: var(--p-text-color);
+    }
+
+    .primary-button {
+      background: var(--p-primary-600);
+      border-color: var(--p-primary-600);
+    }
+
+    .primary-button:hover:not(:disabled) {
+      background: var(--p-primary-700);
+      border-color: var(--p-primary-700);
+    }
+
+    .p-datepicker {
+
+      .p-datepicker-panel {
+        background: var(--p-surface-50) !important;
+      }
+
+      .p-datepicker-header {
+        background: var(--p-surface-50) !important;
+        color: var(--p-text-color) !important;
+      }
+
+      .p-datepicker-calendar {
+        background: var(--p-surface-50) !important;
+        color: var(--p-text-color) !important;
+      }
+
+      .p-datepicker-calendar td,
+      .p-datepicker-calendar th {
+        color: var(--p-text-color) !important;
+        background: var(--p-surface-50) !important;
+      }
+
+      .p-datepicker-calendar td:hover {
+        background: var(--p-surface-300) !important;
+      }
+
+      .p-datepicker-calendar td.p-highlight {
+        background: var(--p-primary-600) !important;
+        color: white !important;
+      }
+
+      .p-datepicker-input {
+        background: var(--p-surface-50) !important;
+        color: var(--p-text-color) !important;
+        border: 1px solid var(--p-surface-300) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+      }
+
+      .p-datepicker-prev,
+      .p-datepicker-next {
+        color: var(--p-text-color) !important;
+        background: var(--p-surface-50) !important;
+        border: 1px solid var(--p-surface-300) !important;
+      }
+
+      .p-datepicker-prev:hover,
+      .p-datepicker-next:hover {
+        background: var(--p-surface-300) !important;
+      }
+    }
+  }
+
+  .detail-row {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--p-surface-200);
+  }
+
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: var(--p-text-color);
+    min-width: 150px;
+  }
+
+  .detail-value {
+    color: var(--p-text-muted);
+    flex: 1;
+  }
+}
+
+::ng-deep .p-dialog-footer .p-button {
+  border-radius: var(--radius-lg) !important;
+  font-weight: 600 !important;
+  transition: all $transition-fast;
+  padding: 0.625rem 1.25rem !important;
+  border-radius: 0.5rem !important;
+
+  &.p-button-outlined.p-button-secondary {
+    border-color: var(--p-surface-border) !important;
+    color: white !important;
+    background: transparent !important;
+
+    &:enabled:hover {
+      border-color: rgb(180, 180, 180) !important;
+    }
+  }
+
+  &.p-button-success {
+    background: var(--secondary-green) !important;
+    border-color: var(--secondary-green) !important;
+    color: white !important;
+
+    &:enabled:hover {
+      background: var(--secondary-green-dark) !important;
+      border-color: var(--secondary-green-dark) !important;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md) !important;
+    }
+
+    &:enabled:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.6 !important;
+      cursor: not-allowed !important;
+    }
+  }
+}

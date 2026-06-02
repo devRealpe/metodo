@@ -1,0 +1,344 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="w-full" [style]="{ 'background': 'transparent', 'padding': '1.5rem' }">
+
+  <!-- PASO 1: Buscar y seleccionar equipo de almacén -->
+  <div *ngIf="!equipoAlmacenSeleccionado">
+
+    <div class="p-6 rounded-xl border-2 shadow-lg" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)',
+        'max-width': '900px',
+        'margin': '0 auto'
+      }">
+
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+          Asignación de Equipos a Aulas
+        </h2>
+        <p class="text-sm sm:text-base opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Seleccione un equipo del almacén y asígnelo a un laboratorio
+        </p>
+      </div>
+
+      <div class="p-5 rounded-lg border mb-5" [style]="{
+          'background': 'var(--p-surface-0)',
+          'border-color': 'var(--p-border-color)'
+        }">
+        <h3 class="text-base font-semibold mb-3" [style]="{ color: 'var(--p-text-color)' }">
+          Paso 1 — Seleccionar equipo del almacén
+        </h3>
+        <app-input-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+          id="busqueda" [ngModel]="busquedaTexto()" (ngModelChange)="busquedaTexto.set($event)"
+          placeholder="Buscar por nombre, tipo, marca o modelo...">
+        </app-input-component>
+      </div>
+
+    </div>
+
+    <!-- Tabla con cabecera azul oscura (fuera del recuadro azul) -->
+    <div class="mt-5 rounded-xl overflow-hidden" [style]="{ 'border': '1px solid var(--p-primary-300)' }">
+
+      <div class="px-6 py-4 border-b" [style]="{
+          'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+          'border-color': 'var(--p-primary-300)'
+        }">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-bold text-white m-0">Equipos en almacén</h3>
+            <p class="text-white/80 text-sm m-0">
+              {{ equiposAlmacenFiltrados().length }} equipo(s) encontrado(s)
+            </p>
+          </div>
+          <span class="bg-white/20 px-3 py-1 rounded-full text-white text-sm font-medium">
+            Actualizado
+          </span>
+        </div>
+      </div>
+
+      <div class="p-4" [style]="{ 'background': 'var(--p-surface-0)' }">
+        <p-table
+          [value]="equiposAlmacenFiltrados()"
+          [loading]="cargandoBusqueda"
+          [paginator]="true"
+          [rows]="8"
+          [rowsPerPageOptions]="[8, 20, 50]"
+          [sortMode]="'single'"
+          styleClass="p-datatable-sm"
+          responsiveLayout="scroll">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre"></p-sortIcon></th>
+              <th pSortableColumn="tipo">Tipo <p-sortIcon field="tipo"></p-sortIcon></th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th class="text-center">Stock</th>
+              <th class="text-center">Seleccionar</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-equipo>
+            <tr [class.opacity-50]="(equipo.unidadesDisponibles ?? equipo.stock) === 0">
+              <td>{{ equipo.nombre }}</td>
+              <td>{{ equipo.tipo }}</td>
+              <td>{{ equipo.marca || '-' }}</td>
+              <td>{{ equipo.modelo || '-' }}</td>
+              <td class="text-center">
+                <span [class.text-red-600]="(equipo.unidadesDisponibles ?? equipo.stock) === 0"
+                      [class.font-semibold]="(equipo.unidadesDisponibles ?? equipo.stock) === 0">
+                  {{ equipo.unidadesDisponibles ?? equipo.stock }}
+                </span>
+              </td>
+              <td class="text-center">
+                <button pButton icon="pi pi-arrow-right" label="Seleccionar"
+                  class="p-button-sm p-button-outlined"
+                  [disabled]="(equipo.unidadesDisponibles ?? equipo.stock) === 0"
+                  pTooltip="{{ (equipo.unidadesDisponibles ?? equipo.stock) === 0 ? 'Sin unidades con hoja de vida disponibles' : 'Seleccionar este equipo' }}"
+                  (click)="seleccionarEquipoAlmacen(equipo)">
+                </button>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="6" class="text-center py-6 opacity-60">
+                <i class="pi pi-inbox text-3xl block mb-2"></i>
+                No se encontraron equipos en almacén
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PASO 2: Formulario de asignación al aula -->
+  <div *ngIf="equipoAlmacenSeleccionado">
+
+    <div class="p-6 rounded-xl border-2 shadow-lg" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)',
+        'max-width': '900px',
+        'margin': '0 auto'
+      }">
+
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+          {{ modoEdicion ? 'Editar Equipo de Aula' : 'Asignación de Equipos a Aulas' }}
+        </h2>
+        <p class="text-sm sm:text-base opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          {{ modoEdicion ? 'Actualizar la asignación del equipo seleccionado' : 'Datos de la asignación al laboratorio' }}
+        </p>
+      </div>
+
+      <div class="p-5 rounded-lg border" [style]="{
+          'background': 'var(--p-surface-0)',
+          'border-color': 'var(--p-border-color)'
+        }">
+
+        <!-- Card del equipo seleccionado por el usuario-->
+        <div class="mb-5 p-4 rounded-lg border" [style]="{ background: 'var(--p-surface-50)', 'border-color': 'var(--p-primary-200)' }">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs uppercase font-medium mb-1 opacity-70" [style]="{ color: 'var(--p-text-color)' }">
+                Equipo seleccionado
+              </p>
+              <p class="font-semibold text-base" [style]="{ color: 'var(--p-text-color)' }">
+                {{ equipoAlmacenSeleccionado.nombre }}
+              </p>
+              <p class="text-sm opacity-70 mt-0.5" [style]="{ color: 'var(--p-text-color)' }">
+                {{ equipoAlmacenSeleccionado.tipo }}
+                <span *ngIf="equipoAlmacenSeleccionado.marca"> · {{ equipoAlmacenSeleccionado.marca }}</span>
+                <span *ngIf="equipoAlmacenSeleccionado.modelo"> · {{ equipoAlmacenSeleccionado.modelo }}</span>
+              </p>
+              <p class="text-sm mt-1" [style]="{ color: 'var(--p-text-color)' }">
+                Stock disponible: <strong>{{ equipoAlmacenSeleccionado.unidadesDisponibles ?? equipoAlmacenSeleccionado.stock }}</strong>
+              </p>
+            </div>
+            <button *ngIf="!modoEdicion" type="button" pButton icon="pi pi-times"
+              class="p-button-text p-button-secondary p-button-sm"
+              pTooltip="Cambiar equipo" (click)="cancelarSeleccion()">
+            </button>
+          </div>
+        </div>
+
+        <h3 class="text-base font-semibold mb-3" [style]="{ color: 'var(--p-text-color)' }">
+          {{ modoEdicion ? 'Editar asignación' : 'Paso 2 — Datos de la asignación' }}
+        </h3>
+
+        <form [formGroup]="formEquipoAula" (ngSubmit)="registrar()" class="grid gap-4">
+
+          <!-- Dropdown 1: Aula / Laboratorio -->
+          <div class="min-w-0">
+            <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+              label="Aula / Laboratorio *" id="aulaSelect"
+              [options]="laboratoriosRaizOpciones"
+              optionLabel="label" optionValue="value"
+              [(ngModel)]="aulaSeleccionadaCodAula"
+              (ngModelChange)="onAulaChange($event)"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="Seleccione el aula" [filter]="true" [showClear]="true"
+              [ngClass]="{ 'p-invalid': esInvalido('idLaboratorio') && hijosDeAulaSeleccionada.length === 0 }">
+            </app-select-component>
+            <small *ngIf="esInvalido('idLaboratorio') && hijosDeAulaSeleccionada.length === 0" class="text-red-500 text-xs sm:text-sm mt-1 block">
+              {{ obtenerMensajeError('idLaboratorio') }}
+            </small>
+          </div>
+
+          <!-- Dropdown 2 (condicional): Aula hija -->
+          <div class="min-w-0" *ngIf="hijosDeAulaSeleccionada.length > 0">
+            <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+              label="Aula *" id="hijoSelect"
+              [options]="hijosOpciones" optionLabel="label" optionValue="value"
+              [(ngModel)]="hijoSeleccionadoUUID"
+              (ngModelChange)="onHijoChange($event)"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="Seleccione el aula" [filter]="true" [showClear]="true"
+              [ngClass]="{ 'p-invalid': esInvalido('idLaboratorio') }">
+            </app-select-component>
+            <small *ngIf="esInvalido('idLaboratorio')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+              {{ obtenerMensajeError('idLaboratorio') }}
+            </small>
+          </div>
+
+          <!-- Selección de unidades (solo en modo creación) -->
+          <div *ngIf="!modoEdicion" class="min-w-0">
+            <p class="text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">Unidades disponibles</p>
+            <div *ngIf="cargandoUnidades" class="text-sm opacity-60 py-2">
+              <i class="pi pi-spin pi-spinner mr-1"></i> Cargando unidades...
+            </div>
+            <div *ngIf="!cargandoUnidades && unidadesDisponibles().length === 0" class="text-sm opacity-60 py-2">
+              Sin unidades disponibles para este equipo.
+            </div>
+            <div *ngIf="!cargandoUnidades && unidadesDisponibles().length > 0"
+              class="flex flex-wrap gap-2">
+              <button *ngFor="let unidad of unidadesDisponibles()" type="button"
+                class="px-3 py-1.5 rounded-full border text-sm transition-colors"
+                [class.bg-blue-600]="estaSeleccionada(unidad)"
+                [class.text-white]="estaSeleccionada(unidad)"
+                [class.border-blue-600]="estaSeleccionada(unidad)"
+                [class.bg-white]="!estaSeleccionada(unidad)"
+                [class.border-gray-300]="!estaSeleccionada(unidad)"
+                (click)="toggleUnidad(unidad)">
+                <i class="pi mr-1" [class.pi-check]="estaSeleccionada(unidad)" [class.pi-plus]="!estaSeleccionada(unidad)"></i>
+                {{ unidad.placa || unidad.serial || ('ID ' + unidad.id.substring(0,8)) }}
+              </button>
+            </div>
+            <small *ngIf="unidadesSeleccionadas.length === 0 && unidadesDisponibles().length > 0"
+              class="text-amber-600 text-xs mt-1 block">
+              Seleccione al menos una unidad
+            </small>
+            <small *ngIf="unidadesSeleccionadas.length > 0" class="text-green-600 text-xs mt-1 block">
+              {{ unidadesSeleccionadas.length }} unidad(es) seleccionada(s)
+            </small>
+          </div>
+
+          <!-- En modo edición mostrar la unidad asignada (solo lectura) -->
+          <div *ngIf="modoEdicion && equipoAulaSeleccionado" class="min-w-0">
+            <p class="text-sm font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">Unidad asignada</p>
+            <span class="px-3 py-1.5 rounded-full border border-blue-600 bg-blue-50 text-sm text-blue-700">
+              {{ equipoAulaSeleccionado.equipoUnidad?.placa || equipoAulaSeleccionado.equipoUnidad?.serial || ('ID ' + equipoAulaSeleccionado.equipoUnidad?.id?.substring(0,8)) }}
+            </span>
+          </div>
+
+          <div class="min-w-0">
+            <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+              label="Responsable" id="responsable"
+              [options]="laboratoristasOpciones()"
+              optionLabel="label" optionValue="value"
+              formControlName="responsable"
+              placeholder="Seleccionar responsable..." [filter]="true" [showClear]="true"
+              [ngClass]="{ 'p-invalid': esInvalido('responsable') }">
+            </app-select-component>
+            <small *ngIf="esInvalido('responsable')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+              {{ obtenerMensajeError('responsable') }}
+            </small>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2 justify-between items-stretch sm:items-center pt-2">
+            <button type="button"
+              class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
+              (click)="limpiarFormulario()">
+              <i class="pi pi-refresh"></i>
+              Limpiar
+            </button>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+              <button *ngIf="modoEdicion" type="button"
+                class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
+                (click)="limpiarFormulario()">
+                <i class="pi pi-times"></i>
+                Cancelar
+              </button>
+
+              <button type="submit"
+                class="px-4 py-2 rounded text-white transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
+                [class.bg-gray-400]="formEquipoAula.invalid || cargando || (!modoEdicion && unidadesSeleccionadas.length === 0)"
+                [class.cursor-not-allowed]="formEquipoAula.invalid || cargando || (!modoEdicion && unidadesSeleccionadas.length === 0)"
+                [class.bg-blue-600]="!(formEquipoAula.invalid || cargando || (!modoEdicion && unidadesSeleccionadas.length === 0))"
+                [class.hover:bg-blue-700]="!(formEquipoAula.invalid || cargando || (!modoEdicion && unidadesSeleccionadas.length === 0))"
+                [disabled]="formEquipoAula.invalid || cargando || (!modoEdicion && unidadesSeleccionadas.length === 0)">
+                <i class="pi pi-save" *ngIf="!cargando"></i>
+                <i class="pi pi-spin pi-spinner" *ngIf="cargando"></i>
+                {{ modoEdicion ? 'Actualizar Asignación' : 'Registrar Asignación' }}
+              </button>
+            </div>
+          </div>
+        </form>
+
+  </div>
+</div>
+
+<!-- Dialog: Devolver equipo al almacén -->
+<p-dialog
+  [(visible)]="mostrarDialogDevolver"
+  header="Devolver equipo al almacén"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '30rem' }"
+  (onHide)="itemParaDevolver = null">
+
+  <div *ngIf="itemParaDevolver" class="flex flex-col gap-4 py-2">
+    <div class="p-3 rounded-lg border" [style]="{ background: 'var(--p-surface-50)', 'border-color': 'var(--p-primary-200)' }">
+      <p class="text-sm mb-1" [style]="{ color: 'var(--p-text-color)' }">
+        <span class="font-medium">Equipo:</span> {{ itemParaDevolver.equipoAlmacen.nombre }}
+      </p>
+      <p class="text-sm mb-1" [style]="{ color: 'var(--p-text-color)' }">
+        <span class="font-medium">Aula:</span> {{ itemParaDevolver.laboratorio.nomAula }}
+      </p>
+      <p class="text-sm" [style]="{ color: 'var(--p-text-color)' }">
+        <span class="font-medium">Cantidad asignada:</span>
+        <span class="font-bold text-blue-600 ml-1">{{ itemParaDevolver.cantidadDisponible }}</span>
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <p class="text-sm font-semibold" [style]="{ color: 'var(--p-text-color)' }">
+        Cantidad a devolver al almacén
+      </p>
+      <p-inputNumber
+        [(ngModel)]="cantidadADevolver"
+        [min]="1"
+        [max]="itemParaDevolver.cantidadDisponible"
+        [showButtons]="true"
+        buttonLayout="horizontal"
+        incrementButtonIcon="pi pi-plus"
+        decrementButtonIcon="pi pi-minus"
+        [inputStyle]="{ 'text-align': 'center', width: '4rem' }"
+        styleClass="w-full">
+      </p-inputNumber>
+      <small class="text-xs opacity-70" [style]="{ color: 'var(--p-text-color)' }">
+        Máximo: {{ itemParaDevolver.cantidadDisponible }} unidad(es). Si devuelve todas, se eliminará el registro.
+      </small>
+    </div>
+  </div>
+
+>
+
+

@@ -1,0 +1,738 @@
+<p-toast />
+<div class="page-header mb-4">
+  <h1
+    class="text-2xl sm:text-3xl font-bold"
+    [style]="{'color': 'var(--p-text-color)'}"
+  >
+    Gestión de planes de trabajo - Planeación
+  </h1>
+</div>
+
+<p-card
+  class="mb-4"
+  [style]="{ 
+  background: 'var(--p-surface-50)', 
+  border: '2px solid var(--p-surface-200)', 
+  borderRadius: '12px'
+}"
+>
+  <div class="flex flex-col md:flex-row items-stretch gap-4">
+    <!-- Sección Seleccionar Plantilla -->
+    <div class="flex flex-col gap-2 flex-1">
+      <label
+        class="text-sm font-semibold"
+        [style]="{'color': 'var(--p-text-color)'}"
+      >
+        <i class="pi pi-list mr-2 text-blue-600 dark:text-blue-400"></i>
+        Editar Plantilla
+      </label>
+      <p-select
+        [options]="plantillas()"
+        [(ngModel)]="plantillaSeleccionada"
+        (onChange)="onPlantillaChange($event.value)"
+        optionLabel="nombre"
+        [filter]="true"
+        filterBy="nombre"
+        [showClear]="true"
+        placeholder="Seleccione una plantilla"
+        class="w-full h-14 py-2"
+        [style]="{'width': '100%'}"
+      >
+        <ng-template #selectedItem let-selectedOption>
+          <div class="flex items-center gap-2" *ngIf="selectedOption">
+            <span class="font-semibold">{{ selectedOption.nombre }}</span>
+          </div>
+        </ng-template>
+
+        <ng-template let-plantilla #item>
+          <div class="flex items-center gap-2">
+            <span>{{ plantilla.nombre }}</span>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+
+    <!-- Divider vertical para pantallas medianas y grandes -->
+    <p-divider
+      layout="vertical"
+      class="hidden md:block"
+      [style]="{borderInlineStart: '1px solid var(--p-surface-200) !important'}"
+    ></p-divider>
+
+    <!-- Sección Crear Nueva Plantilla -->
+    <div class="flex flex-col gap-2 flex-1">
+      <label
+        class="text-sm font-semibold text-center"
+        [style]="{'color': 'var(--p-text-color)'}"
+      >
+        Crear Nueva Plantilla
+      </label>
+      <div class="flex gap-2 items-center">
+        <input
+          pInputText
+          type="text"
+          pSize="large"
+          placeholder="Nombre de la plantilla"
+          [(ngModel)]="nombreNuevaPlantilla"
+          class="w-full"
+          maxlength="25"
+          [style]="{height: '3.5rem', padding: '0 1rem',background: 'var(--p-surface-0)',color: 'var(--p-text-color)',border: '1px solid var(--p-surface-border)',borderRadius: '6px',lineHeight: '1.5'}"
+        />
+
+        <p-button
+          label="Crear"
+          icon="pi pi-plus"
+          (onClick)="create(nombreNuevaPlantilla())"
+          [disabled]="!nombreNuevaPlantilla()"
+          [style]="{ height: '3rem', width: 'auto', minWidth: '80px',background: 'transparent',color: 'var(--p-primary-color)',border: '1px solid var(--p-primary-color)',borderRadius: '6px',fontWeight: '600',fontSize: '0.875rem',padding: '0 1rem',display: 'flex',alignItems: 'center',justifyContent: 'center'}"
+        />
+      </div>
+    </div>
+  </div>
+</p-card>
+
+<div *ngIf="plantillaSeleccionada" class="ml-2 flex gap-2 items-center">
+  <p-button
+    [label]="plantillaSeleccionada.estado ? 'Desactivar plantilla' : 'Activar plantilla'"
+    icon="pi pi-power-off"
+    (onClick)="toggleEstadoPlantilla()"
+    pTooltip="{{plantillaSeleccionada.estado ? 'Se inhabilita el uso de la plantilla al crear un nuevo plan de trabajo' : 'Se activa el uso de la plantilla al crear un nuevo plan de trabajo'}}"
+    tooltipPosition="top"
+    [severity]="plantillaSeleccionada.estado ? 'danger' : 'success'"
+    [style]="{borderRadius: '6px',height: '3rem',marginBottom: '0.5rem'}"
+  />
+
+  <p-button
+    label="Crear Sección Principal"
+    icon="pi pi-plus-circle"
+    severity="info"
+    (onClick)="abrirModalCrearSeccionPrincipal()"
+    [style]="{borderRadius: '6px',height: '3rem',marginBottom: '0.5rem'}"
+    pTooltip="Crear una nueva sección principal en esta plantilla"
+    tooltipPosition="top"
+  />
+</div>
+
+<div
+  class="rounded-xl border-2 shadow-lg overflow-hidden"
+  [style]="{background: 'var(--p-surface-0)', borderColor: 'var(--p-surface-200)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'}"
+>
+  <div *ngIf="secciones().length > 0">
+    <p-accordion [multiple]="true" [(value)]="activePanels">
+      <p-accordion-panel *ngFor="let padre of secciones()" [value]="padre.id">
+        <p-accordion-header
+          [style]="{background: '#0068AD', color: 'white', margin: '0 0 0.25rem', borderRadius: '0'}"
+        >
+          <div class="flex justify-between items-center w-full">
+            <div class="flex items-center gap-2">
+              <p-button
+                icon="pi pi-times"
+                [rounded]="true"
+                [text]="true"
+                severity="danger"
+                size="small"
+                (onClick)="eliminarSeccion(padre.id, padre.nombre, true)"
+                pTooltip="Eliminar sección principal"
+                tooltipPosition="top"
+                [style]="{ width: '1.8rem', height: '1.8rem', padding: '0' }"
+              >
+              </p-button>
+              <h2 class="m-0 text-xl font-bold">{{ padre.nombre }}</h2>
+            </div>
+          </div>
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="table-content" [style]="{ padding: '1rem' }">
+            <div *ngFor="let hijo of padre.hijos" class="mb-4">
+              <div
+                class="rounded-lg overflow-hidden"
+                [style]="{border: '3px solid var(--p-surface-200)', background: 'var(--p-surface-50)'}"
+              >
+                <div
+                  [style]="{ background: '#0068AD', color: 'white', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }"
+                >
+                  <div class="flex items-center gap-2">
+                    <p-button
+                      icon="pi pi-times"
+                      [rounded]="true"
+                      [text]="true"
+                      severity="danger"
+                      size="small"
+                      (onClick)="eliminarSeccion(hijo.id, hijo.nombre, false)"
+                      pTooltip="Eliminar sección secundaria"
+                      tooltipPosition="top"
+                      [style]="{ width: '1.5rem', height: '1.5rem', padding: '0' }"
+                    >
+                    </p-button>
+                    <h3 class="m-0 text-lg font-semibold">{{ hijo.nombre }}</h3>
+                  </div>
+                  <span class="text-lg font-semibold">
+                    Concepto asignado:
+                    <p-inputnumber
+                      [ngModel]="hijo.concepto"
+                      (ngModelChange)="onCambioConcepto(hijo.id, $event)"
+                      [min]="0"
+                      [showButtons]="false"
+                      buttonLayout="vertical"
+                      spinnerMode="vertical"
+                      inputId="vertical"
+                      [useGrouping]="false"
+                      [max]="99999"
+                      [inputStyle]="{ width: '5rem', textAlign: 'center', background: '#01548a', color: 'white', border: 'none', boxShadow: 'none' }"
+                      class="font-bold"
+                      pTooltip="Modificar concepto"
+                      tooltipPosition="top"
+                    >
+                    </p-inputnumber>
+                  </span>
+                </div>
+
+                <div class="p-4">
+                  <!-- 🔹 Sección Cursos -->
+                  <div *ngIf="esSeccionCursos(hijo)">
+                    <p-table [value]="[]" styleClass="p-datatable-sm">
+                      <ng-template pTemplate="header">
+                        <tr>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Código
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Grupo
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Semestre
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Nombre del Curso
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Estudiantes
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Créditos
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Horas Presenciales
+                          </th>
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="emptymessage">
+                        <tr
+                          [style]="{ background: 'var(--p-surface-50)', transition: 'background-color var(--transition-fast)' }"
+                        >
+                          <td
+                            colspan="7"
+                            class="text-center py-3"
+                            [style]="{ textAlign: 'center', color: 'var(--p-text-color)'}"
+                          >
+                            Cursos del profesor - Cargados desde Fenix.
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                  </div>
+
+                  <!-- 🔹 Sección Investigación -->
+                  <div *ngIf="esSeccionInvestigacion(hijo)">
+                    <p-table [value]="[]" styleClass="p-datatable-sm">
+                      <ng-template pTemplate="header">
+                        <tr>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Grupo de Investigación
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            COD
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Nombre del Proyecto
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Momento
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                              min-width: 200px;
+                            "
+                          >
+                            Productos Esperados
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Horas Asignadas
+                          </th>
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="emptymessage">
+                        <tr
+                          [style]="{ background: 'var(--p-surface-50)', transition: 'background-color var(--transition-fast)' }"
+                        >
+                          <td
+                            colspan="6"
+                            class="text-center py-3"
+                            [style]="{ textAlign: 'center', color: 'var(--p-text-color)'}"
+                          >
+                            Proyectos de investigación - Extension del profesor
+                            Asignados por el director
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                  </div>
+
+                  <!-- 🔹 Sección Normal con actividades completas -->
+                  <div *ngIf="esSeccionNormal(hijo)">
+                    <p-table
+                      [value]="hijo.actividades || []"
+                      [showGridlines]="true"
+                      styleClass="p-datatable-sm"
+                      [style]="{ background: 'var(--p-surface-0)' }"
+                    >
+                      <ng-template pTemplate="header">
+                        <tr>
+                          <th
+                            colspan="2"
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Denominación de la actividad
+                          </th>
+                          <th
+                            style="
+                              background: var(--p-surface-50);
+                              color: var(--p-text-color);
+                              text-align: center;
+                              border-bottom: 2px solid #ddd;
+                            "
+                          >
+                            Horas Maximas
+                          </th>
+                        </tr>
+                      </ng-template>
+
+                      <ng-template
+                        pTemplate="body"
+                        let-actividad
+                        let-rowIndex="rowIndex"
+                      >
+                        <!-- ACTIVIDAD CON ASESORIA -->
+                        <ng-container
+                          *ngIf="!actividad.tieneDescripcion && actividad.tieneAsesorias"
+                        >
+                          <tr
+                            class="detail-row"
+                            [style.background]="'var(--p-surface-50)'"
+                            [style.transition]="'background-color 0.2s'"
+                          >
+                            <td colspan="2" class="font-medium">
+                              <div class="flex items-center justify-between">
+                                <span>
+                                  <p-button
+                                    icon="pi pi-times"
+                                    [rounded]="true"
+                                    [text]="true"
+                                    severity="danger"
+                                    size="small"
+                                    (onClick)="eliminarActividad(actividad.id)"
+                                    pTooltip="Eliminar actividad"
+                                    tooltipPosition="top"
+                                    [style]="{ width: '1.5rem', height: '1.5rem', padding: '0' }"
+                                  >
+                                  </p-button>
+                                  {{ actividad.nombre }}
+                                </span>
+                              </div>
+                            </td>
+                            <td
+                              [attr.rowspan]="actividad.tieneAsesorias ? (4 + (actividad.asesorias?.length || -1)) : 1"
+                              class="h-full"
+                              style="vertical-align: middle"
+                            >
+                              <div
+                                class="flex items-center justify-center h-full"
+                              >
+                                <p-inputnumber
+                                  [ngModel]="actividad.horasMaximas"
+                                  (ngModelChange)="onCambioHoras(actividad.id, $event)"
+                                  [min]="0"
+                                  [max]="40"
+                                  [showButtons]="false"
+                                  buttonLayout="vertical"
+                                  spinnerMode="vertical"
+                                  inputId="vertical"
+                                  [inputStyle]="{ width: '3rem', textAlign: 'center', background: 'var(--p-surface-50)', color: 'var(--p-text-color)', border: 'none', boxShadow: 'none' }"
+                                  class="font-bold"
+                                >
+                                </p-inputnumber>
+                              </div>
+                            </td>
+                          </tr>
+
+                          <ng-container
+                            *ngIf="actividad.asesorias && actividad.asesorias.length > 0"
+                          >
+                            <tr
+                              class="detail-row"
+                              [style.background]="'var(--p-surface-50)'"
+                              [style.transition]="'background-color 0.2s'"
+                            >
+                              <td>
+                                <p class="font-bold">Título del Proyecto</p>
+                              </td>
+                              <td>
+                                <p class="text-center font-bold">Fase</p>
+                              </td>
+                            </tr>
+                            <tr
+                              *ngFor="let asesoria of actividad.asesorias; let i = index"
+                              [class.row-even]="rowIndex % 2 === 0"
+                              [class.row-odd]="rowIndex % 2 !== 0"
+                              class="detail-row"
+                              [style.background]="'var(--p-surface-50)'"
+                            >
+                              <td class="relative">
+                                <div class="flex items-center gap-2">
+                                  <p-button
+                                    icon="pi pi-times"
+                                    [rounded]="true"
+                                    [text]="true"
+                                    severity="danger"
+                                    size="small"
+                                    [loading]="eliminandoAsesoria[asesoria.id]"
+                                    [disabled]="eliminandoAsesoria[asesoria.id]"
+                                    pTooltip="Eliminar asesoría"
+                                    tooltipPosition="top"
+                                    [style]="{ width: '1.5rem', height: '1.5rem', padding: '0' }"
+                                  >
+                                  </p-button>
+                                  <span>{{ asesoria.titulo }}</span>
+                                </div>
+                              </td>
+                              <td class="text-center">
+                                {{ asesoria.momento_asesoria?.nombre || 'N/A' }}
+                              </td>
+                            </tr>
+                          </ng-container>
+
+                          <tr
+                            class="detail-row"
+                            [style.background]="'var(--p-surface-50)'"
+                            [style.transition]="'background-color 0.2s'"
+                          >
+                            <td colspan="2" class="text-center py-2">
+                              <p-button
+                                icon="pi pi-plus"
+                                [rounded]="true"
+                                [outlined]="true"
+                                severity="success"
+                                size="small"
+                                label="Agregar Asesoría"
+                                disabled="true"
+                                [style]="{ fontSize: '0.875rem', background: 'var(--p-surface-50)', border: 'none', color: 'var(--p-text-color)' }"
+                              >
+                              </p-button>
+                            </td>
+                          </tr>
+
+                          <tr
+                            class="detail-row"
+                            [style.background]="'var(--p-surface-50)'"
+                            [style.transition]="'background-color 0.2s'"
+                          >
+                            <td class="text-sm">
+                              Número de proyectos de investigación estudiantil a
+                              cargo del profesor en calidad de jurado
+                            </td>
+                            <td class="h-full" style="vertical-align: middle">
+                              <div
+                                class="flex items-center justify-center h-full"
+                              >
+                                <p-inputnumber
+                                  [ngModel]="actividad.numeroProyectosJurado"
+                                  [min]="0"
+                                  [showButtons]="false"
+                                  buttonLayout="vertical"
+                                  spinnerMode="vertical"
+                                  inputId="vertical"
+                                  disabled="true"
+                                  [inputStyle]="{ width: '3rem', textAlign: 'center', background: 'var(--p-surface-50)', color: 'var(--p-text-color)', border: 'none', boxShadow: 'none' }"
+                                  class="font-bold"
+                                >
+                                </p-inputnumber>
+                              </div>
+                            </td>
+                          </tr>
+                        </ng-container>
+
+                        <!-- ACTIVIDAD CON DESCRIPCION -->
+                        <tr
+                          *ngIf="actividad.tieneDescripcion && !actividad.tieneAsesorias"
+                          class="detail-row"
+                          [style.background]="'var(--p-surface-50)'"
+                        >
+                          <td>
+                            <div class="flex items-center justify-between">
+                              <span>
+                                <p-button
+                                  icon="pi pi-times"
+                                  [rounded]="true"
+                                  [text]="true"
+                                  severity="danger"
+                                  size="small"
+                                  (onClick)="eliminarActividad(actividad.id)"
+                                  pTooltip="Eliminar actividad"
+                                  tooltipPosition="top"
+                                  [style]="{ width: '1.5rem', height: '1.5rem', padding: '0' }"
+                                >
+                                </p-button
+                                >{{ actividad.nombre }}</span
+                              >
+                            </div>
+                          </td>
+                          <td>
+                            <textarea
+                              rows="2"
+                              cols="100"
+                              pTextarea
+                              [ngModel]="actividad.descripcion"
+                              fluid
+                              maxlength="255"
+                              [disabled]="true"
+                              [style]="{ resize: 'none', border: 'none', outline: 'none', background: 'var(--p-surface-50)', color: 'var(--p-text-color)', boxShadow: 'none' }"
+                            ></textarea>
+                          </td>
+                          <td class="h-full" style="vertical-align: middle">
+                            <div
+                              class="flex items-center justify-center h-full"
+                            >
+                              <p-inputnumber
+                                [ngModel]="actividad.horasMaximas"
+                                (ngModelChange)="onCambioHoras(actividad.id, $event)"
+                                [min]="0"
+                                [max]="40"
+                                [showButtons]="false"
+                                buttonLayout="vertical"
+                                spinnerMode="vertical"
+                                inputId="vertical"
+                                [inputStyle]="{ width: '3rem', textAlign: 'center', background: 'var(--p-surface-50)', color: 'var(--p-text-color)', border: 'none', boxShadow: 'none' }"
+                                class="font-bold"
+                              >
+                              </p-inputnumber>
+                            </div>
+                          </td>
+                        </tr>
+
+                        <!-- ACTIVIDAD NORMAL -->
+                        <tr
+                          *ngIf="!actividad.tieneDescripcion && !actividad.tieneAsesorias"
+                          class="detail-row"
+                          [style.background]="'var(--p-surface-50)'"
+                          [style.transition]="'background-color 0.2s'"
+                        >
+                          <td colspan="2">
+                            <div class="flex items-center justify-between">
+                              <span>
+                                <p-button
+                                  icon="pi pi-times"
+                                  [rounded]="true"
+                                  [text]="true"
+                                  severity="danger"
+                                  size="small"
+                                  (onClick)="eliminarActividad(actividad.id)"
+                                  pTooltip="Eliminar actividad"
+                                  tooltipPosition="top"
+                                  [style]="{ width: '1.5rem', height: '1.5rem', padding: '0' }"
+                                >
+                                </p-button
+                                >{{ actividad.nombre }}</span
+                              >
+                            </div>
+                          </td>
+                          <td class="h-full" style="text-align: center">
+                            <div
+                              class="flex items-center justify-center h-full"
+                            >
+                              <p-inputnumber
+                                [ngModel]="actividad.horasMaximas"
+                                (ngModelChange)="onCambioHoras(actividad.id, $event)"
+                                [min]="0"
+                                [max]="40"
+                                [showButtons]="false"
+                                buttonLayout="vertical"
+                                spinnerMode="vertical"
+                                inputId="vertical"
+                                [inputStyle]="{ width: '3rem', textAlign: 'center', background: 'var(--p-surface-50)', color: 'var(--p-text-color)', border: 'none', boxShadow: 'none' }"
+                                class="font-bold"
+                              >
+                              </p-inputnumber>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-template>
+
+                      <ng-template pTemplate="emptymessage">
+                        <tr>
+                          <td colspan="3" class="text-center py-3">
+                            No hay actividades registradas.
+                          </td>
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="emptymessage">
+                        <tr
+                          [style]="{ background: 'var(--p-surface-50)', transition: 'background-color var(--transition-fast)' }"
+                        >
+                          <td
+                            colspan="3"
+                            class="text-center py-3"
+                            [style]="{ textAlign: 'center', color: 'var(--p-text-color)'}"
+                          >
+                            Sección sin actividades asignadas
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                    <div class="mt-3 text-center">
+                      <p-button
+                        label="Crear Nueva Actividad"
+                        icon="pi pi-plus"
+                        (onClick)="abrirModalCrearActividad(hijo)"
+                        severity="info"
+                        outlined
+                        [style]="{ borderRadius: '6px' }"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 text-center">
+              <p-button
+                label="Crear Sección Secundaria"
+                icon="pi pi-plus"
+                (onClick)="abrirModalCrearSeccionSecundaria(padre)"
+                severity="secondary"
+                outlined
+                [style]="{ borderRadius: '6px' }"
+                tooltipPosition="top"
+              />
+            </div>
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
+    </p-accordion>
+  </div>
+</div>
+
+<app-modal-crear-actividad
+  [(visible)]="modalCrearActividadVisible"
+  [seccionHijo]="seccionParaNuevaActividad!"
+  [horasDisponibles]="0"
+  [guardando]="false"
+  (guardar)="onGuardarNuevaActividad($event)"
+  (cancelar)="onCancelarModalActividad()"
+>
+</app-modal-crear-actividad>
+
+<app-modal-crear-seccion
+  [(visible)]="modalCrearSeccionVisible"
+  [esSeccionPrincipal]="esCreandoSeccionPrincipal"
+  [plantillaId]="plantillaSeleccionada?.id || null"
+  [plantillaNombre]="plantillaSeleccionada?.nombre || ''"
+  [seccionPadreId]="seccionPadreParaNuevaSeccion?.id || null"
+  [seccionPadreNombre]="seccionPadreParaNuevaSeccion?.nombre || ''"
+  [guardando]="guardandoSeccion"
+  [seccionesPlantilla]="secciones()"
+  (guardar)="onGuardarNuevaSeccion($event)"
+  (cancelar)="onCancelarModalSeccion()"
+>
+</app-modal-crear-seccion>

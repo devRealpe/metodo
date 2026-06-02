@@ -1,0 +1,89 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="reasignar-pt-dialog"
+  [style]="{ 'background': 'var(--p-surface-50)', width: '90%', maxWidth: '800px' }"
+  (onHide)="onCancelar()">
+  <ng-template pTemplate="header">
+    <div class="dialog-header">
+      <span class="dialog-title">Reasignar Plan de Trabajo</span>
+    </div>
+  </ng-template>
+
+  <div class="p-4">
+    <p class="mb-4" [style]="{'color': 'var(--p-text-color)'}">
+      Seleccione el nuevo profesor para el plan de <strong [style]="{'color': 'var(--p-text-color)'}">{{ profesorOriginal?.nombres }} {{ profesorOriginal?.apellidos }}</strong> ({{ periodo }}):
+    </p>
+    <p-table
+      #dt
+      [value]="profesoresDisponibles()"
+      [loading]="cargando()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [responsiveLayout]="'scroll'"
+      styleClass="p-datatable-sm"
+      [style]="{ 'color': 'var(--p-text-color)', 'background': 'var(--p-surface-50)' }">
+      <ng-template pTemplate="header">
+        <tr>
+          <th [style]="{ 'background': 'var(--p-surface-50)', 'color': 'var(--p-text-color)', 'text-align': 'left', 'border-bottom': '2px solid #ddd;' }">
+            <div class="flex align-items-center gap-2">
+              <span>Nombre</span>
+              <i class="pi pi-sort" [style]="{'color': 'var(--p-text-muted)'}"></i>
+            </div>
+          </th>
+          <th [style]="{ 'background': 'var(--p-surface-50)', 'color': 'var(--p-text-color)', 'text-align': 'left', 'border-bottom': '2px solid #ddd;' }">
+            <div class="flex align-items-center gap-2">
+              <span>Cédula</span>
+              <i class="pi pi-sort" [style]="{'color': 'var(--p-text-muted)'}"></i>
+            </div>
+          </th>
+          <th [style]="{ 'background': 'var(--p-surface-50)', 'color': 'var(--p-text-color)', 'text-align': 'center', 'border-bottom': '2px solid #ddd;' }">
+            Acción
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-p>
+        <tr [style]="{ 'background': 'var(--p-surface-50)', 'color': 'var(--p-text-color)' }">
+          <td [style]="{ 'color': 'var(--p-text-color)' }">{{ p.nombres }} {{ p.apellidos }}</td>
+          <td [style]="{ 'color': 'var(--p-text-color)' }">{{ p.numIdentificacion }}</td>
+          <td [style]="{ 'text-align': 'center' }">
+            <p-button
+              label="Seleccionar"
+              icon="pi pi-check" 
+              [style]="{
+                'background-color': 'transparent',
+                'border-color': 'var(--p-text-color)',
+                'color': 'var(--p-text-color)'
+              }"
+              [disabled]="cargando()"
+              (click)="onSeleccionar(p); $event.stopPropagation()">
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td [style]="{ 'text-align': 'center', 'color': 'var(--p-text-muted)' }" colspan="3">
+            No hay profesores disponibles para este periodo
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (click)="onCancelar()">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>

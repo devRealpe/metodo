@@ -1,0 +1,25 @@
+::ng-deep {
+    div.table-content {
+        background: var(--p-surface-0) !important;
+    }
+
+    .p-accordioncontent-content.ng-trigger-content {
+        background: var(--p-surface-0) !important;
+    }
+
+    .p-accordionpanel.ng-star-inserted {
+        border-color: var(--p-surface-200) !important;
+    }
+
+    .p-icon.ng-star-inserted {
+        color: white;
+    }
+
+    p-select .p-icon.ng-star-inserted {
+        color: var(--p-text-color) !important;
+    }
+
+    .p-divider-vertical:before {
+        border-inline-start: 2px solid var(--p-surface-200) !important;
+    }
+}

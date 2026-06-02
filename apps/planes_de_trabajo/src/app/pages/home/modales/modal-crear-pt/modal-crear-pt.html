@@ -1,0 +1,136 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="crear-plan-dialog"
+  [style]="{ width: '500px' }"
+  [baseZIndex]="10000"
+  [appendTo]="'body'"
+  (onHide)="onClose()"
+>
+  <ng-template pTemplate="header">
+    <div class="dialog-header">
+      <div class="header-icon">
+        <i class="pi pi-file-plus text-primary"></i>
+      </div>
+      <span class="dialog-title">CREAR PLAN DE TRABAJO</span>
+    </div>
+  </ng-template>
+
+  <div class="dialog-content">
+    <!-- Información del profesor -->
+    <div *ngIf="profesor" class="profesor-info-card">
+      <h4 class="info-title">
+        <i class="pi pi-user"></i>
+        Información del Profesor
+      </h4>
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>Nombre:</strong> {{ profesor.nombres }} {{ profesor.apellidos
+          }}
+        </div>
+        <div class="info-item">
+          <strong>Identificación:</strong> {{ profesor.numIdentificacion }}
+        </div>
+        <div class="info-item">
+          <strong>Cargo:</strong> {{ profesor.cargo }}
+        </div>
+        <div class="info-item">
+          <strong>Programa:</strong> {{ profesor.programa }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del periodo seleccionado -->
+    <div class="periodo-info-card">
+      <div class="periodo-header">
+        <i class="pi pi-calendar-plus"></i>
+        <span class="periodo-label">Periodo Académico Seleccionado</span>
+      </div>
+      <div class="periodo-value">
+        <strong>{{ periodoInfo }}</strong>
+      </div>
+    </div>
+
+    <!-- Selector de plantilla -->
+    <div class="form-section">
+      <div class="form-field">
+        <label for="plantilla" class="field-label"> Plantilla </label>
+        <p-autocomplete
+          [(ngModel)]="selectedPlantilla"
+          [suggestions]="filteredPlantillas"
+          (completeMethod)="filterPlantillas($event)"
+          [dropdown]="true"
+          optionLabel="nombre"
+          [forceSelection]="true"
+          [showClear]="true"
+          placeholder="Seleccionar plantilla"
+          inputId="plantilla"
+          [fluid]="true"
+          [appendTo]="'body'"
+          [invalid]="mostrarValidacion && !selectedPlantilla"
+          [disabled]="cargandoPlantillas || cargando"
+          [style]="{ width: '100%' }"
+        >
+          <ng-template let-plantilla pTemplate="selectedItem">
+            <div *ngIf="selectedPlantilla" class="flex items-center gap-2">
+              <i class="pi pi-file"></i>
+              <span>{{ selectedPlantilla.nombre }}</span>
+            </div>
+          </ng-template>
+          <ng-template let-plantilla pTemplate="item">
+            <div class="flex items-center gap-2 p-2">
+              <i class="pi pi-file"></i>
+              <div
+                [style]="{'color':'var(--p-text-color-0)'}"
+                class="flex flex-col"
+              >
+                <span class="font-semibold">{{ plantilla.nombre }}</span>
+              </div>
+            </div>
+          </ng-template>
+        </p-autocomplete>
+        @if (mostrarValidacion && !selectedPlantilla) {
+        <p-message severity="error" variant="simple" size="small">
+          La plantilla es requerida
+        </p-message>
+        }
+      </div>
+    </div>
+
+    <div class="info-message">
+      <i class="pi pi-info-circle"></i>
+      <span
+        >El plan se creará para el periodo seleccionado en la vista principal
+        con estado "Sin enviar al profesor"</span
+      >
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        type="button"
+        pButton
+        label="Cancelar"
+        icon="pi pi-times"
+        styleClass="p-button-cancelar"
+        (click)="onCancelarClick()"
+        [disabled]="cargando"
+      ></button>
+
+      <button
+        type="button"
+        pButton
+        label="Crear Plan"
+        icon="pi pi-check"
+        styleClass="p-button-crear"
+        (click)="onCrearClick()"
+        [loading]="cargando"
+        [disabled]="cargandoPlantillas"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,209 @@
+
+
+<div>
+    <!-- Mini formulario para agregar nuevas actividades -->
+    <div class="mb-6 p-4 border border-surface-200 dark:border-surface-700 rounded-lg bg-surface-50 dark:bg-surface-900" *ngIf="showButtons">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div>
+          <app-select-component
+            id="nuevoNombre"
+            label="Labores Sustantivas"
+            placeholder="Seleccionar..."
+            [(ngModel)]="nuevaActividad.nombre"
+            [ngModelOptions]="{standalone: true}"
+            [options]="opcionesLabores"
+            optionLabel="label"
+            optionValue="value">
+          </app-select-component>
+        </div>
+        <div>
+          <app-input-component
+            id="nuevoCompromiso"
+            label="Compromiso"
+            placeholder="Ingresa el compromiso"
+            [(ngModel)]="nuevaActividad.compromiso"
+            [ngModelOptions]="{standalone: true}">
+          </app-input-component>
+        </div>
+        <div>
+          <app-input-component
+            id="nuevaVerificacion"
+            label="Verificación"
+            placeholder="Verificación de cumplimiento"
+            [(ngModel)]="nuevaActividad.verificacion"
+            [ngModelOptions]="{standalone: true}">
+          </app-input-component>
+        </div>
+        <div>
+          <app-textarea-component
+            id="nuevasObservaciones"
+            label="Observaciones"
+            placeholder="Observaciones"
+            [rows]="2"
+            [(ngModel)]="nuevaActividad.observaciones"
+            [ngModelOptions]="{standalone: true}">
+          </app-textarea-component>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" [style]="{'color': 'var(--p-text-color)'}">Estado</label>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+              <p-radioButton
+                value="si"
+                [(ngModel)]="nuevaActividad.estado"
+                [ngModelOptions]="{standalone: true}"
+                inputId="nuevo-si"
+              ></p-radioButton>
+              <label for="nuevo-si" class="text-sm" [style]="{'color': 'var(--p-text-color)'}">Sí</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radioButton
+                value="no"
+                [(ngModel)]="nuevaActividad.estado"
+                [ngModelOptions]="{standalone: true}"
+                inputId="nuevo-no"
+              ></p-radioButton>
+              <label for="nuevo-no" class="text-sm" [style]="{'color': 'var(--p-text-color)'}">No</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radioButton
+                value="pendiente"
+                [(ngModel)]="nuevaActividad.estado"
+                [ngModelOptions]="{standalone: true}"
+                inputId="nuevo-pendiente"
+              ></p-radioButton>
+              <label for="nuevo-pendiente" class="text-sm" [style]="{'color': 'var(--p-text-color)'}">Pendiente</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 flex gap-2">
+        <p-button
+          [label]="isEditing ? 'Actualizar Actividad' : 'Agregar Actividad'"
+          icon="pi pi-plus"
+          (onClick)="agregarActividad()"
+          [loading]="loading()"
+          [disabled]="loading()"
+          severity="primary">
+        </p-button>
+        <p-button
+          *ngIf="isEditing"
+          label="Cancelar Edición"
+          icon="pi pi-times"
+          (onClick)="cancelarEdicion()"
+          severity="secondary">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Tabla de actividades -->
+    <lib-info-table
+      [data]="actividades"
+      [columns]="columns"
+      [actions]="actions"
+      [loading]="loading()"
+      [emptyMessage]="'No hay actividades registradas'"
+      emptyIcon="pi pi-list"
+      emptyTitle="Sin actividades"
+      emptySubtitle="No hay actividades registradas aún">
+      <ng-template #customCell let-row let-column="column">
+        <ng-container *ngIf="column.field === 'compromiso'">
+          <ng-container *ngIf="!row.id; else compromisoReadOnly">
+            <app-input-component
+              [id]="'compromiso-' + (row.id || row.nombre)"
+              placeholder="Ingresa el compromiso"
+              [(ngModel)]="row.compromiso"
+              [ngModelOptions]="{standalone: true}"
+              (inputChange)="onActividadChange()"
+              (inputBlur)="guardarCambios()">
+            </app-input-component>
+          </ng-container>
+          <ng-template #compromisoReadOnly>
+            <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">{{ row.compromiso || '—' }}</div>
+          </ng-template>
+        </ng-container>
+        <ng-container *ngIf="column.field === 'verificacion'">
+          <ng-container *ngIf="!row.id; else verificacionReadOnly">
+            <app-input-component
+              [id]="'verificacion-' + (row.id || row.nombre)"
+              placeholder="Verificación de cumplimiento"
+              [(ngModel)]="row.verificacion"
+              [ngModelOptions]="{standalone: true}"
+              (inputChange)="onActividadChange()"
+              (inputBlur)="guardarCambios()">
+            </app-input-component>
+          </ng-container>
+          <ng-template #verificacionReadOnly>
+            <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">{{ row.verificacion || '—' }}</div>
+          </ng-template>
+        </ng-container>
+        <ng-container *ngIf="column.field === 'observaciones'">
+          <ng-container *ngIf="!row.id; else observacionesReadOnly">
+            <app-textarea-component
+              [id]="'observaciones-' + (row.id || row.nombre)"
+              placeholder="Observaciones"
+              [rows]="2"
+              [(ngModel)]="row.observaciones"
+              [ngModelOptions]="{standalone: true}"
+              (textareaChange)="onActividadChange()"
+              (textareaBlur)="guardarCambios()">
+            </app-textarea-component>
+          </ng-container>
+          <ng-template #observacionesReadOnly>
+            <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">{{ row.observaciones || '—' }}</div>
+          </ng-template>
+        </ng-container>
+        <ng-container *ngIf="column.field === 'estado'">
+          <ng-container *ngIf="!row.id; else estadoReadOnly">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center gap-2">
+                <p-radioButton
+                  value="si"
+                  [(ngModel)]="row.estado"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onEstadoChange(row)"
+                  inputId="si-{{row.id || row.nombre}}"
+                ></p-radioButton>
+                <label for="si-{{row.id || row.nombre}}" class="text-sm" [style]="{'color': 'var(--p-text-color)'}">Sí</label>
+              </div>
+              <div class="flex items-center gap-2">
+                <p-radioButton
+                  value="no"
+                  [(ngModel)]="row.estado"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onEstadoChange(row)"
+                  inputId="no-{{row.id || row.nombre}}"
+                ></p-radioButton>
+                <label for="no-{{row.id || row.nombre}}" class="text-sm" [style]="{'color': 'var(--p-text-color)'}">No</label>
+              </div>
+              <div class="flex items-center gap-2">
+                <p-radioButton
+                  value="pendiente"
+                  [(ngModel)]="row.estado"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onEstadoChange(row)"
+                  inputId="pendiente-{{row.id || row.nombre}}"
+                ></p-radioButton>
+                <label for="pendiente-{{row.id || row.nombre}}" class="text-sm" [style]="{'color': 'var(--p-text-color)'}">Pendiente</label>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #estadoReadOnly>
+            <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">
+              {{ row.estado === 'si' ? 'Sí' : row.estado === 'no' ? 'No' : 'Pendiente' }}
+            </div>
+          </ng-template>
+        </ng-container>
+        <ng-container *ngIf="column.field !== 'compromiso' && column.field !== 'verificacion' && column.field !== 'observaciones' && column.field !== 'estado'">
+          {{ row[column.field] }}
+        </ng-container>
+      </ng-template>
+    </lib-info-table>
+
+    <div *ngIf="error()" class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+      <p class="text-red-700 dark:text-red-200 text-sm font-medium flex items-center gap-2">
+        <i class="pi pi-exclamation-circle"></i>
+        {{ error() }}
+      </p>
+    </div>
+</div>

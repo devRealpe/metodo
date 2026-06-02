@@ -1,0 +1,137 @@
+<p-dialog [(visible)]="visible" (visibleChange)="visibleChange.emit($event)" [modal]="true" [closable]="true"
+    [draggable]="false" [resizable]="false" styleClass="crear-plan-dialog" [style]="{ width: '500px' }"
+    [baseZIndex]="10000" [appendTo]="'body'" (onHide)="onHide()">
+
+    <!-- Header -->
+    <ng-template pTemplate="header">
+        <div class="dialog-header">
+            <div class="header-icon">
+                <i class="pi pi-plus-circle text-primary"></i>
+            </div>
+            <span class="dialog-title">NUEVA INVESTIGACIÓN</span>
+        </div>
+    </ng-template>
+
+    <!-- Content -->
+    <div class="dialog-content">
+
+        <!-- Info Card -->
+        <div class="profesor-info-card">
+            <h4 class="info-title">
+                <i class="pi pi-bookmark"></i>
+                Información de la Sección
+            </h4>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Sección:</strong>
+                    <span>{{ seccionHijo.nombre }}</span>
+                </div>
+
+                <div class="info-item">
+                    <strong>Plan de Trabajo:</strong>
+                    <span>{{ planDeTrabajo.anio }}-{{ planDeTrabajo.periodo }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <!-- Código del Proyecto -->
+            <div class="form-field">
+                <label for="codigo" class="field-label">
+                    Código del Proyecto
+                </label>
+                <input id="codigo" type="text" pInputText [(ngModel)]="nuevaInvestigacion.codigo"
+                    placeholder="Ingrese el código del proyecto"
+                    [invalid]="mostrarValidacion && !nuevaInvestigacion.codigo" class="w-full" maxlength="255" />
+                @if (mostrarValidacion && !nuevaInvestigacion.codigo) {
+                <p-message severity="error" variant="simple" size="small">El código del proyecto es
+                    requerido</p-message>
+                }
+            </div>
+
+            <!-- Nombre del Proyecto -->
+            <div class="form-field">
+                <label for="nombreProyecto" class="field-label">
+                    Nombre del Proyecto
+                </label>
+                <input id="nombreProyecto" type="text" pInputText [(ngModel)]="nuevaInvestigacion.nombreProyecto"
+                    placeholder="Ingrese el nombre del proyecto"
+                    [invalid]="mostrarValidacion && !nuevaInvestigacion.nombreProyecto" class="w-full"
+                    maxlength="255" />
+                @if (mostrarValidacion && !nuevaInvestigacion.nombreProyecto) {
+                <p-message severity="error" variant="simple" size="small">El nombre del proyecto es
+                    requerido</p-message>
+                }
+            </div>
+
+
+            <!-- Grupo de Investigación -->
+            <div class="form-field">
+                <label for="grupo" class="field-label">
+                    Grupo de Investigación
+                </label>
+                <p-autocomplete [(ngModel)]="selectedGrupo" [suggestions]="filteredGrupos"
+                    (completeMethod)="filterGrupos($event)" [dropdown]="true" optionLabel="nombre"
+                    [forceSelection]="true" [showClear]="true" placeholder="Buscar grupo de investigación"
+                    inputId="grupo" [fluid]="true" [appendTo]="'body'" [invalid]="mostrarValidacion && !selectedGrupo"
+                    [style]="{ width: '100%'}">
+                    <ng-template let-grupo pTemplate="item">
+                        <div class="flex items-center gap-2 p-2">
+                            <i class="pi pi-users"></i>
+                            <div [style]="{'color':'var(--p-text-color-0)' }" class="flex flex-col">
+                                <span class="font-semibold">{{ grupo.nombre }}</span>
+                                <small>
+                                    {{ grupo.sigla }} - {{ grupo.codigo }} | Categoría: {{
+                                    grupo.ultimaCategoriaMinciencias }}
+                                </small>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-autocomplete>
+                @if (mostrarValidacion && !selectedGrupo) {
+                <p-message severity="error" variant="simple" size="small">El grupo de investigación es
+                    requerido</p-message>
+                }
+            </div>
+
+            <!-- Momento de Investigación -->
+            <div class="form-field">
+                <label for="momento" class="field-label">
+                    Momento de Investigación
+                </label>
+                <p-autocomplete [(ngModel)]="selectedMomento" [suggestions]="filteredMomentos"
+                    (completeMethod)="filterMomentos($event)" [dropdown]="true" optionLabel="nombre"
+                    [forceSelection]="true" [showClear]="true" placeholder="Seleccionar momento" inputId="momento"
+                    [fluid]="true" [appendTo]="'body'" [invalid]="mostrarValidacion && !selectedMomento"
+                    [style]="{ width: '100%' }">
+                    <ng-template let-momento pTemplate="item">
+                        <div class="flex items-center gap-2 p-2">
+                            <i class="pi pi-clock" style="color: var(--primary-blue);"></i>
+                            <span class="font-semibold" style="color: var(--p-text-color-0);">{{ momento.nombre
+                                }}</span>
+                        </div>
+                    </ng-template>
+                </p-autocomplete>
+                @if (mostrarValidacion && !selectedMomento) {
+                <p-message severity="error" variant="simple" size="small">El momento de investigación es
+                    requerido</p-message>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <button type="button" pButton label="Cancelar" icon="pi pi-times"
+                class="p-button-outlined p-button-secondary" (click)="onCancelar()" [disabled]="guardando">
+            </button>
+
+            <button type="button" pButton label="Guardar Investigación" icon="pi pi-check" class="p-button-success"
+                (click)="onGuardar()" [loading]="guardando">
+            </button>
+        </div>
+    </ng-template>
+</p-dialog>

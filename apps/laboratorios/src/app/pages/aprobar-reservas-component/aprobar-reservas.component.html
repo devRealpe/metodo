@@ -1,0 +1,180 @@
+<p-toast key="aprobar-reservas" position="top-right" [preventOpenDuplicates]="true"></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<!-- Diálogo de rechazo con observación -->
+<p-dialog header="Rechazar reserva" [(visible)]="mostrarDialogoRechazo" [modal]="true"
+  [style]="{ width: '450px' }" [closable]="true" (onHide)="cancelarRechazo()">
+  <div *ngIf="reservaRechazoActual" class="grid gap-3">
+    <p class="text-sm text-gray-700">
+      ¿Rechazar la reserva del <strong>{{ reservaRechazoActual.fecha }}</strong>
+      ({{ formatHora(reservaRechazoActual.horaInicio) }} – {{ formatHora(reservaRechazoActual.horaFin) }})
+      para <strong>{{ reservaRechazoActual.identificacion }}</strong>?
+    </p>
+    <p class="text-xs text-gray-500">Se restaurará el inventario reservado.</p>
+    <div>
+      <p class="block text-sm font-medium mb-1 text-gray-700 m-0">Motivo del rechazo (opcional)</p>
+      <textarea
+        [(ngModel)]="observacionRechazoTexto[reservaRechazoActual.id!]"
+        rows="3"
+        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-y"
+        placeholder="Indique el motivo del rechazo..."
+        maxlength="500"></textarea>
+    </div>
+    <div class="flex justify-end gap-2 mt-2">
+      <p-button label="Cancelar" severity="secondary" size="small" (onClick)="cancelarRechazo()"></p-button>
+      <p-button label="Rechazar" icon="pi pi-times" severity="danger" size="small" (onClick)="confirmarRechazo()"></p-button>
+    </div>
+  </div>
+</p-dialog>
+
+<div class="w-full px-3 sm:px-4 lg:px-6 py-4">
+
+  <!-- Encabezado -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+    <div>
+      <h2 class="text-xl sm:text-2xl font-bold" [style]="{ color: 'var(--p-text-color)' }">
+        <i class="pi pi-check-square mr-2 text-green-500"></i>Aprobación de Reservas de Aula
+      </h2>
+      <p class="text-sm mt-1" [style]="{ color: 'var(--p-text-muted-color)' }">Revise y apruebe o rechace las solicitudes de reserva</p>
+    </div>
+    <p-button icon="pi pi-refresh" label="Actualizar" severity="secondary" size="small"
+      [loading]="cargando" (onClick)="cargarReservas()">
+    </p-button>
+  </div>
+
+  <!-- Tabs de estado -->
+  <div class="flex gap-2 mb-4 flex-wrap">
+    <button type="button"
+      class="px-4 py-2 rounded-lg text-sm font-semibold border transition-all"
+      [class.bg-yellow-500]="vistaActual === 'pendientes'" [class.text-white]="vistaActual === 'pendientes'"
+      [class.border-yellow-500]="vistaActual === 'pendientes'"
+      [class.bg-white]="vistaActual !== 'pendientes'" [class.border-gray-200]="vistaActual !== 'pendientes'"
+      (click)="cambiarVista('pendientes')">
+      <i class="pi pi-clock mr-2"></i>Pendientes
+      <span *ngIf="countPendientes > 0"
+        class="ml-2 text-xs px-2 py-0.5 rounded-full"
+        [class.bg-yellow-600]="vistaActual === 'pendientes'" [class.text-white]="vistaActual === 'pendientes'"
+        [class.bg-yellow-100]="vistaActual !== 'pendientes'" [class.text-yellow-700]="vistaActual !== 'pendientes'">
+        {{ countPendientes }}
+      </span>
+    </button>
+    <button type="button"
+      class="px-4 py-2 rounded-lg text-sm font-semibold border transition-all"
+      [class.bg-green-600]="vistaActual === 'aprobadas'" [class.text-white]="vistaActual === 'aprobadas'"
+      [class.border-green-600]="vistaActual === 'aprobadas'"
+      [class.bg-white]="vistaActual !== 'aprobadas'" [class.border-gray-200]="vistaActual !== 'aprobadas'"
+      (click)="cambiarVista('aprobadas')">
+      <i class="pi pi-check mr-2"></i>Aprobadas
+      <span *ngIf="countAprobadas > 0" class="ml-2 bg-green-200 text-green-800 text-xs px-2 py-0.5 rounded-full">{{ countAprobadas }}</span>
+    </button>
+    <button type="button"
+      class="px-4 py-2 rounded-lg text-sm font-semibold border transition-all"
+      [class.bg-red-600]="vistaActual === 'rechazadas'" [class.text-white]="vistaActual === 'rechazadas'"
+      [class.border-red-600]="vistaActual === 'rechazadas'"
+      [class.bg-white]="vistaActual !== 'rechazadas'" [class.border-gray-200]="vistaActual !== 'rechazadas'"
+      (click)="cambiarVista('rechazadas')">
+      <i class="pi pi-times mr-2"></i>Rechazadas
+      <span *ngIf="countRechazadas > 0" class="ml-2 bg-red-200 text-red-800 text-xs px-2 py-0.5 rounded-full">{{ countRechazadas }}</span>
+    </button>
+  </div>
+
+  <!-- Filtro -->
+  <div class="mb-4 max-w-sm">
+    <app-input-component label="" id="filtroTexto" [formControl]="filtroTexto"
+      placeholder="Filtrar por identificación, aula o motivo">
+    </app-input-component>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="cargando" class="text-center py-12">
+    <i class="pi pi-spinner pi-spin text-3xl text-blue-500"></i>
+    <p class="text-sm mt-3" [style]="{ color: 'var(--p-text-muted-color)' }">Cargando reservas...</p>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="!cargando && reservasFiltradas.length === 0"
+    class="text-center py-16 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+    <i class="pi pi-calendar-times text-5xl text-gray-300 mb-3"></i>
+    <p class="text-gray-500 font-medium">
+      No hay reservas
+      <span *ngIf="vistaActual === 'pendientes'">pendientes de aprobación</span>
+      <span *ngIf="vistaActual === 'aprobadas'">aprobadas</span>
+      <span *ngIf="vistaActual === 'rechazadas'">rechazadas</span>
+    </p>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="!cargando && reservasFiltradas.length > 0">
+    <p-table [value]="reservasFiltradas" [paginator]="true" [rows]="15"
+      styleClass="p-datatable-sm" [rowHover]="true" dataKey="id">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Identificación</th>
+          <th>Aula</th>
+          <th>Fecha</th>
+          <th>Horario</th>
+          <th>Asistentes</th>
+          <th>Motivo / Tipo</th>
+          <th>Observación</th>
+          <th>Equipos/Suministros</th>
+          <th>Estado</th>
+          <th *ngIf="vistaActual === 'rechazadas'">Motivo rechazo</th>
+          <th *ngIf="vistaActual === 'pendientes'" style="width: 11rem">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-reserva>
+        <tr>
+          <td class="font-mono text-sm">{{ reserva.identificacion }}</td>
+          <td>{{ reserva.laboratorio?.nomAula || reserva.laboratorio?.codAula || reserva.laboratorio?.id }}</td>
+          <td class="whitespace-nowrap">{{ reserva.fecha }}</td>
+          <td class="whitespace-nowrap text-sm">{{ formatHora(reserva.horaInicio) }} – {{ formatHora(reserva.horaFin) }}</td>
+          <td class="text-center">{{ reserva.cantidadAsistentes }}</td>
+          <td class="text-sm max-w-xs truncate" [title]="reserva.motivo || reserva.tipoPractica || ''">
+            {{ reserva.motivo || reserva.tipoPractica || '—' }}
+          </td>
+          <td class="text-sm max-w-xs truncate" [title]="reserva.observacion || ''">
+            {{ reserva.observacion || '—' }}
+          </td>
+          <td class="text-sm">
+            <span *ngIf="(reserva.equipos?.length || 0) > 0"
+              class="mr-1 px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+              <i class="pi pi-desktop mr-0.5"></i>{{ reserva.equipos!.length }}
+            </span>
+            <span *ngIf="(reserva.suministros?.length || 0) > 0"
+              class="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">
+              <i class="pi pi-box mr-0.5"></i>{{ reserva.suministros!.length }}
+            </span>
+            <span *ngIf="!(reserva.equipos?.length) && !(reserva.suministros?.length)" class="text-gray-400">—</span>
+          </td>
+          <td>
+            <p-tag [value]="estadoLabel(reserva)" [severity]="estadoSeverity(reserva)"></p-tag>
+          </td>
+          <td *ngIf="vistaActual === 'rechazadas'" class="text-sm max-w-xs">
+            <span *ngIf="reserva.observacionRechazo" class="text-red-600" [title]="reserva.observacionRechazo">
+              {{ reserva.observacionRechazo }}
+            </span>
+            <span *ngIf="!reserva.observacionRechazo" class="text-gray-400">Sin observación</span>
+          </td>
+          <td *ngIf="vistaActual === 'pendientes'">
+            <div class="flex gap-1">
+              <p-button icon="pi pi-check" size="small" severity="success" [rounded]="true"
+                pTooltip="Aprobar" tooltipPosition="top"
+                [loading]="!!procesando[reserva.id]"
+                (onClick)="aprobar(reserva)">
+              </p-button>
+              <p-button icon="pi pi-times" size="small" severity="danger" [rounded]="true"
+                pTooltip="Rechazar" tooltipPosition="top"
+                [loading]="!!procesando[reserva.id]"
+                (onClick)="rechazar(reserva)">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+  </div>
+
+</div>

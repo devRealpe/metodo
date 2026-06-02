@@ -1,0 +1,337 @@
+<p-toast position="top-right"></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="w-full" [style]="{ 'background': 'transparent', 'padding': '1.5rem' }">
+
+  <!-- PASO 1: Buscar y seleccionar suministro de almacén -->
+  <div *ngIf="!suministroAlmacenSeleccionado">
+
+    <div class="p-6 rounded-xl border-2 shadow-lg" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)',
+        'max-width': '900px',
+        'margin': '0 auto'
+      }">
+
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+          Asignación de Suministros a Aulas
+        </h2>
+        <p class="text-sm sm:text-base opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Seleccione un suministro del almacén y asígnelo a un laboratorio
+        </p>
+      </div>
+
+      <div class="p-5 rounded-lg border" [style]="{
+          'background': 'var(--p-surface-0)',
+          'border-color': 'var(--p-border-color)'
+        }">
+        <h3 class="text-base font-semibold mb-3" [style]="{ color: 'var(--p-text-color)' }">
+          Paso 1 — Seleccionar suministro del almacén
+        </h3>
+        <app-input-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+          id="busqueda" [(ngModel)]="busquedaTexto"
+          placeholder="Buscar por código, nombre, categoría o unidad de medida...">
+        </app-input-component>
+      </div>
+
+    </div>
+
+    <!-- Tabla con cabecera azul (fuera del recuadro) -->
+    <div class="mt-5 rounded-xl overflow-hidden" [style]="{ 'border': '1px solid var(--p-primary-300)' }">
+
+      <div class="px-6 py-4 border-b" [style]="{
+          'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+          'border-color': 'var(--p-primary-300)'
+        }">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-bold text-white m-0">Suministros en almacén</h3>
+            <p class="text-white/80 text-sm m-0">
+              {{ suministrosAlmacenFiltrados().length }} suministro(s) encontrado(s)
+            </p>
+          </div>
+          <span class="bg-white/20 px-3 py-1 rounded-full text-white text-sm font-medium">
+            Actualizado
+          </span>
+        </div>
+      </div>
+
+      <div class="p-4" [style]="{ 'background': 'var(--p-surface-0)' }">
+        <p-table
+          [value]="suministrosAlmacenFiltrados()"
+          [loading]="cargandoBusqueda"
+          [paginator]="true"
+          [rows]="8"
+          [rowsPerPageOptions]="[8, 20, 50]"
+          [sortMode]="'single'"
+          styleClass="p-datatable-sm"
+          responsiveLayout="scroll">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="codigo">Código <p-sortIcon field="codigo"></p-sortIcon></th>
+              <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre"></p-sortIcon></th>
+              <th pSortableColumn="categoria">Categoría <p-sortIcon field="categoria"></p-sortIcon></th>
+              <th>Und. Medida</th>
+              <th pSortableColumn="stock" class="text-center">Stock <p-sortIcon field="stock"></p-sortIcon></th>
+              <th class="text-center">Seleccionar</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-suministro>
+            <tr [class.opacity-50]="suministro.stock === 0">
+              <td>{{ suministro.codigo }}</td>
+              <td>{{ suministro.nombre }}</td>
+              <td>{{ suministro.categoria }}</td>
+              <td>{{ suministro.undMedida }}</td>
+              <td class="text-center">
+                <span [class.text-red-600]="suministro.stock === 0" [class.font-semibold]="suministro.stock === 0">
+                  {{ suministro.stock }}
+                </span>
+              </td>
+              <td class="text-center">
+                <button pButton icon="pi pi-arrow-right" label="Seleccionar"
+                  class="p-button-sm p-button-outlined"
+                  [disabled]="suministro.stock === 0"
+                  pTooltip="{{ suministro.stock === 0 ? 'Sin stock disponible' : 'Seleccionar este suministro' }}"
+                  (click)="seleccionarSuministroAlmacen(suministro)">
+                </button>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="6" class="text-center py-6 opacity-60">
+                <i class="pi pi-inbox text-3xl block mb-2"></i>
+                No se encontraron suministros en almacén
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PASO 2: Formulario de asignación al aula -->
+  <div *ngIf="suministroAlmacenSeleccionado">
+
+    <div class="p-6 rounded-xl border-2 shadow-lg" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)',
+        'max-width': '900px',
+        'margin': '0 auto'
+      }">
+
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+          {{ modoEdicion ? 'Editar Suministro de Aula' : 'Asignación de Suministros a Aulas' }}
+        </h2>
+        <p class="text-sm sm:text-base opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          {{ modoEdicion ? 'Actualizar la asignación del suministro seleccionado' : 'Datos de la asignación al laboratorio' }}
+        </p>
+      </div>
+
+      <div class="p-5 rounded-lg border" [style]="{
+          'background': 'var(--p-surface-0)',
+          'border-color': 'var(--p-border-color)'
+        }">
+
+        <!-- Card del suministro seleccionado -->
+        <div class="mb-5 p-4 rounded-lg border" [style]="{ background: 'var(--p-surface-50)', 'border-color': 'var(--p-primary-200)' }">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs uppercase font-medium mb-1 opacity-70" [style]="{ color: 'var(--p-text-color)' }">
+                Suministro seleccionado
+              </p>
+              <p class="font-semibold text-base" [style]="{ color: 'var(--p-text-color)' }">
+                {{ suministroAlmacenSeleccionado.nombre }}
+              </p>
+              <p class="text-sm opacity-70 mt-0.5" [style]="{ color: 'var(--p-text-color)' }">
+                {{ suministroAlmacenSeleccionado.codigo }}
+                <span *ngIf="suministroAlmacenSeleccionado.categoria"> · {{ suministroAlmacenSeleccionado.categoria }}</span>
+                <span *ngIf="suministroAlmacenSeleccionado.undMedida"> · {{ suministroAlmacenSeleccionado.undMedida }}</span>
+              </p>
+              <p class="text-sm mt-1" [style]="{ color: 'var(--p-text-color)' }">
+                Stock disponible: <strong>{{ suministroAlmacenSeleccionado.stock }}</strong>
+              </p>
+            </div>
+            <button *ngIf="!modoEdicion" type="button" pButton icon="pi pi-times"
+              class="p-button-text p-button-secondary p-button-sm"
+              pTooltip="Cambiar suministro" (click)="cancelarSeleccion()">
+            </button>
+          </div>
+        </div>
+
+        <h3 class="text-base font-semibold mb-3" [style]="{ color: 'var(--p-text-color)' }">
+          {{ modoEdicion ? 'Editar asignación' : 'Paso 2 — Datos de la asignación' }}
+        </h3>
+
+        <form [formGroup]="formSuministroAula" (ngSubmit)="registrar()" class="grid gap-4">
+
+          <!-- Dropdown 1: Aula / Laboratorio -->
+          <div class="min-w-0">
+            <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+              label="Aula / Laboratorio *" id="aulaSelect"
+              [options]="laboratoriosRaizOpciones"
+              optionLabel="label" optionValue="value"
+              [(ngModel)]="aulaSeleccionadaCodAula"
+              (ngModelChange)="onAulaChange($event)"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="Seleccione el aula" [filter]="true" [showClear]="true"
+              [ngClass]="{ 'p-invalid': esInvalido('idLaboratorio') && hijosDeAulaSeleccionada.length === 0 }">
+            </app-select-component>
+            <small *ngIf="esInvalido('idLaboratorio') && hijosDeAulaSeleccionada.length === 0" class="text-red-500 text-xs sm:text-sm mt-1 block">
+              {{ obtenerMensajeError('idLaboratorio') }}
+            </small>
+          </div>
+
+          <!-- Dropdown 2 (condicional): Aula hija -->
+          <div class="min-w-0" *ngIf="hijosDeAulaSeleccionada.length > 0">
+            <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+              label="Aula *" id="hijoSelect"
+              [options]="hijosOpciones" optionLabel="label" optionValue="value"
+              [(ngModel)]="hijoSeleccionadoUUID"
+              (ngModelChange)="onHijoChange($event)"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="Seleccione el aula" [filter]="true" [showClear]="true"
+              [ngClass]="{ 'p-invalid': esInvalido('idLaboratorio') }">
+            </app-select-component>
+            <small *ngIf="esInvalido('idLaboratorio')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+              {{ obtenerMensajeError('idLaboratorio') }}
+            </small>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="min-w-0">
+              <app-input-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                label="Cantidad *" id="cantidad" type="number" formControlName="cantidad"
+                placeholder="1" [ngClass]="{ 'p-invalid': esInvalido('cantidad') }">
+              </app-input-component>
+              <small *ngIf="esInvalido('cantidad')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+                {{ obtenerMensajeError('cantidad') }}
+              </small>
+            </div>
+
+            <div class="min-w-0">
+              <app-input-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                label="Cantidad Disponible" id="cantidadDisponible" type="number" formControlName="cantidadDisponible"
+                placeholder="1">
+              </app-input-component>
+              <small class="text-gray-400 text-xs mt-1 block">Se asigna automáticamente desde Cantidad</small>
+            </div>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="min-w-0 flex items-center gap-3 pt-2">
+              <input type="checkbox" id="esReactivo" [(ngModel)]="esReactivo" [ngModelOptions]="{standalone:true}"
+                class="w-4 h-4 accent-blue-600 cursor-pointer">
+              <label for="esReactivo" class="text-sm font-medium cursor-pointer select-none" [style]="{ color: 'var(--p-text-color)' }">
+                ¿Es reactivo químico?
+              </label>
+            </div>
+            <div class="min-w-0" *ngIf="esReactivo">
+              <app-datepicker-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+                label="Fecha de Vencimiento" id="fechaVencimiento" formControlName="fechaVencimiento" type="date">
+              </app-datepicker-component>
+            </div>
+          </div>
+
+          <div class="min-w-0 sm:max-w-xs">
+            <app-select-component class="w-full block min-w-0" style="display:block;width:100%;max-width:100%"
+              label="Estado *" id="estado" formControlName="estado"
+              [options]="estadosOpciones()" optionLabel="label" optionValue="value"
+              placeholder="Seleccione estado"
+              [ngClass]="{ 'p-invalid': esInvalido('estado') }">
+            </app-select-component>
+            <small *ngIf="esInvalido('estado')" class="text-red-500 text-xs sm:text-sm mt-1 block">
+              {{ obtenerMensajeError('estado') }}
+            </small>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2 justify-between items-stretch sm:items-center pt-2">
+            <button type="button"
+              class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
+              (click)="limpiarFormulario()">
+              <i class="pi pi-refresh"></i>
+              Limpiar
+            </button>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+              <button *ngIf="modoEdicion" type="button"
+                class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
+                (click)="limpiarFormulario()">
+                <i class="pi pi-times"></i>
+                Cancelar
+              </button>
+
+              <button type="submit"
+                class="px-4 py-2 rounded text-white transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
+                [class.bg-gray-400]="formSuministroAula.invalid || cargando"
+                [class.cursor-not-allowed]="formSuministroAula.invalid || cargando"
+                [class.bg-blue-600]="!(formSuministroAula.invalid || cargando)"
+                [class.hover:bg-blue-700]="!(formSuministroAula.invalid || cargando)"
+                [disabled]="formSuministroAula.invalid || cargando">
+                <i class="pi pi-save" *ngIf="!cargando"></i>
+                <i class="pi pi-spin pi-spinner" *ngIf="cargando"></i>
+                {{ modoEdicion ? 'Actualizar Asignación' : 'Registrar Asignación' }}
+              </button>
+            </div>
+          </div>
+        </form>
+
+  </div>
+</div>
+
+<!-- Dialog: Devolver suministro al almacén -->
+<p-dialog
+  [(visible)]="mostrarDialogDevolver"
+  header="Devolver suministro al almacén"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '30rem' }"
+  (onHide)="itemParaDevolver = null">
+
+  <div *ngIf="itemParaDevolver" class="flex flex-col gap-4 py-2">
+    <div class="p-3 rounded-lg border" [style]="{ background: 'var(--p-surface-50)', 'border-color': 'var(--p-primary-200)' }">
+      <p class="text-sm mb-1" [style]="{ color: 'var(--p-text-color)' }">
+        <span class="font-medium">Suministro:</span> {{ itemParaDevolver.suministroAlmacen.nombre }}
+      </p>
+      <p class="text-sm mb-1" [style]="{ color: 'var(--p-text-color)' }">
+        <span class="font-medium">Aula:</span> {{ itemParaDevolver.laboratorio.nomAula }}
+      </p>
+      <p class="text-sm" [style]="{ color: 'var(--p-text-color)' }">
+        <span class="font-medium">Cantidad asignada:</span>
+        <span class="font-bold text-blue-600 ml-1">{{ itemParaDevolver.cantidad }}</span>
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-semibold" [style]="{ color: 'var(--p-text-color)' }">
+        Cantidad a devolver al almacén
+      </label>
+      <p-inputNumber
+        [(ngModel)]="cantidadADevolver"
+        [min]="1"
+        [max]="itemParaDevolver.cantidad"
+        [showButtons]="true"
+        buttonLayout="horizontal"
+        incrementButtonIcon="pi pi-plus"
+        decrementButtonIcon="pi pi-minus"
+        [inputStyle]="{ 'text-align': 'center', width: '4rem' }"
+        styleClass="w-full">
+      </p-inputNumber>
+      <small class="text-xs opacity-70" [style]="{ color: 'var(--p-text-color)' }">
+        Máximo: {{ itemParaDevolver.cantidad }} unidad(es). Si devuelve todas, se eliminará el registro.
+      </small>
+    </div>
+  </div>
+
+  <app-lb-lista-suministros-asignados></app-lb-lista-suministros-asignados>
+
+>

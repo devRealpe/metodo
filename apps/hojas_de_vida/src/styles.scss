@@ -1,0 +1,186 @@
+/* You can add global styles to this file, and also import other style files */
+@use 'tailwindcss/base';
+@use 'tailwindcss/components';
+@use 'tailwindcss/utilities';
+@import 'primeicons/primeicons.css';
+
+/* ============================================ */
+/*  FUENTE LATO — Definición de variantes      */
+/* ============================================ */
+@font-face {
+  font-family: 'Lato';
+  src: url('/assets/fonts/Lato/Lato-Thin.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/assets/fonts/Lato/Lato-ThinItalic.ttf') format('truetype');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/assets/fonts/Lato/Lato-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/assets/fonts/Lato/Lato-LightItalic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/assets/fonts/Lato/Lato-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/assets/fonts/Lato/Lato-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/assets/fonts/Lato/Lato-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/assets/fonts/Lato/Lato-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/assets/fonts/Lato/Lato-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/assets/fonts/Lato/Lato-BlackItalic.ttf') format('truetype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ============================================ */
+/*  FUENTE LATO — Aplicación global            */
+/* ============================================ */
+html,
+body {
+  font-family: 'Lato', sans-serif;
+}
+
+/* ============================================ */
+/*  OVERRIDE TAILWIND DEFAULT BORDER COLOR     */
+/*  Para soporte de modo oscuro                */
+/* ============================================ */
+::ng-deep * {
+  border-color: var(--p-surface-border);
+}
+
+/* ============================================ */
+/*  NOTA: Los estilos de MultiSelect y         */
+/*  AutoComplete están centralizados en:       */
+/*  libs/shared/shared-ui/theme/index.ts       */
+/* ============================================ */
+
+/* ============================================ */
+/*  ESTILOS GLOBALES PARA OFERTAS LABORALES   */
+/* ============================================ */
+
+/* Badge de estado (Publicado/No Publicado) */
+.estado-badge {
+  &.activo {
+    background-color: var(--p-green-100);
+    color: var(--p-green-700);
+    border: 1px solid var(--p-green-200);
+  }
+
+  &.inactivo {
+    background-color: var(--p-red-100);
+    color: var(--p-red-700);
+    border: 1px solid var(--p-red-200);
+  }
+}
+
+/* Badge de permite áreas afines */
+.badge-permite-afines {
+  background-color: var(--p-green-100);
+  color: var(--p-green-700);
+  border: 1px solid var(--p-green-200);
+}
+
+/* Badge de puntaje en requisitos */
+.puntaje-badge {
+  background-color: var(--p-primary-100);
+  color: var(--p-primary-700);
+  border: 1px solid var(--p-primary-200);
+}
+
+/* Badge de título académico */
+.titulo-badge {
+  background-color: var(--p-primary-50);
+  color: var(--p-primary-700);
+  border: 1px solid var(--p-primary-100);
+  display: inline-block;
+}
+
+/* Badge de título N/A */
+.titulo-badge-na {
+  background-color: var(--p-surface-100);
+  color: var(--p-text-secondary-color);
+  border: 1px solid var(--p-surface-200);
+  display: inline-block;
+}
+
+/* Contenedor de requisito con detalle */
+.requisito-detalle {
+  background-color: var(--p-surface-100);
+  border: 1px solid var(--p-surface-border);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: var(--p-surface-200);
+    box-shadow: var(--p-elevation-2);
+  }
+}
+
+/* Card inner de Unimar */
+.unimar-card-inner {
+  background-color: var(--p-surface-0);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 12px;
+  box-shadow: var(--p-elevation-1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: var(--p-elevation-2);
+  }
+}
+
+

@@ -1,0 +1,114 @@
+{
+  "name": "hojas_de_vida",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/hojas_de_vida/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:webpack-browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/hojas_de_vida",
+        "index": "apps/hojas_de_vida/src/index.html",
+        "main": "apps/hojas_de_vida/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/hojas_de_vida/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/hojas_de_vida/public"
+          }
+        ],
+        "styles": ["apps/hojas_de_vida/src/styles.scss"],
+        "customWebpackConfig": {
+          "path": "apps/hojas_de_vida/webpack.config.ts"
+        }
+      },
+      "configurations": {
+        "production": {
+          "baseHref": "/hojas_de_vida/",
+          "deployUrl": "/hojas_de_vida/",
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "1mb",
+              "maximumError": "2mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "15kb",
+              "maximumError": "50kb"
+            }
+          ],
+          "outputHashing": "all",
+          "customWebpackConfig": {
+            "path": "apps/hojas_de_vida/webpack.prod.config.ts"
+          }
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@nx/angular:dev-server",
+      "options": {
+        "port": 4201,
+        "publicHost": "http://localhost:4201",
+        "proxyConfig": "apps/hojas_de_vida/proxy.conf.js"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "hojas_de_vida:build:production"
+        },
+        "development": {
+          "buildTarget": "hojas_de_vida:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "hojas_de_vida:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/apps/hojas_de_vida"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "defaultConfiguration": "production",
+      "options": {
+        "buildTarget": "hojas_de_vida:build",
+        "port": 4201,
+        "watch": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "hojas_de_vida:build:development"
+        },
+        "production": {
+          "buildTarget": "hojas_de_vida:build:production"
+        }
+      }
+    }
+  }
+}

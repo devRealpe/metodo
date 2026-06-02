@@ -1,0 +1,39 @@
+<p-dialog [(visible)]="visible" [modal]="true" [closable]="false" [dismissableMask]="true" [closeOnEscape]="true"
+  [draggable]="false" [resizable]="false" styleClass="rejection-dialog"
+  [style]="{ width: '95%', maxWidth: '600px', 'max-height': '90vh' }" (onHide)="onClose()">
+
+  <ng-template pTemplate="header">
+    <span class="dialog-title">RECHAZAR PLAN DE TRABAJO</span>
+    <button pButton type="button" icon="pi pi-times" class="p-button-rounded p-button-text custom-close-button"
+      (click)="onClose()" aria-label="Cerrar"></button>
+  </ng-template>
+
+  <div class="rejection-content pt-0">
+    <div class="dialog-content">
+      <div class="mb-2" *ngIf="nombreProfesor">
+        <p class="text-sm sm:text-base break-words text-center" [style]="{'color': 'var(--p-text-color)'}">
+          Se está rechazando el PT de: <strong>{{ nombreProfesor }}</strong>
+        </p>
+      </div>
+
+      <app-textarea-component [(ngModel)]="motivoRechazo" [id]="'motivoRechazo'"
+        [label]="'Indicar el motivo del rechazo'" [placeholder]="''" [rows]="5" [autoResize]="false" [required]="true"
+        [showCounters]="false" [showCharCount]="false">
+      </app-textarea-component>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="rejection-footer">
+      <div class="flex flex-column sm:flex-row justify-end gap-2 w-full">
+        <button type="button" pButton label="Cancelar" class="p-button-text cancel-button w-full sm:w-auto"
+          (click)="onCancelarClick()">
+        </button>
+
+        <button type="button" pButton label="Rechazar PT" class="p-button reject-button w-full sm:w-auto"
+          [disabled]="!motivoRechazo.trim()" (click)="onConfirmarClick()">
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>

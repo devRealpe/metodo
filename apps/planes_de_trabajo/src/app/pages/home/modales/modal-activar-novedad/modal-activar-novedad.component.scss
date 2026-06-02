@@ -1,0 +1,138 @@
+$transition-fast: var(--transition-fast);
+
+::ng-deep {
+    .p-select-overlay {
+        background: var(--p-surface-0) !important;
+        border: 1px solid var(--p-surface-200) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        
+        .p-select-list {
+            background: var(--p-surface-0) !important;
+            color: var(--p-text-color) !important;
+            max-height: 200px !important; 
+            overflow-y: auto !important; 
+            padding: 4px !important;
+        }
+        
+        .p-select-option {
+            background: var(--p-surface-0) !important;
+            color: var(--p-text-color) !important;
+            padding: 8px 12px !important;
+            border-radius: 4px !important;
+            margin: 2px 0 !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+            
+    
+            &:hover {
+                background: var(--p-surface-100) !important;
+                color: var(--p-text-color) !important;
+            }
+            
+            &.p-selected {
+                background: var(--p-primary-color) !important;
+                color: var(--p-primary-inverse-color) !important;
+            }
+            
+        
+            &.p-focus {
+                background: var(--p-surface-100) !important;
+                outline: 2px solid var(--p-primary-color) !important;
+                outline-offset: -2px !important;
+            }
+        }
+        
+        .p-select-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .p-select-list::-webkit-scrollbar-track {
+            background: var(--p-surface-100);
+            border-radius: 3px;
+        }
+        
+        .p-select-list::-webkit-scrollbar-thumb {
+            background: var(--p-surface-400);
+            border-radius: 3px;
+            
+            &:hover {
+                background: var(--p-surface-500);
+            }
+        }
+    }
+
+    .p-select {
+        background: var(--p-surface-0) !important;
+        border: 1px solid var(--p-surface-300) !important;
+        color: var(--p-text-color) !important;
+        
+        &:hover {
+            border-color: var(--p-primary-color) !important;
+        }
+        
+        &.p-focus {
+            border-color: var(--p-primary-color) !important;
+            box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.2) !important;
+        }
+        
+        .p-select-label {
+            color: var(--p-text-color) !important;
+        }
+        
+        .p-select-dropdown {
+            color: var(--p-text-color) !important;
+        }
+    }
+}
+
+::ng-deep .p-dialog {
+  .p-dialog-footer {
+     border-bottom-left-radius: 0.7rem !important;
+    border-bottom-right-radius: 0.7rem !important;
+  }
+  
+  .p-dialog-header{
+    border-top-left-radius: 0.7rem !important;
+    border-top-right-radius: 0.7rem !important;
+    overflow: hidden !important; 
+  }
+}
+
+ ::ng-deep .p-dialog-footer .p-button {
+  border-radius: var(--radius-lg) !important;
+  font-weight: 600 !important;
+  transition: all $transition-fast;
+  padding: 0.625rem 1.25rem !important;
+  border-radius: 0.5rem !important;
+
+  &.p-button-outlined.p-button-secondary {
+    border-color: var(--p-surface-border) !important;
+    color: white !important;
+    background: transparent !important;
+
+    &:enabled:hover {
+      border-color: rgb(180, 180, 180) !important;
+    }
+  }
+
+  &.p-button-success {
+    background: var(--secondary-green) !important;
+    border-color: var(--secondary-green) !important;
+    color: white !important;
+
+    &:enabled:hover {
+      background: var(--secondary-green-dark) !important;
+      border-color: var(--secondary-green-dark) !important;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md) !important;
+    }
+
+    &:enabled:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.6 !important;
+      cursor: not-allowed !important;
+    }
+}}

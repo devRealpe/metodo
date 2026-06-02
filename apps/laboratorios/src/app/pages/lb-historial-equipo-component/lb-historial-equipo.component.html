@@ -1,0 +1,596 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="w-full max-w-8xl mx-auto" [style]="{ 'background': 'transparent', 'padding': '1.5rem' }">
+
+  <!-- Criterios de búsqueda -->
+  <div class="mb-6">
+    <div class="p-6 rounded-xl border-2 shadow-lg" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+      }">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+          Historial de Equipos
+        </h2>
+        <p class="text-sm sm:text-base opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Consulte la trazabilidad completa de cada unidad de equipo
+        </p>
+      </div>
+
+      <div class="p-5 rounded-lg border" [style]="{
+          'background': 'var(--p-surface-0)',
+          'border-color': 'var(--p-border-color)'
+        }">
+        <div class="flex items-center justify-between mb-5">
+          <h4 class="text-lg font-semibold m-0" [style]="{ color: 'var(--p-text-color)' }">
+            Criterios de Búsqueda
+          </h4>
+          <button pButton label="Limpiar Filtros" icon="pi pi-times" severity="secondary" [outlined]="true"
+            [style]="{ 'height': '2.5rem', 'border-radius': '8px' }"
+            (click)="limpiarFiltros()"
+            [disabled]="!hayFiltrosActivos">
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+          <!-- Equipo -->
+          <div>
+            <p class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Equipo
+            </p>
+            <app-select-component
+              [(ngModel)]="filtroEquipoId"
+              [options]="equipoOpciones()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Todos los equipos"
+              class="w-full"
+              [filter]="true">
+            </app-select-component>
+          </div>
+
+          <!-- Serial -->
+          <div>
+            <p class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Serial
+            </p>
+            <app-input-component
+              type="text"
+              [(ngModel)]="filtroSerial"
+              placeholder="Buscar por serial"
+              class="w-full">
+            </app-input-component>
+          </div>
+
+          <!-- Placa -->
+          <div>
+            <p class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Placa
+            </p>
+            <app-input-component
+              type="text"
+              [(ngModel)]="filtroPlaca"
+              placeholder="Buscar por placa"
+              class="w-full">
+            </app-input-component>
+          </div>
+
+          <!-- Estado -->
+          <div>
+            <p class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Estado
+            </p>
+            <app-select-component
+              [(ngModel)]="filtroEstado"
+              [options]="estadoOpciones()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Todos los estados"
+              class="w-full"
+              [filter]="true">
+            </app-select-component>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de equipos con historial-->
+  <div class="rounded-xl border-2 shadow-lg overflow-hidden" [style]="{
+      'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+      'border-color': 'var(--p-primary-200)',
+      'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+    }">
+
+    <div class="px-6 py-4 border-b" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+        'border-color': 'var(--p-primary-300)'
+      }">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-xl font-bold text-white m-0">Equipos registrados</h3>
+          <p class="text-white/80 text-sm m-0">
+            {{ unidadesFiltradas.length }} unidad(es) encontrada(s)
+          </p>
+        </div>
+        <span class="bg-white/20 px-3 py-1 rounded-full text-white text-sm font-medium">
+          Actualizado
+        </span>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div *ngIf="cargando"
+        class="absolute inset-0 flex flex-col items-center justify-center z-10"
+        [style]="{ 'background': 'rgba(255,255,255,0.95)' }">
+        <p-progressSpinner styleClass="w-12 h-12" [style]="{ 'animation-duration': '1s' }"></p-progressSpinner>
+        <p class="mt-4 text-sm font-medium opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Cargando equipos...
+        </p>
+      </div>
+
+      <div class="p-4">
+        <p-table
+          [value]="unidadesFiltradas"
+          [loading]="cargando"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[10, 20, 50]"
+          [tableStyle]="{ 'min-width': '900px' }"
+          sortMode="multiple"
+          class="overflow-x-auto"
+          [style]="{
+            '--p-datatable-header-background': 'var(--p-surface-100)',
+            '--p-datatable-header-border-color': 'var(--p-border-color)',
+            '--p-datatable-row-background': 'var(--p-surface-0)',
+            '--p-datatable-row-hover-background': 'var(--p-surface-50)'
+          }">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="equipoAlmacen.nombre" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Equipo</div>
+                <p-sortIcon field="equipoAlmacen.nombre"></p-sortIcon>
+              </th>
+              <th pSortableColumn="serial" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Serial</div>
+                <p-sortIcon field="serial"></p-sortIcon>
+              </th>
+              <th pSortableColumn="placa" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Placa</div>
+                <p-sortIcon field="placa"></p-sortIcon>
+              </th>
+              <th pSortableColumn="estado" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Estado</div>
+                <p-sortIcon field="estado"></p-sortIcon>
+              </th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">Acciones</div>
+              </th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-unidad let-rowIndex="rowIndex">
+            <tr class="transition-all duration-200 hover:shadow-sm" [style]="{
+                'background': rowIndex % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-25)',
+                'border-bottom': '1px solid var(--p-border-color)'
+              }">
+
+              <!-- Equipo -->
+              <td class="py-4 px-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+                    [style]="{ 'background': 'var(--p-primary-500)' }">
+                    {{ unidad.equipoAlmacen?.nombre?.charAt(0) || 'E' }}
+                  </div>
+                  <div>
+                    <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">
+                      {{ unidad.equipoAlmacen?.nombre ?? '-' }}
+                    </div>
+                    <div class="text-xs opacity-60"
+                      *ngIf="unidad.equipoAlmacen?.marca || unidad.equipoAlmacen?.modelo"
+                      [style]="{ color: 'var(--p-text-color)' }">
+                      {{ unidad.equipoAlmacen?.marca }}{{ unidad.equipoAlmacen?.marca && unidad.equipoAlmacen?.modelo ? ' · ' : '' }}{{ unidad.equipoAlmacen?.modelo }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Serial -->
+              <td class="py-4 px-3">
+                <ng-container *ngIf="unidad.serial; else sinValor1">
+                  <span class="font-mono text-sm" [style]="{ color: 'var(--p-text-color)' }">{{ unidad.serial }}</span>
+                </ng-container>
+                <ng-template #sinValor1><span class="opacity-60 italic">-</span></ng-template>
+              </td>
+
+              <!-- Placa -->
+              <td class="py-4 px-3">
+                <ng-container *ngIf="unidad.placa; else sinValor2">
+                  <span class="font-mono text-sm" [style]="{ color: 'var(--p-text-color)' }">{{ unidad.placa }}</span>
+                </ng-container>
+                <ng-template #sinValor2><span class="opacity-60 italic">-</span></ng-template>
+              </td>
+
+              <!-- Estado -->
+              <td class="py-4 px-3">
+                <div class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold"
+                  [style]="{
+                    'background': colorEstado(unidad.estado).bg,
+                    'color':      colorEstado(unidad.estado).text
+                  }">
+                  {{ etiquetaEstado(unidad.estado) }}
+                </div>
+              </td>
+
+              <!-- Acciones -->
+              <td class="py-4 px-3">
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-eye"
+                  class="p-button-rounded p-button-text p-button-info"
+                  pTooltip="Ver historial"
+                  (click)="verHistorial(unidad)">
+                </button>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center py-12" [style]="{
+                  'background': 'var(--p-surface-50)',
+                  'color': 'var(--p-text-color)'
+                }">
+                <div class="flex flex-col items-center gap-4">
+                  <div class="w-16 h-16 rounded-full flex items-center justify-center"
+                    [style]="{ 'background': 'var(--p-surface-200)' }">
+                    <i class="pi pi-inbox text-2xl opacity-50"></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-semibold mb-1">No se encontraron equipos</p>
+                    <p class="text-sm opacity-80">Ajuste los filtros para obtener resultados</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     DIÁLOGO — HISTORIAL COMPLETO
+══════════════════════════════════════════════════════════ -->
+<p-dialog
+  [(visible)]="mostrarDialogo"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '95vw', maxWidth: '1100px' }"
+  [contentStyle]="{ padding: '0' }"
+  [draggable]="false"
+  (onHide)="cerrarDialogo()">
+
+  <ng-template pTemplate="header">
+    <div class="flex align-items-center gap-3 w-full">
+      <i class="pi pi-history text-2xl" style="color: var(--p-primary-500)"></i>
+      <div>
+        <div class="font-bold text-lg" style="color: var(--p-surface-900);">
+          Historial — {{ unidadSeleccionada?.equipoAlmacen?.nombre ?? '—' }}
+        </div>
+        <div class="text-xs mt-1" style="color: var(--p-surface-500);">
+          Serial: {{ unidadSeleccionada?.serial ?? '—' }} &nbsp;·&nbsp;
+          Placa: {{ unidadSeleccionada?.placa ?? '—' }}
+        </div>
+      </div>
+      <div class="ml-auto">
+        <span class="border-round px-2 py-1 text-xs font-semibold"
+              [style]="{ background: colorEstado(unidadSeleccionada?.estado ?? '').bg,
+                         color:      colorEstado(unidadSeleccionada?.estado ?? '').text }">
+          {{ etiquetaEstado(unidadSeleccionada?.estado ?? '') }}
+        </span>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Spinner carga detalle -->
+  @if (cargandoDetalle) {
+    <div class="flex justify-content-center align-items-center py-6">
+      <p-progressSpinner strokeWidth="4" styleClass="w-3rem h-3rem" />
+    </div>
+  }
+
+  @if (!cargandoDetalle && unidadSeleccionada) {
+    <div class="p-4">
+
+      <!-- ── 1. IDENTIFICACIÓN ─────────────────────────────── -->
+      <div class="border-round-lg overflow-hidden mb-4"
+           style="border: 1px solid var(--p-surface-200);">
+        <div class="px-3 py-2 font-bold text-sm text-white"
+             style="background: #2c5f8d; letter-spacing:.04em;">
+          IDENTIFICACIÓN DEL EQUIPO
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:.85rem;">
+          <tbody>
+            <tr>
+              <td class="px-3 py-2 font-semibold" style="width:22%; background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Nombre</td>
+              <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ unidadSeleccionada.equipoAlmacen.nombre }}</td>
+              <td class="px-3 py-2 font-semibold" style="width:22%; background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Tipo</td>
+              <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ unidadSeleccionada.equipoAlmacen.tipo }}</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Marca</td>
+              <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ unidadSeleccionada.equipoAlmacen.marca }}</td>
+              <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Modelo</td>
+              <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ unidadSeleccionada.equipoAlmacen.modelo }}</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Serial</td>
+              <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ unidadSeleccionada.serial ?? '—' }}</td>
+              <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Placa</td>
+              <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ unidadSeleccionada.placa ?? '—' }}</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Fecha adquisición</td>
+              <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ unidadSeleccionada.fechaAdquisicion ?? '—' }}</td>
+              <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Garantía hasta</td>
+              <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ unidadSeleccionada.garantia ?? '—' }}</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Valor</td>
+              <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">
+                {{ unidadSeleccionada.valor !== null && unidadSeleccionada.valor !== undefined ? ('$' + (unidadSeleccionada.valor | number:'1.0-0')) : '—' }}
+              </td>
+              <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Accesorios</td>
+              <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ nombreAccesorios(unidadSeleccionada.accesorios) }}</td>
+            </tr>
+            @if (unidadSeleccionada.observaciones) {
+              <tr>
+                <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50);">Observaciones</td>
+                <td class="px-3 py-2" colspan="3" style="background:var(--p-surface-0);">{{ unidadSeleccionada.observaciones }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── 2. ASIGNACIÓN AL LABORATORIO ─────────────────── -->
+      <div class="border-round-lg overflow-hidden mb-4"
+           style="border: 1px solid var(--p-surface-200);">
+        <div class="px-3 py-2 font-bold text-sm text-white"
+             style="background: #2c5f8d; letter-spacing:.04em;">
+          ASIGNACIÓN AL LABORATORIO
+        </div>
+        @if (asignacionActual) {
+          <table style="width:100%; border-collapse:collapse; font-size:.85rem;">
+            <tbody>
+              <tr>
+                <td class="px-3 py-2 font-semibold" style="width:22%; background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Aula</td>
+                <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ asignacionActual.laboratorio.nomAula }}</td>
+                <td class="px-3 py-2 font-semibold" style="width:22%; background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Tipo</td>
+                <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ asignacionActual.laboratorio.tipoAula }}</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Bloque</td>
+                <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ asignacionActual.laboratorio.nomBloque }} ({{ asignacionActual.laboratorio.codBloque }})</td>
+                <td class="px-3 py-2 font-semibold" style="background:var(--p-surface-50); border-bottom:1px solid var(--p-surface-200);">Responsable</td>
+                <td class="px-3 py-2" style="background:var(--p-surface-0); border-bottom:1px solid var(--p-surface-200);">{{ asignacionActual.responsable ?? '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        } @else {
+          <div class="px-3 py-3 text-sm" style="color: var(--p-surface-500);">
+            <i class="pi pi-info-circle mr-2"></i>Sin asignación activa a laboratorio.
+          </div>
+        }
+      </div>
+
+      <!-- ── 3. HISTORIAL DE MANTENIMIENTOS ───────────────── -->
+      <div class="border-round-lg overflow-hidden mb-4"
+           style="border: 1px solid var(--p-surface-200);">
+        <div class="px-3 py-2 font-bold text-sm text-white"
+             style="background: #2c5f8d; letter-spacing:.04em;">
+          HISTORIAL DE MANTENIMIENTOS ({{ mantenimientos.length }})
+        </div>
+        @if (mantenimientos.length > 0) {
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:.83rem;">
+              <thead>
+                <tr style="background:var(--p-surface-100);">
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">Tipo</th>
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">F. Programada</th>
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">F. Realizada</th>
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">Estado</th>
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">Responsable</th>
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">Observaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (m of mantenimientos; track m.id; let i = $index) {
+                  <tr [style]="{ background: i % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-50)' }">
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-200);">{{ m.tipoMantenimiento }}</td>
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-200);">{{ m.fechaProgramada }}</td>
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-200);">{{ m.fechaRealizada ?? '—' }}</td>
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-200);">
+                      <span class="border-round px-2 py-1 text-xs font-semibold"
+                            [style]="{ background: colorEstado(m.estado).bg, color: colorEstado(m.estado).text }">
+                        {{ etiquetaEstado(m.estado) }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-200);">{{ m.responsable ?? '—' }}</td>
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-200);">{{ m.observaciones ?? '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="px-3 py-3 text-sm" style="color: var(--p-surface-500);">
+            <i class="pi pi-info-circle mr-2"></i>Sin registros de mantenimiento.
+          </div>
+        }
+      </div>
+
+      <!-- ── 4. HISTORIAL DE RESERVAS Y DEVOLUCIONES ──────── -->
+      <div class="border-round-lg overflow-hidden mb-4"
+           style="border: 1px solid var(--p-surface-200);">
+        <div class="px-3 py-2 font-bold text-sm text-white"
+             style="background: #2c5f8d; letter-spacing:.04em;">
+          HISTORIAL DE RESERVAS Y DEVOLUCIONES ({{ totalReservas }})
+        </div>
+        @if (historialReservas.length > 0) {
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:.83rem;">
+              <thead>
+                <tr style="background:var(--p-surface-100);">
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">Fecha</th>
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">Horario</th>
+                  <th class="px-3 py-2 text-center" style="border-bottom:2px solid var(--p-surface-200);">Asistentes</th>
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">Devuelta</th>
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">Estado devolución</th>
+                  <th class="px-3 py-2 text-left" style="border-bottom:2px solid var(--p-surface-200);">Observaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (fila of historialReservas; track fila.reserva.id; let i = $index) {
+                  <tr [style]="{ background: i % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-50)' }">
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-100);">{{ fila.reserva.fecha }}</td>
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-100);">{{ fila.reserva.horaInicio }} – {{ fila.reserva.horaFin }}</td>
+                    <td class="px-3 py-2 text-center" style="border-bottom:1px solid var(--p-surface-100);">{{ fila.reserva.estudiantesBeneficiados ?? 0 }}</td>
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-100);">
+                      <span class="border-round px-2 py-1 text-xs font-semibold"
+                            [style]="{ background: fila.reserva.devuelta ? 'var(--p-green-100)' : 'var(--p-surface-200)',
+                                       color:      fila.reserva.devuelta ? 'var(--p-green-700)' : 'var(--p-surface-600)' }">
+                        {{ fila.reserva.devuelta ? 'Sí' : 'No' }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-100);">
+                      <span class="border-round px-2 py-1 text-xs font-semibold"
+                            [style]="{ background: colorEstadoDev(fila.estadoDevolucion).bg,
+                                       color:      colorEstadoDev(fila.estadoDevolucion).text }">
+                        {{ fila.estadoDevolucion }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-2" style="border-bottom:1px solid var(--p-surface-100);">{{ fila.observacionesDevolucion }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="px-3 py-3 text-sm" style="color: var(--p-surface-500);">
+            <i class="pi pi-info-circle mr-2"></i>Sin registros de reservas para este equipo.
+          </div>
+        }
+      </div>
+
+      <!-- ── 5. RESUMEN ────────────────────────────────────── -->
+      <div class="border-round-lg overflow-hidden mb-4"
+           style="border: 1px solid var(--p-surface-200);">
+        <div class="px-3 py-2 font-bold text-sm text-white"
+             style="background: #2c5f8d; letter-spacing:.04em;">
+          RESUMEN
+        </div>
+        <div class="flex gap-3 p-3">
+
+          <!-- Recuadro Mantenimientos -->
+          <div class="flex-1 border-round-lg overflow-hidden"
+               style="border: 2px solid var(--p-primary-200);">
+            <div class="px-3 py-2 font-semibold text-sm text-white text-center"
+                 style="background: var(--p-primary-600);">
+              Mantenimientos
+            </div>
+            <div class="flex p-2 gap-2">
+              <div class="flex-1 text-center py-2">
+                <div class="text-2xl font-bold" style="color: var(--p-primary-600);">{{ totalMantenimientos }}</div>
+                <div class="text-xs mt-1" style="color: var(--p-surface-500);">Total</div>
+              </div>
+              <div style="width:1px; background: var(--p-surface-200);"></div>
+              <div class="flex-1 text-center py-2">
+                <div class="text-2xl font-bold" style="color: var(--p-green-600);">{{ completados }}</div>
+                <div class="text-xs mt-1" style="color: var(--p-surface-500);">Completados</div>
+              </div>
+              <div style="width:1px; background: var(--p-surface-200);"></div>
+              <div class="flex-1 text-center py-2">
+                <div class="text-2xl font-bold" style="color: var(--p-orange-600);">{{ pendientes }}</div>
+                <div class="text-xs mt-1" style="color: var(--p-surface-500);">Pendientes</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recuadro Reservas y Devoluciones -->
+          <div class="flex-1 border-round-lg overflow-hidden"
+               style="border: 2px solid var(--p-blue-200);">
+            <div class="px-3 py-2 font-semibold text-sm text-white text-center"
+                 style="background: var(--p-blue-600);">
+              Reservas y Devoluciones
+            </div>
+            <div class="flex p-2 gap-2">
+              <div class="flex-1 text-center py-2">
+                <div class="text-2xl font-bold" style="color: var(--p-blue-600);">{{ totalReservas }}</div>
+                <div class="text-xs mt-1" style="color: var(--p-surface-500);">Reservas</div>
+              </div>
+              <div style="width:1px; background: var(--p-surface-200);"></div>
+              <div class="flex-1 text-center py-2">
+                <div class="text-2xl font-bold" style="color: var(--p-teal-600);">{{ reservasDevueltas }}</div>
+                <div class="text-xs mt-1" style="color: var(--p-surface-500);">Devueltas</div>
+              </div>
+              <div style="width:1px; background: var(--p-surface-200);"></div>
+              <div class="flex-1 text-center py-2">
+                <div class="text-2xl font-bold" style="color: var(--p-yellow-600);">{{ reservasConObs }}</div>
+                <div class="text-xs mt-1" style="color: var(--p-surface-500);">Con obs.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Botón PDF ─────────────────────────────────────── -->
+      <div class="flex justify-content-end">
+        <button pButton type="button"
+                icon="pi pi-file-pdf"
+                label="Descargar PDF"
+                class="p-button-danger"
+                [loading]="descargandoPdf"
+                (click)="descargarPdf()">
+        </button>
+      </div>
+
+    </div>
+  }
+
+</p-dialog>

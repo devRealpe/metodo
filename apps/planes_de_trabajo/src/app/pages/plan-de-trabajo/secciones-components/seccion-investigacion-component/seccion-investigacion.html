@@ -1,0 +1,158 @@
+<div class="table-content" [style]="{ padding: '1rem' }">
+  <div [style]="{
+      background: 'var(--p-surface-50)',
+      border: '3px solid var(--p-surface-200)',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      transition: 'all var(--transition-normal)',
+    }">
+
+    <div [style]="{
+        background: '#0068AD',
+        color: 'white',
+        padding: '1.5rem',
+      }">
+      <h3 class="text-lg font-semibold mb-0">
+        {{ seccionHijo.nombre }}
+      </h3>
+    </div>
+
+    <div [style]="{ padding: '1.5rem' }">
+      <p-table [value]="investigaciones" [loading]="cargando" styleClass="p-datatable-sm" [style]="{
+          color: 'var(--p-text-color)',
+          background: 'var(--p-surface-50)'
+        }">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd; width: 3rem;">
+            </th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Grupo de Investigación</th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              COD</th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Nombre del Proyecto</th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Momento</th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd; min-width: 200px;">
+              Productos Esperados</th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd;">
+              Horas</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-investigacion>
+          <tr class="detail-row"
+            [style]="{background: 'var(--p-surface-50)',transition: 'background-color var(--transition-fast)'}">
+            <td style="text-align: center; vertical-align: middle;">
+              <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" size="small"
+                [loading]="eliminando[investigacion.id]" [disabled]="eliminando[investigacion.id]"
+                (onClick)="eliminarInvestigacion(investigacion.id)" pTooltip="Eliminar investigación"
+                tooltipPosition="top" [style]="{transition: 'all var(--transition-fast)',width: '2rem',height: '2rem'}">
+              </p-button>
+            </td>
+            <td style="text-align: center">{{ investigacion.grupo.sigla }}</td>
+            <td style="text-align: center">{{ investigacion.codigo }}</td>
+            <td style="text-align: center">{{ investigacion.nombreProyecto }}</td>
+            <td style="text-align: center">{{ investigacion.momentoInvestigacion.nombre }}</td>
+            <td style="text-align: center; padding: 0.5rem;">
+              <div class="flex flex-col gap-2 items-center">
+                <div class="w-full">
+                  @if (investigacion.productos && investigacion.productos.length > 0) {
+                  <div class="flex flex-wrap gap-1 justify-center">
+                    @for (producto of investigacion.productos; track producto.id) {
+                    <div class="flex items-center gap-1 px-2 py-1 rounded-md text-xs"
+                      [style]="{background: 'var(--p-surface-100)',border: '1px solid var(--p-surface-200)',transition: 'all var(--transition-fast)'}">
+                      <span>{{ producto.nombre }}</span>
+                      <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" size="small"
+                        [loading]="eliminandoProducto[producto.id]" [disabled]="eliminandoProducto[producto.id]"
+                        (onClick)="eliminarProducto(producto.id, investigacion.id)"
+                        [style]="{width: '1rem', height: '1rem', padding: '0',transition: 'all var(--transition-fast)'}"
+                        pTooltip="Eliminar producto" tooltipPosition="top">
+                      </p-button>
+                    </div>
+                    }
+                  </div>
+                  } @else {
+                  <span class="text-xs" style="color: var(--p-text-muted-color);">Sin productos</span>
+                  }
+                </div>
+
+                <p-button icon="pi pi-plus" [rounded]="true" [outlined]="true" severity="success" size="small"
+                  (onClick)="abrirDialogoProducto(investigacion)" pTooltip="Agregar producto esperado"
+                  tooltipPosition="top" label="Agregar"
+                  [style]="{transition: 'all var(--transition-fast)',fontSize: '0.875rem',background: 'var(--p-surface-50)',border: 'none',color: 'var(--p-text-color)'}">
+                </p-button>
+              </div>
+            </td>
+            <td class="h-full" style="vertical-align: middle;">
+              <div class="flex items-center justify-center h-full">
+                <p-inputnumber [ngModel]="investigacion.horas" (ngModelChange)="onCambioHoras(investigacion.id, $event)"
+                  [min]="0" [max]="getMaxHoras(investigacion.id)" [showButtons]="false" buttonLayout="vertical"
+                  spinnerMode="vertical" inputId="vertical"
+                  [inputStyle]="{width: '3rem', textAlign: 'center',background: 'var(--p-surface-50)',color: 'var(--p-text-color)',border: 'none',boxShadow: 'none',transition: 'all var(--transition-fast)'}"
+                  class="font-bold">
+                </p-inputnumber>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+          <tr>
+            <td [attr.colspan]="7" style="padding: 0; border-top: 2px solid #ddd;">
+              <button type="button" class="w-full text-center font-bold py-3 cursor-pointer transition-all"
+                [style]="{background: 'var(--p-surface-50)', border: '1px solid var(--p-surface-border)', color: 'var(--p-text-color)', transition: 'all var(--transition-normal)', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', borderRadius: '0'}"
+                (click)="abrirDialogo()">
+                <i class="pi pi-plus mr-1"></i>
+                <span> Agregar Investigación Extensión</span>
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr [style]="{background: 'var(--p-surface-50)', transition: 'background-color var(--transition-fast)'}">
+            <td colspan="7" class="py-3" [style]="{ textAlign: 'center' }">
+              No hay investigaciones registradas
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <p-table [showGridlines]="true" styleClass="p-datatable-sm" [tableStyle]="{ width: 'auto', marginLeft: 'auto' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd; width: 7rem;">
+              <p class="font-bold">Subtotal</p>
+            </th>
+            <th
+              style="background: var(--p-surface-50); color: var(--p-text-color); text-align: center; border-bottom: 2px solid #ddd; width: 7rem;">
+              <p class="font-bold">{{ calcularSubtotal() }}</p>
+            </th>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<app-modal-crear-investigacion [(visible)]="displayDialog" [guardando]="guardando" [seccionHijo]="seccionHijo"
+  [planDeTrabajo]="planDeTrabajo" [gruposInvestigacion]="gruposInvestigacion"
+  [momentosInvestigacion]="momentosInvestigacion" (guardar)="onGuardarInvestigacion($event)"
+  (cancelar)="cerrarDialogo()">
+</app-modal-crear-investigacion>
+
+<app-modal-crear-producto-esperado [(visible)]="displayProductoDialog" [guardando]="guardandoProducto"
+  [investigacion]="investigacionSeleccionada!" [tiposProducto]="tiposProducto" (guardar)="onGuardarProducto($event)"
+  (cancelar)="cerrarDialogoProducto()">
+</app-modal-crear-producto-esperado>

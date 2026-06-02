@@ -1,0 +1,104 @@
+:host ::ng-deep {
+  .observaciones-dialog {
+    .p-dialog {
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      background-color: var(--p-surface-0);
+      border: 2px solid var(--p-surface-200);
+    }
+
+    .p-dialog-header {
+      background: var(--p-surface-0) !important;
+      padding: 1.25rem 1.5rem;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      border-bottom: 2px solid var(--p-surface-200);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .dialog-header {
+        width: 100%;
+        text-align: center;
+        position: relative;
+
+        .dialog-title {
+          font-size: 1.125rem !important;
+          font-weight: 700 !important;
+          letter-spacing: 0.5px !important;
+          text-transform: uppercase !important;
+          color: var(--p-text-color) !important;
+        }
+
+        .custom-close-button {
+          position: absolute !important;
+          right: 0 !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          width: 2rem !important;
+          height: 2rem !important;
+          color: var(--p-text-color) !important;
+
+          &:hover {
+            background-color: var(--p-surface-100) !important;
+          }
+
+          .p-button-icon {
+            font-size: 1.1rem !important;
+          }
+        }
+      }
+    }
+
+    .p-dialog-content {
+      padding: 1.5rem;
+      background-color: var(--p-surface-0);
+
+      textarea {
+        width: 100%;
+        padding: 0.875rem;
+        border: 1px solid var(--p-surface-300);
+        border-radius: 8px;
+        background-color: var(--p-surface-50);
+        color: var(--p-text-color);
+        font-family: inherit;
+        transition: all 0.2s ease;
+        resize: none;
+
+        &:focus {
+          outline: none;
+          border-color: var(--p-primary-500);
+          box-shadow: 0 0 0 3px rgba(0, 113, 188, 0.1);
+          background-color: var(--p-surface-0);
+        }
+
+        &::placeholder {
+          color: var(--p-text-muted-color);
+        }
+      }
+    }
+
+    .p-dialog-footer {
+      background-color: var(--p-surface-0) !important;
+      padding: 1rem 1.5rem;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      border-top: 1px solid var(--p-surface-200);
+
+      button {
+        padding: 0.625rem 1.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-1px);
+        }
+
+        &:active:not(:disabled) {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+}

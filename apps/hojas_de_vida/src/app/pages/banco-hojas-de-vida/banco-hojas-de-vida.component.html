@@ -1,0 +1,137 @@
+<p-panel >
+  <div class="mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <p class="text-3xl font-bold mb-2 flex items-center gap-3">
+          Banco de Hojas de Vida
+        </p>
+        <p>
+          Visualiza y gestiona todas las hojas de vida registradas en el sistema
+        </p>
+      </div>
+      
+      <button 
+        pButton 
+        pRipple
+        type="button"
+        icon="pi pi-refresh"
+        label="Actualizar"
+        class="p-button-outlined"
+        (click)="refrescarDatos()"
+        [loading]="loading"
+      ></button>
+    </div>
+  </div>
+
+  <lib-info-table
+    [data]="personas"
+    [columns]="tableColumns"
+    [actions]="tableActions"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50, 100]"
+    [globalFilterFields]="globalFilterFields"
+    [showGlobalFilter]="true"
+    [showTableHeader]="true"
+    [tableHeaderTitle]="'Hojas de Vida Registradas'"
+    [tableHeaderSubtitle]="personas.length + ' candidatos en el sistema'"
+    [tableHeaderIcon]="'pi pi-id-card'"
+    [tableHeaderBadge]="'Actualizado'"
+    [striped]="true"
+    [hoverable]="true"
+    [emptyTitle]="'No hay hojas de vida registradas'"
+    [emptySubtitle]="'No se encontraron candidatos en el sistema'"
+    [emptyIcon]="'pi pi-inbox'"
+  >
+    <ng-template #customCell let-row="row" let-column="column" let-value="value">
+      <ng-container *ngIf="column.field === 'foto'">
+        <div class="flex items-center justify-center">
+          <lib-image-viewer-with-cache
+            *ngIf="row.id"
+            [personaId]="row.id"
+            [fotoUrl]="environment.apiHojasDeVida + '/hojas-de-vida/personas/' + row.id + '/foto'"
+            [alt]="obtenerNombreCompleto(row)"
+            width="50px"
+            height="50px"
+            [rounded]="true"
+            [initials]="obtenerIniciales(row)"
+            placeholderText="" />
+        </div>
+      </ng-container>
+    </ng-template>
+  </lib-info-table>
+
+  <p-toast position="top-right"></p-toast>
+</p-panel>
+
+<p-dialog 
+  [(visible)]="displayDialog" 
+  [modal]="true" 
+  [style]="{ width: '90vw', maxWidth: '1200px' }"
+  [closable]="false"
+  [dismissableMask]="true"
+  styleClass="cv-dialog"
+  (onHide)="cerrarDialog()"
+>
+  <ng-template pTemplate="header">
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <i class="pi pi-id-card text-2xl text-blue-500"></i>
+        <span class="text-xl font-bold">Hoja de Vida Completa</span>
+      </div>
+      <button 
+        type="button" 
+        pButton 
+        pRipple 
+        icon="pi pi-times" 
+        (click)="cerrarDialog()" 
+        class="p-dialog-header-close [&_.pi]:!opacity-100 [&_.pi]:!visible [&_i]:!opacity-100 [&_i]:!visible hover:[&_.pi]:!opacity-100 hover:[&_i]:!opacity-100">
+      </button>
+    </div>
+  </ng-template>
+  
+  <div class="cv-dialog-content" style="max-height: 75vh; overflow-y: auto;">
+    <app-cv-viewer 
+      *ngIf="personaSeleccionada" 
+      [persona]="personaSeleccionada"
+      [loading]="false"
+    ></app-cv-viewer>
+  </div>
+  
+  <ng-template pTemplate="footer">
+    <button 
+      pButton 
+      pRipple
+      type="button"
+      icon="pi pi-times"
+      label="Cerrar"
+      class="p-button-text"
+      (click)="cerrarDialog()"
+    ></button>
+    <button 
+      pButton 
+      pRipple
+      type="button"
+      icon="pi pi-file-pdf"
+      label="Descargar PDF Básico"
+      class="p-button-outlined p-button-danger"
+      (click)="descargarPDF(personaSeleccionada!)"
+      [loading]="generatingPdf"
+      [disabled]="generatingPdf || generatingPdfWithAttachments"
+      *ngIf="personaSeleccionada"
+    ></button>
+    <button 
+      pButton 
+      pRipple
+      type="button"
+      icon="pi pi-file-pdf"
+      label="Descargar PDF Completo"
+      class="p-button-danger"
+      (click)="descargarPDFConAdjuntos(personaSeleccionada!)"
+      [loading]="generatingPdfWithAttachments"
+      [disabled]="generatingPdf || generatingPdfWithAttachments"
+      *ngIf="personaSeleccionada"
+    ></button>
+  </ng-template>
+</p-dialog>

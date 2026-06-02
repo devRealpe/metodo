@@ -1,0 +1,135 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{
+    background: 'var(--p-surface-0)',
+    width: '90%',
+    maxWidth: '600px'
+  }"
+  (onHide)="onClose()"
+>
+  <ng-template pTemplate="header">
+    <div class="dialog-header">
+      <h2 class="dialog-title">Activar novedades para un Plan de Trabajo</h2>
+    </div>
+  </ng-template>
+
+  <div class="p-3">
+    <div class="mb-4">
+      <p class="text-sm mb-3" [style.color]="'var(--p-text-muted)'">
+        Seleccione primero el periodo y luego el plan de trabajo para el cual
+        desea activar el registro de novedades.
+      </p>
+    </div>
+
+    <!-- Filtro de Periodo -->
+    <div class="mb-3">
+      <label
+        class="block mb-2 text-sm font-medium"
+        [style.color]="'var(--p-text-color)'"
+        >Periodo</label
+      >
+      <p-select
+        [options]="periodosOpciones"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccione un periodo"
+        class="w-full"
+        [(ngModel)]="periodoSeleccionado"
+        (onChange)="onPeriodoChange()"
+        [scrollHeight]="'200px'"
+        [virtualScroll]="false"
+        appendTo="body"
+      >
+      </p-select>
+    </div>
+
+    <div class="mb-3">
+      <p class="text-sm mb-3" [style.color]="'var(--p-text-muted)'">
+        Seleccione el plan de trabajo para el cual desea activar el registro de
+        novedades.
+      </p>
+    </div>
+
+    <div class="mb-3">
+      <label
+        class="block mb-2 text-sm font-medium"
+        [style.color]="'var(--p-text-color)'"
+        >Plan de trabajo</label
+      >
+      <p-select
+        [options]="planesDisponiblesFiltrados"
+        optionLabel="label"
+        optionValue="id"
+        placeholder="Seleccione un plan de trabajo"
+        class="w-full"
+        [(ngModel)]="planSeleccionadoId"
+        [scrollHeight]="'200px'"
+        [virtualScroll]="false"
+        [disabled]="
+          !periodoSeleccionado || planesDisponiblesFiltrados.length === 0
+        "
+        appendTo="body"
+      >
+        <ng-template pTemplate="empty">
+          <div class="p-3 text-center" [style.color]="'var(--p-text-muted)'">
+            {{
+              !periodoSeleccionado
+                ? 'Seleccione un periodo primero'
+                : 'No hay planes disponibles para este periodo'
+            }}
+          </div>
+        </ng-template>
+      </p-select>
+      <small
+        *ngIf="periodoSeleccionado && planesDisponiblesFiltrados.length === 0"
+        class="block mt-2"
+        [style.color]="'var(--p-text-muted)'"
+      >
+        No se encontraron planes activos para el periodo seleccionado
+      </small>
+    </div>
+
+    <div class="mt-3">
+      <label
+        class="block mb-2 text-sm font-medium"
+        [style.color]="'var(--p-text-color)'"
+        >Operación realizada por</label
+      >
+      <input
+        pInputText
+        class="w-full"
+        [ngModel]="registradoPorNombreCedula"
+        disabled
+        [style]="{
+          background: 'var(--p-surface-100)',
+          color: 'var(--p-text-color)'
+        }"
+      />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        type="button"
+        pButton
+        label="Cancelar"
+        styleClass="mi-boton-cancelar"
+        (click)="onClose()"
+      ></button>
+
+      <button
+        type="button"
+        pButton
+        label="Activar Novedades"
+        styleClass="mi-boton-confirmar"
+        [disabled]="!puedeConfirmar()"
+        (click)="confirmar()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>

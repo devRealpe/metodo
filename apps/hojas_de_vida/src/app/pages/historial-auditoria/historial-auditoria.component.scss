@@ -1,0 +1,42 @@
+.historial-auditoria-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+pre {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.font-mono {
+  font-family: 'Courier New', monospace;
+}
+
+::ng-deep {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background-color: #f8f9fa;
+      color: #495057;
+      font-weight: 600;
+    }
+
+    .p-datatable-tbody > tr {
+      &:hover {
+        background-color: #f1f3f5;
+      }
+    }
+  }
+
+  .p-tag {
+    font-weight: 600;
+  }
+
+  .p-panel {
+    .p-panel-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+    }
+  }
+}

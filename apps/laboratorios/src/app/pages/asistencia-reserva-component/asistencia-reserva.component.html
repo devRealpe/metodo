@@ -1,0 +1,199 @@
+<p-toast key="asistencia-toast" position="top-right" [preventOpenDuplicates]="true"></p-toast>
+
+<div class="w-full overflow-x-hidden">
+  <div class="w-full max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
+
+    <!-- Encabezado -->
+    <div class="text-center mb-6">
+      <h2 class="text-xl sm:text-2xl font-bold mb-1" [style]="{ color: 'var(--p-text-color)' }">
+        <i class="pi pi-check-square mr-2"></i>Asistencia a Reserva
+      </h2>
+      <p class="text-sm sm:text-base" [style]="{ color: 'var(--p-text-muted-color)' }">
+        Registrar asistencia al laboratorio para reservas aprobadas del día de hoy
+      </p>
+      <p class="text-xs mt-1 font-mono" [style]="{ color: 'var(--p-text-muted-color)' }">
+        Fecha: {{ hoyStr }}
+      </p>
+    </div>
+
+    <!-- Buscar por cédula -->
+    <p-card [style]="{
+        'background': 'var(--p-surface-0)',
+        'border': '1px solid var(--p-border-color)',
+        'border-radius': '12px'
+      }">
+      <form [formGroup]="formCedula" class="grid gap-4">
+
+        <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-start">
+          <div class="min-w-0">
+            <app-input-component
+              label="Cédula / Identificación"
+              id="asist_identificacion"
+              formControlName="identificacion"
+              placeholder="Ingrese la cédula del usuario"
+              [maxlength]="20"
+              [ngClass]="{ 'p-invalid': invalidCedula('identificacion') }"
+              (keydown.enter)="buscarUsuario()">
+            </app-input-component>
+            <small *ngIf="invalidCedula('identificacion')" class="text-red-500 text-xs mt-1 block">
+              Identificación inválida (mínimo 4 caracteres alfanuméricos)
+            </small>
+          </div>
+          <p-button
+            label="Buscar"
+            icon="pi pi-search"
+            styleClass="mt-6"
+            [loading]="cargando"
+            [disabled]="!formCedula.get('identificacion')?.value || formCedula.get('identificacion')?.invalid"
+            (onClick)="buscarUsuario()">
+          </p-button>
+        </div>
+
+        <!-- Usuario encontrado -->
+        <div *ngIf="usuarioActual"
+          class="bg-blue-50 border border-blue-200 px-4 py-3 rounded-lg">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+              <i class="pi pi-user text-white text-lg"></i>
+            </div>
+            <div class="flex-1">
+              <p class="font-semibold text-blue-800">{{ usuarioActual.nombre }}</p>
+              <p class="text-xs text-blue-600">ID: {{ usuarioActual.identificacion }}</p>
+            </div>
+            <div *ngIf="usuarioActual.programa" class="text-right">
+              <p class="text-xs text-blue-500 uppercase">Programa</p>
+              <p class="text-sm font-medium text-blue-700">{{ usuarioActual.programa }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sin reservas -->
+        <div *ngIf="sinReservas"
+          class="bg-yellow-50 border border-yellow-300 px-4 py-3 rounded-lg flex items-start gap-2">
+          <i class="pi pi-exclamation-triangle text-yellow-500 mt-0.5"></i>
+          <div>
+            <p class="text-yellow-800 font-semibold text-sm">Sin reservas para hoy</p>
+            <p class="text-yellow-700 text-xs mt-1">
+              Este usuario no tiene reservas aprobadas para el día de hoy ({{ hoyStr }}).
+              Debe tener una reserva aprobada para poder registrar asistencia.
+            </p>
+          </div>
+        </div>
+
+        <!-- Reservas del día -->
+        <div *ngIf="reservasHoy.length > 0" class="space-y-3">
+          <p-divider></p-divider>
+          <h4 class="text-sm font-semibold flex items-center gap-2 mb-2">
+            <i class="pi pi-calendar text-indigo-600"></i>
+            Reservas aprobadas para hoy ({{ reservasHoy.length }})
+          </h4>
+
+          <div *ngFor="let reserva of reservasHoy"
+            class="border rounded-lg p-4 transition-all"
+            [ngClass]="{
+              'bg-green-50 border-green-200': reserva.yaRegistrado,
+              'bg-white border-gray-200 hover:border-blue-300 hover:shadow-sm': !reserva.yaRegistrado
+            }">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ reserva.laboratorio.nomAula || '—' }}
+                  </span>
+                  <span *ngIf="reserva.laboratorio.codAula" class="text-xs text-gray-400">
+                    ({{ reserva.laboratorio.codAula }})
+                  </span>
+                </div>
+                <div class="flex items-center gap-4 text-sm text-gray-600">
+                  <span>
+                    <i class="pi pi-clock mr-1"></i>
+                    {{ formatHora(reserva.horaInicio) }} – {{ formatHora(reserva.horaFin) }}
+                  </span>
+                  <span *ngIf="reserva.motivo">
+                    <i class="pi pi-bookmark mr-1"></i>
+                    {{ reserva.motivo }}
+                  </span>
+                  <span>
+                    <i class="pi pi-users mr-1"></i>
+                    {{ reserva.cantidadAsistentes }} asistente{{ reserva.cantidadAsistentes !== 1 ? 's' : '' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <p-tag *ngIf="reserva.yaRegistrado"
+                  value="Asistencia registrada" severity="success"
+                  [style]="{ 'font-weight': '600' }">
+                </p-tag>
+                <div *ngIf="!reserva.yaRegistrado" class="flex flex-col items-end gap-1">
+                  <p-button
+                    label="Registrar Asistencia"
+                    icon="pi pi-check"
+                    severity="success"
+                    [loading]="!!registrando[reserva.id!]"
+                    [disabled]="!esDentroDeHorario(reserva)"
+                    (onClick)="registrarAsistencia(reserva)">
+                  </p-button>
+                  <small *ngIf="!esDentroDeHorario(reserva)" class="text-xs text-orange-600 flex items-center gap-1">
+                    <i class="pi pi-clock text-xs"></i>{{ mensajeHorario(reserva) }}
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón limpiar -->
+        <div *ngIf="usuarioActual" class="flex justify-end mt-2">
+          <p-button label="Nueva consulta" icon="pi pi-refresh" severity="secondary"
+            [outlined]="true" (onClick)="limpiar()">
+          </p-button>
+        </div>
+
+      </form>
+    </p-card>
+
+    <!-- Historial de la sesión actual -->
+    <div *ngIf="registrosExitosos.length > 0" class="mt-6">
+      <div class="rounded-xl border-2 shadow-lg overflow-hidden" [style]="{
+          'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+          'border-color': 'var(--p-green-200)'
+        }">
+        <div class="px-6 py-3 border-b" [style]="{
+            'background': 'linear-gradient(135deg, var(--p-green-500), var(--p-green-600))'
+          }">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-bold text-white m-0">
+                <i class="pi pi-check-circle mr-2"></i>Registros de esta sesión
+              </h3>
+              <p class="text-white/80 text-xs m-0">{{ registrosExitosos.length }} asistencias registradas</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4">
+          <div *ngFor="let reg of registrosExitosos; let i = index"
+            class="flex items-center justify-between py-2 px-3 rounded-lg mb-1 text-sm"
+            [ngClass]="i % 2 === 0 ? 'bg-green-50' : 'bg-white'">
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center">
+                <i class="pi pi-check text-white text-xs"></i>
+              </div>
+              <div>
+                <span class="font-medium">{{ reg.nombre }}</span>
+                <span class="text-gray-500 ml-2 font-mono text-xs">{{ reg.identificacion }}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-sm font-medium text-green-700">{{ reg.laboratorio }}</span>
+              <span class="text-gray-400 mx-2">·</span>
+              <span class="text-xs text-gray-500">{{ reg.hora }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

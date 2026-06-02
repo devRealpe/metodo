@@ -1,0 +1,506 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<!-- Diálogo de Edición -->
+<p-dialog 
+  [(visible)]="mostrarDialogEdicion" 
+  [header]="'Editar: ' + (aulaSeleccionada?.nomAula || '')"
+  [modal]="true"
+  [style]="{width: '600px'}"
+  [draggable]="false"
+  [resizable]="false">
+  
+  <form [formGroup]="formEdicion" (ngSubmit)="guardarEdicion()">
+    <div class="space-y-3">
+      
+      <!-- Aula Padre -->
+      <div>
+        <app-select-component
+          label="Aula "
+          [options]="aulasOracleDropdown"
+          formControlName="idPadre"
+          placeholder="Ninguna"
+          [showClear]="true"
+          [filter]="true"
+        />
+      </div>
+
+      <!-- Bloque -->
+      <div>
+        <app-select-component
+          label="Bloque"
+          [options]="bloquesDropdown"
+          formControlName="bloqueSelector"
+          placeholder="Seleccione un bloque"
+          [showClear]="false"
+          [filter]="true"
+        />
+      </div>
+
+      <!-- Grid de 2 columnas -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <app-input-component
+            label="Código"
+            id="codAulaEdit"
+            formControlName="codAula"
+            placeholder="Ej: A101"
+          />
+        </div>
+
+        <div>
+          <app-input-component
+            label="Nombre"
+            id="nomAulaEdit"
+            formControlName="nomAula"
+            placeholder="Laboratorio de Física"
+          />
+        </div>
+      </div>
+
+      <!-- Grid de 2 columnas -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <app-select-component
+            label="Tipo de Aula"
+            [options]="tiposAulaDropdown"
+            formControlName="tipoAulaSelector"
+            placeholder="Seleccione tipo"
+            [showClear]="false"
+            [filter]="true"
+          />
+        </div>
+
+        <div>
+          <label for="numCapacidadEdit" class="block text-sm font-medium mb-1">Capacidad</label>
+          <p-inputNumber
+            inputId="numCapacidadEdit"
+            formControlName="numCapacidad"
+            [min]="1"
+            [max]="999"
+            placeholder="30"
+            class="w-full"
+            inputStyleClass="w-full"
+          />
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-end gap-2 mt-4 pt-3 border-t">
+        <p-button
+          label="Cancelar"
+          icon="pi pi-times"
+          severity="secondary"
+          [outlined]="true"
+          type="button"
+          (onClick)="cerrarDialogEdicion()"
+        />
+        <p-button
+          label="Guardar"
+          icon="pi pi-check"
+          severity="primary"
+          type="submit"
+          [disabled]="formEdicion.invalid"
+        />
+      </div>
+    </div>
+  </form>
+</p-dialog>
+
+<p-card class="w-full max-w-8xl mx-auto" [style]="{
+    'background': 'var(--p-surface-50)',
+    'border': '1px solid var(--p-border)',
+    'box-shadow': 'var(--p-elevation-2)'
+  }">
+  
+  <div class="mb-6">
+    <div class="p-6 rounded-xl border-2 shadow-lg" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+      }">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+          Gestión de Aulas y Laboratorios
+        </h2>
+        <p class="text-sm sm:text-base opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+            Utiliza el formulario para agregar nuevas aulas o editar las existentes. 
+            Las aulas se muestran en la tabla inferior, donde también puedes editarlas o eliminarlas.
+        </p>
+      </div>
+
+      <!-- Formulario -->
+      <div class="p-5 rounded-lg border" [style]="{
+          'background': 'var(--p-surface-0)',
+          'border-color': 'var(--p-border-color)'
+        }">
+        <div class="flex items-center gap-2 mb-5">
+          <h4 class="text-lg font-semibold m-0" [style]="{ color: 'var(--p-text-color)' }">
+            Nueva Aula
+          </h4>
+
+        </div>
+
+        <form [formGroup]="formAula" (ngSubmit)="guardar()">
+          <div class="space-y-5">
+            <!-- Campo Aula Padre - Ancho Completo -->
+            <div>
+              <app-select-component
+                label="Aula "
+                [options]="aulasOracleDropdown"
+                formControlName="idPadre"
+                placeholder="Seleccione un aula "
+                [showClear]="true"
+                [filter]="true"
+              />
+            </div>
+
+            <!-- Grid de 2 columnas para los demás campos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <!-- Selector de Bloque de Oracle -->
+              <div class="md:col-span-2">
+                <app-select-component
+                  label="Bloque"
+                  [options]="bloquesDropdown"
+                  formControlName="bloqueSelector"
+                  placeholder="Seleccione un bloque"
+                  [showClear]="true"
+                  [filter]="true"
+                />
+                <small *ngIf="formAula.get('bloqueSelector')?.invalid && formAula.get('bloqueSelector')?.touched" class="text-red-500 block mt-1">
+                  Debe seleccionar un bloque
+                </small>
+                <div *ngIf="formAula.get('codBloque')?.value" class="mt-2 p-2 rounded" [style]="{ 'background': 'var(--p-surface-100)', 'border': '1px solid var(--p-border-color)' }">
+                  <small class="block" [style]="{ color: 'var(--p-text-color)' }">
+                    <strong>Código:</strong> {{ formAula.get('codBloque')?.value }} | 
+                    <strong>Nombre:</strong> {{ formAula.get('nomBloque')?.value }}
+                  </small>
+                </div>
+              </div>
+
+              <div>
+                <app-input-component
+                  label="Código Aula"
+                  id="codAula"
+                  formControlName="codAula"
+                  placeholder="Ej: A101"
+                />
+              </div>
+
+              <div>
+                <app-input-component
+                  label="Nombre Aula"
+                  id="nomAula"
+                  formControlName="nomAula"
+                  placeholder="Ejemplo: Laboratorio de Física"
+                />
+              </div>
+
+              <div>
+                <app-select-component
+                  label="Tipo de Aula"
+                  [options]="tiposAulaDropdown"
+                  formControlName="tipoAulaSelector"
+                  placeholder="Seleccione un tipo de aula"
+                  [showClear]="true"
+                  [filter]="true"
+                />
+               
+              </div>
+
+              <div>
+                <label for="numCapacidad" class="block text-sm font-medium mb-2" [style]="{ color: 'var(--p-text-color)' }">
+                  Capacidad <span class="text-red-500">*</span>
+                </label>
+                <p-inputNumber
+                  inputId="numCapacidad"
+                  formControlName="numCapacidad"
+                  [min]="1"
+                  [showButtons]="true"
+                  placeholder="N° de personas"
+                  class="w-full"
+                  inputStyleClass="w-full"
+                  [style]="{
+                    'height': '2.75rem'
+                  }"
+                ></p-inputNumber>
+                <small class="text-red-500 block mt-1" *ngIf="formAula.get('numCapacidad')?.invalid && formAula.get('numCapacidad')?.touched">
+                  La capacidad debe ser mínimo 1
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6">
+            <p-button
+              type="submit"
+              [label]="modoEdicion ? 'Actualizar' : 'Guardar'"
+              icon="pi pi-save"
+              [disabled]="formAula.invalid || cargando"
+              [loading]="cargando"
+              [style]="{
+                'height': '3rem',
+                'font-weight': '600',
+                'border-radius': '8px'
+              }"
+            />
+            <p-button
+              *ngIf="modoEdicion"
+              type="button"
+              label="Cancelar"
+              icon="pi pi-times"
+              severity="secondary"
+              [outlined]="true"
+              (onClick)="cancelar()"
+              [style]="{
+                'height': '3rem',
+                'border-radius': '8px'
+              }"
+            />
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Aulas -->
+  <div class="rounded-xl border-2 shadow-lg overflow-hidden" [style]="{
+      'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+      'border-color': 'var(--p-primary-200)',
+      'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+    }">
+    <div class="px-6 py-4 border-b" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+        'border-color': 'var(--p-primary-300)'
+      }">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div>
+            <h3 class="text-xl font-bold text-white m-0"> Laboratorios Registrados</h3>
+            <p class="text-white/80 text-sm m-0">
+               Laboratorios 
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="bg-white/20 px-3 py-1 rounded-full text-white text-sm font-medium">
+            Solo Hijas
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div *ngIf="cargando"
+        class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm z-10"
+        [style]="{ 'background': 'rgba(255,255,255,0.95)' }">
+        <p-progressSpinner styleClass="w-12 h-12" [style]="{ 'animation-duration': '1s' }"></p-progressSpinner>
+        <p class="mt-4 text-sm font-medium opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Cargando aulas...
+        </p>
+      </div>
+
+      <div class="p-4">
+        <p-table 
+          [value]="aulasPostgres" 
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[10, 25, 50]"
+          [tableStyle]="{ 'min-width': '980px' }"
+          sortMode="multiple"
+          class="overflow-x-auto"
+          [style]="{
+            '--p-datatable-header-background': 'var(--p-surface-100)',
+            '--p-datatable-header-border-color': 'var(--p-border-color)',
+            '--p-datatable-row-background': 'var(--p-surface-0)',
+            '--p-datatable-row-hover-background': 'var(--p-surface-50)'
+          }"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="codAula" class="font-semibold" style="width: 120px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Código
+                </div>
+                <p-sortIcon field="codAula"></p-sortIcon>
+              </th>
+              <th pSortableColumn="nomAula" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Nombre
+                </div>
+                <p-sortIcon field="nomAula"></p-sortIcon>
+              </th>
+              <th pSortableColumn="nomBloque" class="font-semibold" style="width: 150px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Bloque
+                </div>
+                <p-sortIcon field="nomBloque"></p-sortIcon>
+              </th>
+              <th pSortableColumn="tipoAula" class="font-semibold" style="width: 150px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Tipo
+                </div>
+                <p-sortIcon field="tipoAula"></p-sortIcon>
+              </th>
+              <th pSortableColumn="numCapacidad" class="text-center font-semibold" style="width: 110px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center justify-center gap-2">
+                  Capacidad
+                </div>
+                <p-sortIcon field="numCapacidad"></p-sortIcon>
+              </th>
+              <th class="font-semibold" style="width: 200px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center gap-2">
+                  Aula 
+                </div>
+              </th>
+              <th class="text-center font-semibold" style="width: 140px" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)',
+                  'color': 'var(--p-text-color)',
+                  'padding': '1rem 0.75rem'
+                }">
+                <div class="flex items-center justify-center gap-2">
+                  Acciones
+                </div>
+              </th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-aula let-rowIndex="rowIndex">
+            <tr class="transition-all duration-200 hover:shadow-sm" [style]="{
+                'background': rowIndex % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-25)',
+                'border-bottom': '1px solid var(--p-border-color)'
+              }">
+              <td class="py-4 px-3">
+                <div class="font-semibold px-3 py-1 rounded-lg inline-block" [style]="{
+                    'background': 'var(--p-primary-50)',
+                    'color': 'var(--p-primary-700)'
+                  }">
+                  {{ aula.codAula }}
+                </div>
+              </td>
+              <td class="py-4 px-3">
+                <div class="font-medium" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ aula.nomAula }}
+                </div>
+              </td>
+              <td class="py-4 px-3">
+                <div class="opacity-70" [style]="{ color: 'var(--p-text-color)' }">
+                  {{ aula.nomBloque }}
+                </div>
+              </td>
+              <td class="py-4 px-3">
+                <div class="px-2 py-1 rounded-lg inline-block text-sm font-medium" [style]="{
+                    'background': aula.tipoAula === 'Laboratorio' ? 'var(--p-blue-50)' : 
+                                 aula.tipoAula === 'Oficina' ? 'var(--p-green-50)' : 
+                                 'var(--p-orange-50)',
+                    'color': aula.tipoAula === 'Laboratorio' ? 'var(--p-blue-700)' : 
+                            aula.tipoAula === 'Oficina' ? 'var(--p-green-700)' : 
+                            'var(--p-orange-700)'
+                  }">
+                  {{ aula.tipoAula }}
+                </div>
+              </td>
+              <td class="py-4 px-3 text-center">
+                <div class="font-bold text-lg" [style]="{ color: 'var(--p-primary-600)' }">
+                  {{ aula.numCapacidad }}
+                </div>
+              </td>
+              <td class="py-4 px-3">
+                <div *ngIf="aula.idPadre" class="flex items-center gap-2">
+                  <span class="text-sm" [style]="{ color: 'var(--p-text-color)' }">
+                    {{ obtenerNombreAulaPadre(aula.idPadre) }}
+                  </span>
+                </div>
+                <div *ngIf="!aula.idPadre" class="flex items-center gap-2 opacity-50">
+                  <span class="text-sm">Sin padre</span>
+                </div>
+              </td>
+              <td class="py-4 px-3">
+                <div class="flex items-center justify-center gap-2">
+                  <button 
+                    pButton
+                    icon="pi pi-pencil" 
+                    [rounded]="true"
+                    [text]="true"
+                    severity="info"
+                    size="small"
+                    pTooltip="Editar"
+                    tooltipPosition="top"
+                    aria-label="Editar"
+                    (click)="editar(aula)"
+                    [style]="{
+                      'width': '2.5rem',
+                      'height': '2.5rem'
+                    }"
+                  ></button>
+                  <button 
+                    pButton
+                    icon="pi pi-trash" 
+                    [rounded]="true"
+                    [text]="true"
+                    severity="danger"
+                    size="small"
+                    pTooltip="Eliminar"
+                    tooltipPosition="top"
+                    aria-label="Eliminar"
+                    (click)="eliminar(aula)"
+                    [style]="{
+                      'width': '2.5rem',
+                      'height': '2.5rem'
+                    }"
+                  ></button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7" class="text-center py-8">
+                <div class="flex flex-col items-center gap-3">
+                  <p class="text-lg font-medium opacity-60" [style]="{ color: 'var(--p-text-color)' }">
+                    No hay aulas registradas
+                  </p>
+                  <p class="text-sm opacity-50" [style]="{ color: 'var(--p-text-color)' }">
+                    Crea tu primera aula usando el formulario superior
+                  </p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</p-card>

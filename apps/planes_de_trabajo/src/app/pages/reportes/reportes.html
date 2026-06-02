@@ -1,0 +1,250 @@
+<p-toast />
+
+<div class="page-header mb-4">
+  <h1
+    class="text-2xl sm:text-3xl font-bold"
+    [style]="{'color': 'var(--p-text-color)'}"
+  >
+    Reportes de Auditoría
+  </h1>
+</div>
+
+<!-- Card para los selectores -->
+<p-card
+  class="mb-4"
+  [style]="{ 
+  'background': 'var(--p-surface-50)', 
+  'border': '2px solid var(--p-surface-200)', 
+  'border-radius': '12px'
+}"
+>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Selector de Periodo Académico -->
+    <div class="flex flex-col gap-2">
+      <label
+        class="text-sm font-semibold"
+        [style]="{'color': 'var(--p-text-color)'}"
+      >
+        <i class="pi pi-calendar mr-2 text-blue-600 dark:text-blue-400"></i>
+        Periodo Académico
+      </label>
+      <p-select
+        [options]="periodosAcademicos"
+        [(ngModel)]="periodoSeleccionado"
+        (onChange)="onCambioPeriodo($event.value)"
+        optionLabel="label"
+        [filter]="false"
+        placeholder="Seleccione un periodo"
+        class="w-full h-14 py-2"
+        [style]="{'width': '100%'}"
+      >
+        <ng-template #selectedItem let-selectedOption>
+          <div class="flex items-center gap-2" *ngIf="selectedOption">
+            <i class="pi pi-calendar-plus text-blue-600 dark:text-blue-400"></i>
+            <span class="font-semibold">{{ selectedOption.label }}</span>
+          </div>
+        </ng-template>
+
+        <ng-template let-periodo #item>
+          <div class="flex items-center gap-2">
+            <i class="pi pi-calendar text-blue-500 dark:text-blue-300"></i>
+            <span>{{ periodo.label }}</span>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+
+    <!-- Selector de Profesor -->
+    <div class="flex flex-col gap-2">
+      <label
+        class="text-sm font-semibold"
+        [style]="{'color': 'var(--p-text-color)'}"
+      >
+        <i class="pi pi-user mr-2 text-blue-600 dark:text-blue-400"></i>
+        Profesor
+      </label>
+      <p-select
+        [options]="profesoresConPlan()"
+        [(ngModel)]="profesorSeleccionado"
+        (onChange)="onCambioProfesor($event.value)"
+        optionLabel="nombres"
+        [filter]="true"
+        filterBy="nombres,apellidos,numIdentificacion"
+        [showClear]="true"
+        placeholder="Seleccione un profesor"
+        class="w-full h-14 py-2"
+        [loading]="cargandoProfesores()"
+      >
+        <ng-template #selectedItem let-selectedOption>
+          <div class="flex items-center gap-2" *ngIf="selectedOption">
+            <i class="pi pi-user text-blue-600 dark:text-blue-400"></i>
+            <div class="flex flex-col">
+              <span class="font-semibold"
+                >{{ selectedOption.nombres }} {{ selectedOption.apellidos
+                }}</span
+              >
+              <span class="text-xs text-gray-500 dark:text-gray-400">
+                {{ selectedOption.numIdentificacion }}
+              </span>
+            </div>
+          </div>
+        </ng-template>
+
+        <ng-template let-profesor #item>
+          <div class="flex items-center gap-2">
+            <i class="pi pi-user text-blue-500 dark:text-blue-300"></i>
+            <div class="flex flex-col">
+              <span>{{ profesor.nombres }} {{ profesor.apellidos }}</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400">
+                {{ profesor.numIdentificacion }}
+              </span>
+            </div>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+  </div>
+</p-card>
+
+<!-- Card con información del profesor seleccionado -->
+<p-card
+  *ngIf="profesorSeleccionado()"
+  class="mb-4"
+  [style]="{ 
+    'background': 'var(--p-surface-50)', 
+    'border': '2px solid var(--p-primary-200)', 
+    'border-radius': '12px'
+  }"
+>
+  <div class="flex items-center gap-4">
+    <i
+      class="pi pi-info-circle text-3xl"
+      [style]="{'color': 'var(--primary-blue)'}"
+    ></i>
+    <div>
+      <h3
+        class="text-lg font-bold mb-1"
+        [style]="{'color': 'var(--p-text-color)'}"
+      >
+        Plan de Trabajo de {{ nombreProfesorCompleto }}
+      </h3>
+      <p class="text-sm mb-0" [style]="{'color': 'var(--p-text-muted)'}">
+        Periodo: {{ periodoSeleccionado()?.label }}
+      </p>
+      <p class="text-sm mb-0" [style]="{'color': 'var(--p-text-muted)'}">
+        Estado:
+        <span
+          [style]="{'color': profesorSeleccionado()?.planDeTrabajo ? 'var(--green-500)' : 'var(--red-500)', 'font-weight': 'bold'}"
+        >
+          {{ profesorSeleccionado()?.planDeTrabajo ? 'Con Plan de Trabajo' :
+          'Sin Plan de Trabajo' }}
+        </span>
+      </p>
+    </div>
+  </div>
+</p-card>
+
+<!-- Tabla de Auditorías -->
+<div
+  [style]="{
+  background: 'var(--p-surface-50)', 
+  border: '3px solid var(--p-surface-200)', 
+  'border-radius': '8px', 
+  overflow: 'hidden'
+}"
+>
+  <div
+    [style]="{ 
+    background: '#0068AD', 
+    color: 'white', 
+    padding: '1.5rem'
+  }"
+  >
+    <h3 class="text-lg font-semibold mb-1">Historial de Auditoría</h3>
+    <p class="text-sm mb-0" *ngIf="profesorSeleccionado()">
+      {{ auditorias().length }} registro(s) encontrado(s)
+    </p>
+  </div>
+
+  <div [style]="{ padding: '1.5rem' }">
+    <p-table
+      [value]="auditorias()"
+      [paginator]="true"
+      [rows]="10"
+      [responsiveLayout]="'scroll'"
+      [loading]="cargandoAuditorias()"
+      styleClass="p-datatable-sm"
+      [style]="{ 
+        color: 'var(--p-text-color)', 
+        background: 'var(--p-surface-50)' 
+      }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th
+            style="
+              background: var(--p-surface-50);
+              color: var(--p-text-color);
+              text-align: center;
+              border-bottom: 2px solid #ddd;
+            "
+          >
+            Tipo de Cambio
+          </th>
+          <th
+            style="
+              background: var(--p-surface-50);
+              color: var(--p-text-color);
+              text-align: center;
+              border-bottom: 2px solid #ddd;
+            "
+          >
+            Acción
+          </th>
+          <th
+            style="
+              background: var(--p-surface-50);
+              color: var(--p-text-color);
+              text-align: center;
+              border-bottom: 2px solid #ddd;
+            "
+          >
+            Fecha
+          </th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-auditoria let-i="rowIndex">
+        <tr>
+          <td style="text-align: center; background: var(--p-surface-50)">
+            <p-tag
+              [value]="auditoria.tipoCambio"
+              [severity]="auditoria.severity"
+              styleClass="border-radius-12 px-3 py-1 text-xs"
+            />
+          </td>
+          <td style="text-align: center; background: var(--p-surface-50)">
+            {{ auditoria.accion }}
+          </td>
+          <td style="text-align: center; background: var(--p-surface-50)">
+            <i
+              class="pi pi-clock mr-2"
+              [style]="{'color': 'var(--p-text-muted)', 'font-size': '0.875rem'}"
+            ></i>
+            {{ auditoria.fecha | date:'dd/MM/yyyy HH:mm:ss' }}
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr [style.background]="'var(--p-surface-50)'">
+          <td colspan="3" style="text-align: center">
+            {{ profesorSeleccionado() ? 'No hay auditorías registradas para este
+            plan de trabajo' : 'Seleccione un periodo y un profesor para ver las
+            auditorías' }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

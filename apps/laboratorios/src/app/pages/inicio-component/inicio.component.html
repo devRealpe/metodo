@@ -1,0 +1,153 @@
+<div class="navigation-container p-4 lg:p-6">
+  <div class="text-center mb-6 lg:mb-8">
+    <h1 class="text-2xl lg:text-4xl font-bold mb-2" [style]="{'color': 'var(--p-text-color)'}">
+      Sistema de Laboratorios
+    </h1>
+    <p class="text-sm lg:text-base opacity-70" [style]="{'color': 'var(--p-text-muted)'}">
+      Selecciona el módulo al que deseas acceder
+    </p>
+  </div>
+
+  <div class="max-w-4xl mx-auto mb-6 lg:mb-8">
+    <p-card
+      class="shadow-3"
+      [style]="{
+        'background': 'var(--p-surface-50)',
+        'border': '2px solid var(--p-surface-200)',
+        'border-radius': '16px',
+        'overflow': 'hidden'
+      }">
+      
+      <ng-template #header>
+        <div class="h-2 w-full" [style]="{'background': 'linear-gradient(90deg, var(--p-primary-500), var(--p-primary-400))'}"></div>
+      </ng-template>
+
+      <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 p-2 sm:p-4">
+        <div class="flex-shrink-0 mx-auto sm:mx-0">
+          <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center"
+               [style]="{
+                 'background': 'var(--p-primary-500)',
+                 'border': '3px solid var(--p-primary-200)'
+               }">
+            <i class="pi pi-user" [style]="{'font-size': '36px', 'color': 'white'}"></i>
+          </div>
+        </div>
+        
+        <div class="flex-grow text-center sm:text-left">
+          <h2 class="text-xl sm:text-2xl font-bold mb-1" [style]="{'color': 'var(--p-text-color)'}">
+            {{ userInfo.nombre }}
+          </h2>
+          <p class="text-sm opacity-70 mb-4" [style]="{'color': 'var(--p-text-muted)'}">
+            Información del usuario
+          </p>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div class="flex items-center gap-3 p-3 rounded-xl" [style]="{'background': 'var(--p-surface-100)'}">
+              <div class="w-10 h-10 flex items-center justify-center rounded-lg flex-shrink-0"
+                   [style]="{'background': 'var(--p-primary-100)', 'color': 'var(--p-primary-600)'}">
+                <i class="pi pi-id-card" [style]="{'font-size': '18px'}"></i>
+              </div>
+              <div class="text-left flex-grow min-w-0">
+                <div class="text-xs opacity-70" [style]="{'color': 'var(--p-text-muted)'}">Identificación</div>
+                <div class="font-semibold text-sm" [style]="{'color': 'var(--p-text-color)'}">
+                  {{ userInfo.identificacion }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-3 p-3 rounded-xl" [style]="{'background': 'var(--p-surface-100)'}">
+              <div class="w-10 h-10 flex items-center justify-center rounded-lg flex-shrink-0"
+                   [style]="{'background': 'var(--p-primary-100)', 'color': 'var(--p-primary-600)'}">
+                <i class="pi pi-envelope" [style]="{'font-size': '18px'}"></i>
+              </div>
+              <div class="text-left flex-grow min-w-0">
+                <div class="text-xs opacity-70" [style]="{'color': 'var(--p-text-muted)'}">Correo Personal</div>
+                <div class="font-semibold text-sm break-words" 
+                     [style]="{'color': 'var(--p-text-color)', 'word-break': 'break-word', 'overflow-wrap': 'break-word'}">
+                  {{ userInfo.email }}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3 p-3 rounded-xl" [style]="{'background': 'var(--p-surface-100)'}">
+              <div class="w-10 h-10 flex items-center justify-center rounded-lg flex-shrink-0"
+                   [style]="{'background': 'var(--p-primary-100)', 'color': 'var(--p-primary-600)'}">
+                <i class="pi pi-briefcase" [style]="{'font-size': '18px'}"></i>
+              </div>
+              <div class="text-left flex-grow min-w-0">
+                <div class="text-xs opacity-70" [style]="{'color': 'var(--p-text-muted)'}">Cargo</div>
+                <div class="font-semibold text-sm break-words" 
+                     [style]="{'color': 'var(--p-text-color)', 'word-break': 'break-word', 'overflow-wrap': 'break-word'}">
+                  {{ userInfo.cargo }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-4xl mx-auto justify-center place-items-center">
+    <div *ngFor="let card of visibleNavigationCards; trackBy: trackByCard" 
+         class="navigation-card cursor-pointer transition-all duration-300 hover:scale-105"
+         role="button"
+         tabindex="0"
+         (click)="navigateTo(card.route)"
+         (keydown.enter)="navigateTo(card.route)"
+         (keydown.space)="navigateTo(card.route)">
+      
+      <p-card
+        class="relative h-full border-none shadow-3 overflow-hidden transition-all duration-300 hover:shadow-5 hover:-translate-y-1"
+        [style]="{
+          'background': 'var(--p-surface-50)',
+          'border': '2px solid var(--p-surface-200)',
+          'border-radius': '16px'
+        }">
+        
+        <ng-template #header>
+          <div class="h-2 w-full relative overflow-hidden" [style]="{'background': 'var(--p-surface-200)'}">
+            <div class="h-full w-full transition-all duration-700 ease-out"
+                 [style]="'background: linear-gradient(90deg, var(--p-' + card.color + '-500), var(--p-' + card.color + '-400))'">
+            </div>
+            <div class="absolute top-0 left-0 h-full w-8 shine-effect" [style]="{
+                'background': 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)'
+              }"></div>
+          </div>
+        </ng-template>
+
+        <div class="p-3 sm:p-4 lg:p-6 text-center relative">
+          
+          <div class="mb-2 sm:mb-3 lg:mb-4 relative">
+            <div class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center transition-all duration-300"
+                 [style]="getCardColorStyles(card.color)">
+              <i class="pi {{card.piIcon}}" [style]="{'font-size': '28px'}"></i>
+            </div>
+          </div>
+
+          <h3 class="text-sm sm:text-base lg:text-lg font-semibold mb-2 sm:mb-3 transition-colors duration-300"
+            [style]="{'color': 'var(--p-text-color)'}">
+            {{ card.title }}
+          </h3>
+          
+          <p class="text-xs sm:text-sm mb-3 sm:mb-4 opacity-70" [style]="{'color': 'var(--p-text-muted)'}">
+            {{ card.description }}
+          </p>
+
+          <div class="flex items-center justify-center">
+            <span
+              class="px-3 py-2 lg:px-4 lg:py-2 border-round-full text-xs font-medium flex items-center gap-2 transition-all duration-300"
+              [style]="'background: var(--p-' + card.color + '-500); color: white; border: 1px solid var(--p-' + card.color + '-600); box-shadow: 0 2px 8px rgba(0,0,0,0.1)'">
+              <i class="pi pi-arrow-right transition-transform duration-300" 
+                [style]="{'font-size': '10px'}"></i>
+              <span>Acceder</span>
+            </span>
+          </div>
+
+          <div class="absolute inset-0 bg-gradient-to-br from-transparent to-black/5 opacity-0 hover-overlay transition-opacity duration-300 rounded-2xl pointer-events-none"></div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+  
+</div>

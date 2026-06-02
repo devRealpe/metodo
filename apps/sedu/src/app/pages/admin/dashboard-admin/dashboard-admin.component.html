@@ -1,0 +1,123 @@
+<p-toast></p-toast>
+
+<div class="flex flex-col gap-6">
+  <!-- Header con selector de periodo -->
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <h2 class="text-2xl font-bold text-[var(--p-text-color)]">Dashboard Administrador</h2>
+    <p-select
+      [options]="periodos()"
+      optionLabel="nombre"
+      optionValue="id"
+      placeholder="Seleccionar periodo"
+      [ngModel]="periodoSeleccionado()"
+      (ngModelChange)="onPeriodoChange($event)"
+      class="w-72"
+    ></p-select>
+  </div>
+
+  <!-- Estado: Sin periodo seleccionado -->
+  @if (!periodoSeleccionado()) {
+    <div class="flex flex-col items-center justify-center py-20 text-[var(--p-text-secondary-color)]">
+      <i class="pi pi-calendar text-5xl mb-4"></i>
+      <p class="text-lg">Seleccione un periodo para ver el avance</p>
+    </div>
+  }
+
+  <!-- Estado: Cargando -->
+  @if (cargando()) {
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      @for (i of [1,2,3,4]; track i) {
+        <p-card>
+          <p-skeleton width="100%" height="60px"></p-skeleton>
+        </p-card>
+      }
+    </div>
+  }
+
+  <!-- Estado: Error -->
+  @if (error()) {
+    <div class="flex flex-col items-center py-10 text-red-500">
+      <i class="pi pi-exclamation-triangle text-4xl mb-4"></i>
+      <p>{{ error() }}</p>
+      <p-button label="Reintentar" icon="pi pi-refresh" severity="secondary" class="mt-4"
+        (onClick)="cargarReporte(periodoSeleccionado()!)"></p-button>
+    </div>
+  }
+
+  <!-- Contenido principal -->
+  @if (!cargando() && !error() && reporte()) {
+    <!-- Tarjetas resumen -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <p-card styleClass="sedu-card">
+        <div class="flex flex-col items-center p-2">
+          <span class="text-3xl font-bold text-[var(--p-primary-color)]">{{ totalEvaluaciones }}</span>
+          <span class="text-sm text-[var(--p-text-secondary-color)] mt-1">Total Evaluaciones</span>
+        </div>
+      </p-card>
+      <p-card styleClass="sedu-card">
+        <div class="flex flex-col items-center p-2">
+          <span class="text-3xl font-bold text-green-600">{{ totalCerradas }}</span>
+          <span class="text-sm text-[var(--p-text-secondary-color)] mt-1">Cerradas</span>
+        </div>
+      </p-card>
+      <p-card styleClass="sedu-card">
+        <div class="flex flex-col items-center p-2">
+          <span class="text-3xl font-bold text-amber-500">{{ totalPendientes }}</span>
+          <span class="text-sm text-[var(--p-text-secondary-color)] mt-1">Pendientes Firma</span>
+        </div>
+      </p-card>
+      <p-card styleClass="sedu-card">
+        <div class="flex flex-col items-center p-2">
+          <span class="text-3xl font-bold text-slate-500">{{ totalBorrador }}</span>
+          <span class="text-sm text-[var(--p-text-secondary-color)] mt-1">En Borrador</span>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Gráfica de avance -->
+    @if (chartData) {
+      <p-card header="Avance por Dependencia" styleClass="sedu-card">
+        <div style="height: 300px">
+          <p-chart type="bar" [data]="chartData" [options]="chartOptions" height="280"></p-chart>
+        </div>
+      </p-card>
+    }
+
+    <!-- Tabla de resumen -->
+    <p-card header="Detalle por Dependencia" styleClass="sedu-card">
+      @if (reporte()!.detalles.length === 0) {
+        <div class="text-center py-8 text-[var(--p-text-secondary-color)]">
+          <i class="pi pi-inbox text-4xl mb-3"></i>
+          <p>No hay datos de evaluaciones para este periodo</p>
+        </div>
+      } @else {
+        <p-table [value]="reporte()!.detalles" [paginator]="true" [rows]="10"
+          styleClass="p-datatable-sm p-datatable-striped">
+          <ng-template #header>
+            <tr>
+              <th>Dependencia</th>
+              <th class="text-center">Total</th>
+              <th class="text-center">Cerradas</th>
+              <th class="text-center">Pendientes Firma</th>
+              <th class="text-center">En Borrador</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-dep>
+            <tr>
+              <td>{{ dep.dependencia }}</td>
+              <td class="text-center font-semibold">{{ dep.total }}</td>
+              <td class="text-center"><p-tag [value]="dep.cerradas + ''" severity="success"></p-tag></td>
+              <td class="text-center"><p-tag [value]="dep.pendientesFirma + ''" severity="warn"></p-tag></td>
+              <td class="text-center"><p-tag [value]="dep.enBorrador + ''" severity="secondary"></p-tag></td>
+              <td class="text-center">
+                <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
+                  pTooltip="Ver detalle" (onClick)="navegarDetalle(dep)"></p-button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </p-card>
+  }
+</div>

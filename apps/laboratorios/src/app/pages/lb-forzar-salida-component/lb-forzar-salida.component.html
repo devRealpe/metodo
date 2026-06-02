@@ -1,0 +1,191 @@
+<p-toast key="forzar-salida" position="top-right" />
+<p-confirmDialog>
+  <ng-template #message let-message>
+    <div [innerHTML]="message.message"></div>
+  </ng-template>
+</p-confirmDialog>
+
+<p-card
+  class="w-full max-w-8xl mx-auto"
+  [style]="{
+    background: 'var(--p-surface-50)',
+    border: '1px solid var(--p-border)',
+    'box-shadow': 'var(--p-elevation-2)'
+  }">
+
+  <!-- Encabezado con gradiente -->
+  <div
+    class="p-6 rounded-xl border-2 shadow-lg mb-6"
+    [style]="{
+      background: 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+      'border-color': 'var(--p-primary-200)',
+      'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+    }">
+
+    <div class="text-center mb-5">
+      <div class="flex items-center justify-center gap-3 mb-2">
+        <i class="pi pi-clock text-3xl" [style]="{ color: 'var(--p-primary-500)' }"></i>
+        <h2 class="text-2xl sm:text-3xl font-bold m-0" [style]="{ color: 'var(--p-text-color)' }">
+          Gestión de sesiones activas
+        </h2>
+      </div>
+      <p class="text-sm sm:text-base opacity-80 m-0" [style]="{ color: 'var(--p-text-color)' }">
+        Usuarios que están dentro de un laboratorio y olvidaron marcar su salida
+      </p>
+    </div>
+
+    <!-- Barra de búsqueda y acciones -->
+    <div
+      class="p-5 rounded-lg border"
+      [style]="{ background: 'var(--p-surface-0)', 'border-color': 'var(--p-border-color)' }">
+
+      <div class="flex items-center gap-2 mb-4">
+        <i class="pi pi-sliders-h" [style]="{ color: 'var(--p-primary-500)' }"></i>
+        <h4 class="text-base font-semibold m-0" [style]="{ color: 'var(--p-text-color)' }">
+          Filtros y acciones
+        </h4>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div class="w-full sm:w-96">
+          <p-iconfield>
+            <p-inputicon class="pi pi-search" />
+            <input
+              pInputText
+              type="text"
+              [(ngModel)]="filtroBusqueda"
+              placeholder="Buscar por nombre, identificación, laboratorio..."
+              class="w-full" />
+          </p-iconfield>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div
+            class="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold"
+            [style]="{ background: sesionesActivas.length > 0 ? 'var(--p-orange-100)' : 'var(--p-green-100)',
+                       color: sesionesActivas.length > 0 ? 'var(--p-orange-700)' : 'var(--p-green-700)',
+                       border: sesionesActivas.length > 0 ? '1px solid var(--p-orange-300)' : '1px solid var(--p-green-300)' }">
+            <i [class]="sesionesActivas.length > 0 ? 'pi pi-exclamation-circle' : 'pi pi-check-circle'"></i>
+            {{ sesionesActivas.length }} sesión(es) activa(s)
+          </div>
+          <p-button
+            label="Actualizar"
+            icon="pi pi-refresh"
+            severity="secondary"
+            [loading]="cargando"
+            (onClick)="cargarActivos()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado: cargando -->
+  <div *ngIf="cargando" class="text-center py-12" [style]="{ color: 'var(--p-text-muted-color)' }">
+    <i class="pi pi-spin pi-spinner text-4xl mb-3 block" [style]="{ color: 'var(--p-primary-400)' }"></i>
+    <p class="text-sm">Cargando sesiones y datos de usuarios…</p>
+  </div>
+
+  <!-- Estado vacío -->
+  <div
+    *ngIf="!cargando && sesionesActivas.length === 0"
+    class="text-center py-16 rounded-xl border-2 border-dashed"
+    [style]="{ background: 'var(--p-surface-50)', 'border-color': 'var(--p-green-300)' }">
+    <i class="pi pi-check-circle text-5xl mb-4 block" [style]="{ color: 'var(--p-green-500)' }"></i>
+    <p class="text-lg font-semibold mb-1" [style]="{ color: 'var(--p-text-color)' }">Sin sesiones activas</p>
+    <p class="text-sm" [style]="{ color: 'var(--p-text-muted-color)' }">
+      No hay usuarios dentro de ningún laboratorio en este momento.
+    </p>
+  </div>
+
+  <!-- Tabla -->
+  <div
+    *ngIf="!cargando && sesionesActivas.length > 0"
+    class="p-5 rounded-lg border"
+    [style]="{ background: 'var(--p-surface-0)', 'border-color': 'var(--p-border-color)' }">
+
+    <div class="flex items-center gap-2 mb-4">
+      <i class="pi pi-table" [style]="{ color: 'var(--p-primary-500)' }"></i>
+      <h4 class="text-base font-semibold m-0" [style]="{ color: 'var(--p-text-color)' }">
+        Sesiones en curso
+      </h4>
+    </div>
+
+    <p-table
+      [value]="sesionesFiltered"
+      [paginator]="sesionesFiltered.length > 10"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      styleClass="p-datatable-sm p-datatable-striped p-datatable-gridlines"
+      responsiveLayout="scroll">
+
+      <ng-template #header>
+        <tr>
+          <th style="min-width:130px">Identificación</th>
+          <th style="min-width:180px">Nombre</th>
+          <th style="min-width:160px">Laboratorio</th>
+          <th style="min-width:110px">Hora entrada</th>
+          <th style="min-width:90px">Semestre</th>
+          <th style="min-width:180px">Programa</th>
+          <th style="min-width:160px">Facultad</th>
+          <th style="min-width:130px" class="text-center">Acción</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-sesion>
+        <tr>
+          <td>
+            <span class="font-mono text-sm font-semibold">{{ sesion.identificacion ?? '—' }}</span>
+          </td>
+          <td>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-user text-xs" [style]="{ color: 'var(--p-primary-400)' }"></i>
+              <span class="text-sm font-medium">{{ sesion.nombreUsuario }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="flex flex-col gap-0.5">
+              <span class="text-sm font-semibold">{{ sesion.labNombre }}</span>
+              <span class="text-xs font-mono" [style]="{ color: 'var(--p-text-muted-color)' }">{{ sesion.codAula }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="flex items-center gap-1.5">
+              <i class="pi pi-clock text-xs" [style]="{ color: 'var(--p-orange-500)' }"></i>
+              <span class="font-mono text-sm font-bold" [style]="{ color: 'var(--p-orange-600)' }">
+                {{ (sesion.horaInicio ?? '').slice(0, 5) || '—' }}
+              </span>
+            </div>
+          </td>
+          <td>
+            <span *ngIf="sesion.semestre" class="px-2 py-0.5 rounded-full text-xs font-semibold"
+              [style]="{ background: 'var(--p-primary-100)', color: 'var(--p-primary-700)', border: '1px solid var(--p-primary-200)' }">
+              {{ sesion.semestre }}
+            </span>
+            <span *ngIf="!sesion.semestre" [style]="{ color: 'var(--p-text-muted-color)' }">—</span>
+          </td>
+          <td class="text-sm">{{ sesion.programa || '—' }}</td>
+          <td class="text-sm">{{ sesion.facultad || '—' }}</td>
+          <td class="text-center">
+            <p-button
+              label="Forzar salida"
+              icon="pi pi-sign-out"
+              severity="danger"
+              size="small"
+              (onClick)="confirmarForzarSalida(sesion)">
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="8" class="text-center py-6 text-sm" [style]="{ color: 'var(--p-text-muted-color)' }">
+            No se encontraron resultados para "{{ filtroBusqueda }}"
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+</p-card>

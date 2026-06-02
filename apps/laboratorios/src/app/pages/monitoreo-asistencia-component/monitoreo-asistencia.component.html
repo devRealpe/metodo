@@ -1,0 +1,363 @@
+<p-toast position="top-right"></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="w-full max-w-8xl mx-auto" [style]="{ 'background': 'transparent', 'padding': '1.5rem' }">
+
+  <!-- ── Criterios de búsqueda ───────────────────────────────────────────── -->
+  <div class="mb-6">
+    <div class="p-6 rounded-xl border-2 shadow-lg" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+        'border-color': 'var(--p-primary-200)',
+        'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+      }">
+
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+          Monitoreo de Asistencia
+        </h2>
+        <p class="text-sm sm:text-base opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Cache semanal de horarios Oracle. Sincroniza los horarios para que los docentes puedan declarar no-uso.
+        </p>
+      </div>
+
+      <div class="p-5 rounded-lg border" [style]="{
+          'background': 'var(--p-surface-0)',
+          'border-color': 'var(--p-border-color)'
+        }">
+        <div class="flex items-center justify-between mb-5">
+          <h4 class="text-lg font-semibold m-0" [style]="{ color: 'var(--p-text-color)' }">
+            Criterios de Búsqueda
+          </h4>
+          <button pButton label="Limpiar Filtros" icon="pi pi-times" severity="secondary" [outlined]="true"
+            [style]="{ 'height': '2.5rem', 'border-radius': '8px' }"
+            (click)="limpiarFiltros()"
+            [disabled]="!hayFiltrosActivos">
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+
+          <!-- Fecha de semana -->
+          <div>
+            <label class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Fecha de semana
+            </label>
+            <p-datepicker
+              [(ngModel)]="fechaSeleccionada"
+              (ngModelChange)="onFechaChange()"
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              placeholder="Seleccionar fecha"
+              styleClass="w-full"
+            />
+          </div>
+
+          <!-- Cod. Aula -->
+          <div>
+            <label class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Cod. Aula
+            </label>
+            <app-input-component
+              type="text"
+              [(ngModel)]="filtroCodAula"
+              placeholder="Buscar por código"
+              class="w-full">
+            </app-input-component>
+          </div>
+
+          <!-- Aula -->
+          <div>
+            <label class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Aula
+            </label>
+            <app-select-component
+              [(ngModel)]="filtroAulaSelect"
+              [options]="aulaOpciones"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Todas las aulas"
+              class="w-full"
+              [filter]="true"
+              [showClear]="true">
+            </app-select-component>
+          </div>
+
+          <!-- Materia -->
+          <div>
+            <label class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Materia
+            </label>
+            <app-select-component
+              [(ngModel)]="filtroMateria"
+              [options]="materiaOpciones"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Todas las materias"
+              class="w-full"
+              [filter]="true"
+              [showClear]="true">
+            </app-select-component>
+          </div>
+
+          <!-- Estado -->
+          <div>
+            <label class="block text-sm font-semibold mb-2" [style]="{ color: 'var(--p-text-color)' }">
+              Estado
+            </label>
+            <app-select-component
+              [(ngModel)]="filtroEstado"
+              [options]="estadoOpciones"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Todos los estados"
+              class="w-full"
+              [showClear]="true">
+            </app-select-component>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tabla ────────────────────────────────────────────────────────────── -->
+  <div class="rounded-xl border-2 shadow-lg overflow-hidden" [style]="{
+      'background': 'linear-gradient(135deg, var(--p-surface-0) 0%, var(--p-surface-50) 100%)',
+      'border-color': 'var(--p-primary-200)',
+      'box-shadow': '0 8px 32px rgba(0,0,0,0.1)'
+    }">
+
+    <!-- Cabecera con gradiente -->
+    <div class="px-6 py-4 border-b" [style]="{
+        'background': 'linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600))',
+        'border-color': 'var(--p-primary-300)'
+      }">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="text-xl font-bold text-white m-0">Horarios de la semana</h3>
+          <p class="text-white/80 text-sm m-0">
+            Semana del lunes:
+            <span class="font-bold text-white ml-1">{{ lunesSemana }}</span>
+            &nbsp;·&nbsp;
+            {{ registrosFiltrados.length }} registro(s) encontrado(s)
+          </p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span *ngIf="ultimaSincronizacion"
+            class="bg-white/20 px-3 py-1 rounded-full text-white text-xs font-medium">
+            ↑ {{ ultimaSincronizacion.insertados }} insertados
+            · {{ ultimaSincronizacion.omitidos }} ya existían
+          </span>
+          <button pButton type="button" icon="pi pi-refresh"
+            pTooltip="Recargar tabla" tooltipPosition="bottom"
+            [text]="true" [rounded]="true"
+            [style]="{ color: 'white' }"
+            (click)="cargarRegistros()">
+          </button>
+          <button pButton type="button" label="Sincronizar semana" icon="pi pi-cloud-download"
+            [loading]="sincronizando"
+            [style]="{ 'background': 'white', 'color': 'var(--p-primary-600)', 'border': 'none',
+                       'height': '2.5rem', 'border-radius': '8px', 'font-weight': '600' }"
+            pTooltip="Lee los horarios de Oracle e inserta los que faltan (idempotente)"
+            (click)="sincronizarSemana()">
+          </button>
+          <button pButton type="button" label="Eliminar semana" icon="pi pi-trash"
+            [loading]="eliminando"
+            [disabled]="!registros.length"
+            [style]="{ 'background': 'transparent', 'color': 'white',
+                       'border': '1px solid rgba(255,255,255,0.6)',
+                       'height': '2.5rem', 'border-radius': '8px' }"
+            pTooltip="Elimina todos los registros de esta semana"
+            (click)="confirmarEliminarSemana()">
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cuerpo con tabla -->
+    <div class="relative">
+      <div *ngIf="cargandoTabla"
+        class="absolute inset-0 flex flex-col items-center justify-center z-10"
+        [style]="{ 'background': 'rgba(255,255,255,0.95)' }">
+        <p-progressSpinner styleClass="w-12 h-12" [style]="{ 'animation-duration': '1s' }"></p-progressSpinner>
+        <p class="mt-4 text-sm font-medium opacity-80" [style]="{ color: 'var(--p-text-color)' }">
+          Cargando registros...
+        </p>
+      </div>
+
+      <div class="p-4">
+        <p-table
+          [value]="registrosFiltrados"
+          [loading]="cargandoTabla"
+          [paginator]="true"
+          [rows]="20"
+          [rowsPerPageOptions]="[10, 20, 50]"
+          [tableStyle]="{ 'min-width': '900px' }"
+          sortMode="multiple"
+          class="overflow-x-auto"
+          [style]="{
+            '--p-datatable-header-background': 'var(--p-surface-100)',
+            '--p-datatable-header-border-color': 'var(--p-border-color)',
+            '--p-datatable-row-background': 'var(--p-surface-0)',
+            '--p-datatable-row-hover-background': 'var(--p-surface-50)'
+          }">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="diaSemana" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Día <p-sortIcon field="diaSemana"></p-sortIcon>
+              </th>
+              <th pSortableColumn="fechaClase" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Fecha <p-sortIcon field="fechaClase"></p-sortIcon>
+              </th>
+              <th pSortableColumn="horaInicio" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Inicio <p-sortIcon field="horaInicio"></p-sortIcon>
+              </th>
+              <th pSortableColumn="horaFin" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Fin <p-sortIcon field="horaFin"></p-sortIcon>
+              </th>
+              <th pSortableColumn="codAula" class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Cod. Aula <p-sortIcon field="codAula"></p-sortIcon>
+              </th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Aula
+              </th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Materia
+              </th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Docente
+              </th>
+              <th class="font-semibold" [style]="{
+                  'background': 'linear-gradient(135deg, var(--p-surface-100), var(--p-surface-200))',
+                  'border-color': 'var(--p-border-color)', 'color': 'var(--p-text-color)', 'padding': '1rem 0.75rem'
+                }">
+                Estado
+              </th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-reg let-rowIndex="rowIndex">
+            <tr class="transition-all duration-200 hover:shadow-sm" [style]="{
+                'background': rowIndex % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-25)',
+                'border-bottom': '1px solid var(--p-border-color)'
+              }">
+
+              <td class="py-3 px-3">
+                <span class="text-xs font-bold px-2 py-1 rounded-full text-white"
+                  [style]="{ 'background': 'var(--p-primary-400)' }">
+                  {{ reg.diaSemana }}
+                </span>
+              </td>
+
+              <td class="py-3 px-3 font-mono text-sm" [style]="{ color: 'var(--p-text-color)' }">
+                {{ reg.fechaClase || '—' }}
+              </td>
+
+              <td class="py-3 px-3 font-mono text-sm" [style]="{ color: 'var(--p-text-color)' }">
+                {{ reg.horaInicio || '—' }}
+              </td>
+
+              <td class="py-3 px-3 font-mono text-sm" [style]="{ color: 'var(--p-text-color)' }">
+                {{ reg.horaFin || '—' }}
+              </td>
+
+              <td class="py-3 px-3">
+                <span class="font-mono text-xs px-2 py-1 rounded"
+                  [style]="{ 'background': 'var(--p-surface-100)', 'color': 'var(--p-text-color)' }">
+                  {{ reg.codAula }}
+                </span>
+              </td>
+
+              <td class="py-3 px-3" [style]="{ color: 'var(--p-text-color)' }">
+                {{ reg.nomAula || '—' }}
+              </td>
+
+              <td class="py-3 px-3 max-w-xs" [style]="{ color: 'var(--p-text-color)' }">
+                <span class="block truncate" [pTooltip]="reg.materia" tooltipPosition="top">
+                  {{ reg.materia || '—' }}
+                </span>
+              </td>
+
+              <td class="py-3 px-3 max-w-xs" [style]="{ color: 'var(--p-text-color)' }">
+                <span class="block truncate" [pTooltip]="reg.docente" tooltipPosition="top">
+                  {{ reg.docente || '—' }}
+                </span>
+              </td>
+
+              <td class="py-3 px-3">
+                <p-tag
+                  [severity]="estadoTag(reg.asistio)"
+                  [value]="estadoLabel(reg.asistio)"
+                />
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="9" class="text-center py-12" [style]="{
+                  'background': 'var(--p-surface-50)', 'color': 'var(--p-text-color)'
+                }">
+                <div class="flex flex-col items-center gap-4">
+                  <div class="w-16 h-16 rounded-full flex items-center justify-center"
+                    [style]="{ 'background': 'var(--p-surface-200)' }">
+                    <i class="pi pi-calendar text-2xl opacity-50"></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-semibold mb-1">No hay registros para esta semana</p>
+                    <p class="text-sm opacity-80">
+                      {{ hayFiltrosActivos
+                          ? 'No hay coincidencias con los filtros aplicados.'
+                          : 'Usa "Sincronizar semana" para cargar los horarios desde Oracle.' }}
+                    </p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="footer">
+            <tr>
+              <td colspan="9" class="text-sm py-2 px-3" [style]="{ color: 'var(--p-text-muted-color)' }">
+                Mostrando {{ registrosFiltrados.length }} de {{ registros.length }} registros
+                <ng-container *ngIf="ultimaSincronizacion">
+                  &nbsp;·&nbsp;
+                  Última sync: insertados {{ ultimaSincronizacion.insertados }},
+                  ya existían {{ ultimaSincronizacion.omitidos }},
+                  total Oracle {{ ultimaSincronizacion.total }}
+                </ng-container>
+              </td>
+            </tr>
+          </ng-template>
+
+        </p-table>
+      </div>
+    </div>
+  </div>
+
+</div>

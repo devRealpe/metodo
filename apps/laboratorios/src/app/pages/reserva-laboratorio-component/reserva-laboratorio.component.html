@@ -1,0 +1,669 @@
+<div class="w-full overflow-x-hidden">
+  <div class="w-full max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
+    <div class="text-center py-4">
+      <h2 class="text-xl sm:text-2xl font-bold mb-1" [style]="{ color: 'var(--p-text-color)' }">Reserva de Laboratorio</h2>
+      <p class="text-sm sm:text-base" [style]="{ color: 'var(--p-text-muted-color)' }">Crear una nueva reserva de laboratorio</p>
+    </div>
+
+    <div class="pb-6">
+      <p-stepper [(value)]="stepReserva" class="block w-full max-w-full">
+        <div class="overflow-x-auto">
+          <p-step-list class="whitespace-nowrap">
+            <p-step [value]="1">Identificación</p-step>
+            <p-step [value]="2">Reserva de Laboratorio</p-step>
+          </p-step-list>
+        </div>
+
+        <p-step-panels class="block max-w-full">
+
+          <!-- ── PASO 1: Identificación ── -->
+          <p-step-panel [value]="1">
+            <ng-template #content>
+              <form [formGroup]="formReservaId" class="grid gap-4 mt-2">
+
+                <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-center">
+                  <div class="min-w-0">
+                    <app-input-component
+                      label="Identificación"
+                      id="res_identificacion"
+                      formControlName="identificacion"
+                      placeholder="Ingrese identificación (máx. 20 caracteres)"
+                      [maxlength]="20"
+                      [ngClass]="{ 'p-invalid': invalidReservaId('identificacion') }"
+                      (keydown.enter)="buscarUsuarioReserva()">
+                    </app-input-component>
+                    <small *ngIf="invalidReservaId('identificacion')" class="text-red-500 text-xs mt-1 block">
+                      Identificación inválida (mínimo 4 caracteres alfanuméricos)
+                    </small>
+                  </div>
+                  <p-button
+                    label="Buscar"
+                    icon="pi pi-search"
+                    [loading]="cargandoReserva"
+                    [disabled]="!formReservaId.get('identificacion')?.value || formReservaId.get('identificacion')?.invalid"
+                    (onClick)="buscarUsuarioReserva()">
+                  </p-button>
+                </div>
+
+                <div *ngIf="usuarioReserva"
+                  class="bg-green-50 border border-green-200 px-4 py-2 rounded-lg flex items-center gap-2">
+                  <i class="pi pi-user text-green-600"></i>
+                  <span class="font-semibold text-green-800">{{ usuarioReserva.nombre }}</span>
+                  <span class="text-green-600 text-sm ml-auto">ID: {{ usuarioReserva.identificacion }}</span>
+                </div>
+
+                <div *ngIf="usuarioReserva" class="flex justify-end mt-2">
+                  <p-button label="Continuar" icon="pi pi-arrow-right" iconPos="right" (onClick)="stepReserva = 2">
+                  </p-button>
+                </div>
+
+              </form>
+            </ng-template>
+          </p-step-panel>
+
+          <!-- ── PASO 2: Reserva ── -->
+          <p-step-panel [value]="2">
+            <ng-template #content>
+              <form [formGroup]="formReserva" class="grid gap-4 mt-2">
+
+                <!-- Resumen estudiante -->
+                <div class="bg-blue-50 border border-blue-200 px-4 py-3 rounded-lg">
+                  <p class="text-xs text-blue-500 font-medium uppercase mb-1">Estudiante</p>
+                  <p class="font-semibold text-blue-800">{{ usuarioReserva?.nombre }}</p>
+                  <p class="text-xs text-blue-600">ID: {{ usuarioReserva?.identificacion }}</p>
+                </div>
+
+                <p-divider></p-divider>
+
+                <!-- Selector laboratorio -->
+                <div>
+                  <app-select-component
+                    label="Laboratorio"
+                    id="res_laboratorioId"
+                    formControlName="laboratorioId"
+                    [options]="aulasOptionsReserva"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Seleccione el laboratorio"
+                    [filter]="true"
+                    [ngClass]="{ 'p-invalid': invalidReserva('laboratorioId') }"
+                    (selectionChange)="onAulaReservaChange($event)">
+                  </app-select-component>
+                  <small *ngIf="invalidReserva('laboratorioId')" class="text-red-500 text-xs mt-1 block">
+                    Seleccione un laboratorio
+                  </small>
+
+                  <!-- Estado y cupos del laboratorio seleccionado -->
+                  <div *ngIf="formReserva.get('laboratorioId')?.value as lid" class="mt-2 flex flex-wrap gap-2 items-center">
+                    <span class="px-2 py-1 rounded text-xs"
+                      [ngClass]="{
+                        'bg-green-100 text-green-800': (estadoLab.get(lid) || 'disponible') === 'disponible',
+                        'bg-yellow-100 text-yellow-800': (estadoLab.get(lid) || '') === 'mantenimiento',
+                        'bg-red-100 text-red-800': (estadoLab.get(lid) || '') === 'ocupado'
+                      }">
+                      Estado actual: {{ estadoLab.get(lid) || '—' }}
+                    </span>
+                    <span class="px-2 py-1 rounded text-xs"
+                      [style]="{ background: 'var(--p-surface-200)', color: 'var(--p-text-color)' }">
+                      Cupos actuales: {{ cuposDisponibles.get(lid) ?? '—' }}
+                    </span>
+                    <span *ngIf="aulaReservaSeleccionada" class="px-2 py-1 rounded text-xs bg-indigo-100 text-indigo-800">
+                      Capacidad total: {{ aulaReservaSeleccionada.numCapacidad }}
+                    </span>
+                  </div>
+
+                  <!-- Selector sub-laboratorio (solo si el aula tiene hijos) -->
+                  <div *ngIf="aulasHijasOptions.length > 0" class="mt-3">
+                    <app-select-component
+                      label="Sub-laboratorio"
+                      id="res_aulaHija"
+                      [options]="aulasHijasOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Seleccione el sub-laboratorio"
+                      [filter]="true"
+                      (selectionChange)="onAulaHijaChange($event)">
+                    </app-select-component>
+                    <small class="text-gray-500 text-xs mt-1 block">
+                      Este laboratorio tiene divisiones. La reserva se asignará al sub-laboratorio seleccionado.
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Rangos disponibles -->
+                <div *ngIf="formReserva.get('laboratorioId')?.value && formReserva.get('fecha')?.value" class="mt-1">
+                  <p class="block text-sm font-medium mb-1" [style]="{ color: 'var(--p-text-color)' }">
+                    <i class="pi pi-clock text-green-600 mr-1"></i>Horarios disponibles para reservar
+                  </p>
+                  <div *ngIf="rangosDisponibles.length > 0" class="flex flex-wrap gap-2">
+                    <span *ngFor="let r of rangosDisponibles"
+                      class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300">
+                      <i class="pi pi-check-circle"></i>
+                      {{ r.inicioLabel }} — {{ r.finLabel }}
+                    </span>
+                  </div>
+                  <div *ngIf="rangosDisponibles.length === 0"
+                    class="bg-red-50 border border-red-200 px-3 py-2 rounded-lg text-xs text-red-700 font-medium">
+                    <i class="pi pi-ban mr-1"></i>No hay horarios disponibles para este laboratorio en la fecha seleccionada.
+                  </div>
+                </div>
+
+                <!-- ── Asistencia del laboratorio en la semana ── -->
+                <div *ngIf="formReserva.get('laboratorioId')?.value && formReserva.get('fecha')?.value" class="mt-2">
+                  <div class="rounded-lg border overflow-hidden"
+                       [style]="{ 'border-color': 'var(--p-border-color)' }">
+
+                    <!-- cabecera colapsable -->
+                    <div class="px-4 py-2 flex items-center justify-between cursor-pointer select-none"
+                         [style]="{ background: 'var(--p-surface-100)' }"
+                         tabindex="0"
+                         role="button"
+                         (click)="mostrarTablaAsistencia = !mostrarTablaAsistencia"
+                         (keydown.enter)="mostrarTablaAsistencia = !mostrarTablaAsistencia"
+                         (keydown.space)="mostrarTablaAsistencia = !mostrarTablaAsistencia">
+                      <span class="text-sm font-semibold flex items-center gap-2"
+                            [style]="{ color: 'var(--p-text-color)' }">
+                        <i class="pi pi-calendar-times" [style]="{ color: 'var(--p-primary-500)' }"></i>
+                        Clases programadas hoy
+                        <span class="text-xs font-normal opacity-60">— ver qué franjas están libres</span>
+                      </span>
+                      <div class="flex items-center gap-2">
+                        <i *ngIf="cargandoAsistenciaReserva" class="pi pi-spin pi-spinner text-xs" [style]="{ color: 'var(--p-text-muted-color)' }"></i>
+                        <i [class]="mostrarTablaAsistencia ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                           class="text-xs opacity-50"></i>
+                      </div>
+                    </div>
+
+                    <div *ngIf="mostrarTablaAsistencia">
+
+                      <!-- sin registros -->
+                      <div *ngIf="!cargandoAsistenciaReserva && !asistenciaDiaReserva.length"
+                           class="px-4 py-4 text-sm text-center"
+                           [style]="{ color: 'var(--p-text-muted-color)' }">
+                        <i class="pi pi-info-circle mr-1"></i>
+                        No hay registros de asistencia para esta semana.
+                        Sincronice los horarios en "Monitoreo de Asistencia".
+                      </div>
+
+                      <!-- leyenda -->
+                      <div *ngIf="asistenciaDiaReserva.length"
+                           class="px-4 pt-2 pb-1 flex flex-wrap gap-3 text-xs"
+                           [style]="{ color: 'var(--p-text-muted-color)' }">
+                        <span class="flex items-center gap-1">
+                          <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                          Libre para reservar (docente declaró no-uso)
+                        </span>
+                        <span class="flex items-center gap-1">
+                          <span class="inline-block w-2.5 h-2.5 rounded-full bg-red-400"></span>
+                          Clase confirmada (no disponible)
+                        </span>
+                        <span class="flex items-center gap-1">
+                          <span class="inline-block w-2.5 h-2.5 rounded-full bg-gray-400"></span>
+                          Estado pendiente
+                        </span>
+                      </div>
+
+                      <!-- tabla compacta de asistencia -->
+                      <div *ngIf="asistenciaDiaReserva.length" class="overflow-x-auto">
+                        <table class="w-full text-xs border-collapse">
+                          <thead>
+                            <tr [style]="{ background: 'var(--p-surface-100)' }">
+                              <th class="text-left px-3 py-2 font-semibold border-b"
+                                  [style]="{ 'border-color': 'var(--p-border-color)', color: 'var(--p-text-color)' }">
+                                Fecha
+                              </th>
+                              <th class="text-left px-3 py-2 font-semibold border-b"
+                                  [style]="{ 'border-color': 'var(--p-border-color)', color: 'var(--p-text-color)' }">
+                                Horario
+                              </th>
+                              <th class="text-left px-3 py-2 font-semibold border-b hidden sm:table-cell"
+                                  [style]="{ 'border-color': 'var(--p-border-color)', color: 'var(--p-text-color)' }">
+                                Materia
+                              </th>
+                              <th class="text-left px-3 py-2 font-semibold border-b hidden sm:table-cell"
+                                  [style]="{ 'border-color': 'var(--p-border-color)', color: 'var(--p-text-color)' }">
+                                Docente
+                              </th>
+                              <th class="text-left px-3 py-2 font-semibold border-b"
+                                  [style]="{ 'border-color': 'var(--p-border-color)', color: 'var(--p-text-color)' }">
+                                Estado
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let reg of asistenciaDiaReserva; let i = index"
+                                [style]="{
+                                  background: reg.asistio === false
+                                    ? 'rgba(16,185,129,0.08)'
+                                    : reg.asistio === true
+                                      ? 'rgba(239,68,68,0.05)'
+                                      : (i % 2 === 0 ? 'var(--p-surface-0)' : 'var(--p-surface-25)')
+                                }">
+                              <td class="px-3 py-1.5 border-b font-mono"
+                                  [style]="{ 'border-color': 'var(--p-border-color)', color: 'var(--p-text-color)' }">
+                                {{ reg.fechaClase || '—' }}
+                              </td>
+                              <td class="px-3 py-1.5 border-b font-mono whitespace-nowrap"
+                                  [style]="{ 'border-color': 'var(--p-border-color)', color: 'var(--p-text-color)' }">
+                                {{ a12h(reg.horaInicio) }} – {{ a12h(reg.horaFin) }}
+                              </td>
+                              <td class="px-3 py-1.5 border-b hidden sm:table-cell"
+                                  [style]="{ 'border-color': 'var(--p-border-color)', color: 'var(--p-text-color)', 'max-width': '120px' }">
+                                <span class="block truncate" [title]="reg.materia || ''">{{ reg.materia || '—' }}</span>
+                              </td>
+                              <td class="px-3 py-1.5 border-b hidden sm:table-cell"
+                                  [style]="{ 'border-color': 'var(--p-border-color)', color: 'var(--p-text-color)', 'max-width': '100px' }">
+                                <span class="block truncate" [title]="reg.docente || ''">{{ reg.docente || '—' }}</span>
+                              </td>
+                              <td class="px-3 py-1.5 border-b"
+                                  [style]="{ 'border-color': 'var(--p-border-color)' }">
+                                <p-tag
+                                  [severity]="estadoTagAsistencia(reg.asistio)"
+                                  [value]="estadoLabelAsistencia(reg.asistio)" />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Fecha y Horas -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <app-datepicker-component
+                      label="Fecha" 
+                      id="res_fecha"
+                      formControlName="fecha"
+                      placeholder="Seleccione fecha"
+                      [minDate]="hoy"
+                      [ngClass]="{ 'p-invalid': invalidReserva('fecha') }"
+                      (dateChange)="onFechaChange()">
+                    </app-datepicker-component>
+                    <small *ngIf="invalidReserva('fecha')" class="text-red-500 text-xs mt-1 block">Fecha requerida</small>
+                  </div>
+                  <div>
+                    <app-select-component
+                      label="Hora inicio"
+                      id="res_horaInicio"
+                      formControlName="horaInicio"
+                      [options]="horasInicioOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Seleccione hora"
+                      [filter]="true"
+                      [appendTo]="'body'"
+                      [ngClass]="{ 'p-invalid': invalidReserva('horaInicio') }"
+                      (selectionChange)="onHoraInicioChange()">
+                    </app-select-component>
+                    <small *ngIf="!formReserva.get('laboratorioId')?.value" class="text-gray-500 text-xs mt-1 block">Seleccione laboratorio primero</small>
+                    <small *ngIf="formReserva.get('laboratorioId')?.value && invalidReserva('horaInicio')" class="text-red-500 text-xs mt-1 block">Hora inicio requerida</small>
+                  </div>
+                  <div>
+                    <app-select-component
+                      label="Hora fin"
+                      id="res_horaFin"
+                      formControlName="horaFin"
+                      [options]="horasFinOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Seleccione hora"
+                      [filter]="true"
+                      [appendTo]="'body'"
+                      [ngClass]="{ 'p-invalid': invalidReserva('horaFin') }"
+                      (selectionChange)="verificarDisponibilidad()">
+                    </app-select-component>
+                    <small *ngIf="!formReserva.get('horaInicio')?.value" class="text-gray-500 text-xs mt-1 block">Seleccione hora inicio primero</small>
+                    <small *ngIf="formReserva.get('horaInicio')?.value && invalidReserva('horaFin')" class="text-red-500 text-xs mt-1 block">Hora fin requerida</small>
+                  </div>
+                </div>
+
+                <!-- Tipo de práctica / Motivo -->
+                <div>
+                  <app-select-component
+                    label="Tipo de práctica (Motivo)"
+                    id="res_tipoPractica"
+                    [formControl]="tipoPracticaReservaCtrl"
+                    [options]="practicasDisponibles"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Seleccionar práctica..."
+                    [filter]="true">
+                  </app-select-component>
+                  <small class="text-gray-500 text-xs mt-1 block">Opcional. Se guardará con la reserva y se cargará automáticamente al registrar ingreso.</small>
+                </div>
+
+                <!-- Campo Observación -->
+                <div>
+                  <label for="res_observacion" class="block text-sm font-medium mb-1"
+                    [style]="{ color: 'var(--p-text-color)' }">Observación</label>
+                  <textarea id="res_observacion"
+                    formControlName="observacion"
+                    rows="3"
+                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-y"
+                    placeholder="Observaciones adicionales sobre la clase o la reserva (opcional)"
+                    maxlength="500"></textarea>
+                  <small class="text-gray-500 text-xs mt-1 block">Opcional. Máximo 500 caracteres.</small>
+                </div>
+
+                <!-- ═══════ PARTICIPANTES ADICIONALES ═══════ -->
+                <div class="mt-2">
+                  <p-divider></p-divider>
+                  <h4 class="text-sm font-semibold mb-2 flex items-center gap-2">
+                    <i class="pi pi-users text-indigo-600"></i> Participantes adicionales
+                    <span class="text-xs text-gray-400 font-normal">(opcional)</span>
+                  </h4>
+                  <p class="text-xs text-gray-500 mb-3">Agregue otros participantes a la reserva buscando por su número de cédula o identificación.</p>
+
+                  <!-- Carga masiva desde Excel -->
+                  <div class="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <p class="text-xs font-semibold text-gray-700 flex items-center gap-2 mb-2">
+                      <i class="pi pi-file-excel text-green-600"></i> Carga masiva desde Excel
+                    </p>
+                    <p class="text-xs text-gray-500 mb-2">Suba un archivo Excel (.xlsx, .xls) con una columna de números de identificación para agregar participantes masivamente.</p>
+                    <div class="flex items-center gap-2">
+                      <input type="file" #excelFileInput
+                        accept=".xlsx,.xls"
+                        class="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 file:cursor-pointer"
+                        (change)="onExcelFileSelected($event)"
+                        [disabled]="cargandoExcel" />
+                      <i *ngIf="cargandoExcel" class="pi pi-spin pi-spinner text-green-600"></i>
+                    </div>
+                    <div *ngIf="excelResultado" class="mt-2 text-xs"
+                      [class.text-green-700]="excelResultado.tipo === 'success'"
+                      [class.text-red-600]="excelResultado.tipo === 'error'"
+                      [class.text-yellow-700]="excelResultado.tipo === 'warn'">
+                      <i class="pi mr-1"
+                        [class.pi-check-circle]="excelResultado.tipo === 'success'"
+                        [class.pi-exclamation-triangle]="excelResultado.tipo === 'warn'"
+                        [class.pi-times-circle]="excelResultado.tipo === 'error'"></i>
+                      {{ excelResultado.mensaje }}
+                    </div>
+                  </div>
+
+                  <!-- Buscar participante -->
+                  <div [formGroup]="formParticipante" class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-center">
+                    <div class="min-w-0">
+                      <app-input-component
+                        label="Cédula del participante"
+                        id="res_participante_id"
+                        formControlName="identificacion"
+                        placeholder="Ingrese cédula o identificación"
+                        [maxlength]="20"
+                        (keydown.enter)="buscarParticipante()">
+                      </app-input-component>
+                    </div>
+                    <p-button
+                      label="Agregar"
+                      icon="pi pi-user-plus"
+                      severity="info"
+                      [loading]="cargandoParticipante"
+                      [disabled]="formParticipante.invalid || cargandoParticipante"
+                      (onClick)="buscarParticipante()">
+                    </p-button>
+                  </div>
+
+                  <!-- Lista de participantes -->
+                  <div *ngIf="participantes.length > 0" class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="w-full text-sm">
+                      <thead>
+                        <tr class="bg-gray-50 text-left">
+                          <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase">#</th>
+                          <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase">Nombre</th>
+                          <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase">Identificación</th>
+                          <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase text-center">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let p of participantes; let i = index" class="border-t border-gray-100">
+                          <td class="px-3 py-2 text-gray-500">{{ i + 1 }}</td>
+                          <td class="px-3 py-2 font-medium">{{ p.nombre }}</td>
+                          <td class="px-3 py-2 text-gray-600">{{ p.identificacion }}</td>
+                          <td class="px-3 py-2 text-center">
+                            <button type="button"
+                              class="text-red-500 hover:text-red-700 transition-colors"
+                              title="Eliminar participante"
+                              (click)="eliminarParticipante(i)">
+                              <i class="pi pi-trash"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div *ngIf="participantes.length > 0"
+                    class="mt-2 text-xs text-indigo-600 font-medium">
+                    Total asistentes: {{ participantes.length + 1 }} (incluye al usuario principal)
+                  </div>
+
+                  <div *ngIf="participantes.length === 0"
+                    class="text-xs text-gray-400 italic py-2">
+                    Sin participantes adicionales. Solo se registrará al usuario principal.
+                  </div>
+                </div>
+
+                <!-- Alerta conflicto de horario -->
+                <div *ngIf="conflictoHorario"
+                  class="bg-red-50 border border-red-300 px-4 py-3 rounded-lg flex items-start gap-2">
+                  <i class="pi pi-exclamation-triangle text-red-500 mt-0.5"></i>
+                  <div>
+                    <p class="text-red-700 font-semibold text-sm">Conflicto de horario detectado</p>
+                    <p class="text-red-600 text-xs mt-1">{{ mensajeConflicto }}</p>
+                    <p class="text-red-500 text-xs mt-1">El laboratorio tiene una clase programada en ese horario. Seleccione otro horario.</p>
+                  </div>
+                </div>
+
+                <!-- ═══════ EQUIPOS Y SUMINISTROS ═══════ -->
+                <div *ngIf="formReserva.get('laboratorioId')?.value && formReserva.get('horaInicio')?.value && formReserva.get('horaFin')?.value" class="mt-2">
+                  <p-divider></p-divider>
+
+                  <!-- Banner informativo de reservas solapadas -->
+                  <div *ngIf="cargandoDisponibilidad" class="text-center py-3">
+                    <i class="pi pi-spin pi-spinner text-blue-500 text-xl"></i>
+                    <p class="text-xs text-gray-500 mt-1">Verificando disponibilidad de recursos…</p>
+                  </div>
+
+                  <div *ngIf="!cargandoDisponibilidad && reservasSolapadasCount > 0"
+                    class="bg-amber-50 border border-amber-300 px-4 py-3 rounded-lg flex items-start gap-2 mb-4">
+                    <i class="pi pi-info-circle text-amber-600 mt-0.5"></i>
+                    <div>
+                      <p class="text-amber-800 font-semibold text-sm">
+                        {{ reservasSolapadasCount }} reserva{{ reservasSolapadasCount !== 1 ? 's' : '' }} en este horario
+                      </p>
+                      <p class="text-amber-700 text-xs mt-1">
+                        Cupos ocupados: {{ cuposOcupados }} de {{ aulaReservaSeleccionada?.numCapacidad ?? '—' }}.
+                        Los equipos y suministros ya reservados por otros se muestran con disponibilidad reducida.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div *ngIf="!cargandoDisponibilidad && reservasSolapadasCount === 0 && !conflictoHorario"
+                    class="bg-green-50 border border-green-200 px-4 py-2 rounded-lg flex items-center gap-2 mb-4">
+                    <i class="pi pi-check-circle text-green-600"></i>
+                    <span class="text-green-700 text-xs font-medium">Todos los recursos están disponibles — sin otras reservas en este horario</span>
+                  </div>
+
+                  <!-- Equipos -->
+                  <div class="mb-4">
+                    <h4 class="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <i class="pi pi-box text-blue-600"></i> Equipos del laboratorio
+                    </h4>
+                    <div *ngIf="cargandoInventario" class="text-center py-3">
+                      <i class="pi pi-spin pi-spinner text-blue-500 text-xl"></i>
+                      <p class="text-xs text-gray-500 mt-1">Cargando inventario…</p>
+                    </div>
+                    <div *ngIf="!cargandoInventario && equiposAgrupados.length === 0"
+                      class="text-xs text-gray-400 italic py-2">Sin equipos registrados en este laboratorio.</div>
+
+                    <div *ngIf="!cargandoInventario && equiposAgrupados.length > 0" class="overflow-x-auto rounded-lg border border-gray-200">
+                      <table class="w-full text-sm">
+                        <thead>
+                          <tr class="bg-gray-50 text-left">
+                            <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase">Equipo</th>
+                            <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase text-center">Stock</th>
+                            <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase text-center">Reservados</th>
+                            <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase text-center">Disponible</th>
+                            <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase text-center">Seleccionar</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let grp of equiposAgrupados"
+                            class="border-t border-gray-100 transition-all"
+                            [class.bg-blue-50]="isGrupoEquipoSelected(grp.categoria)"
+                            [class.opacity-50]="grp.totalDisponible === 0">
+                            <td class="px-3 py-2.5">
+                              <span class="font-medium">{{ grp.categoria }}</span>
+                              <span class="text-xs text-gray-400 ml-1">({{ grp.items.length }} tipo{{ grp.items.length !== 1 ? 's' : '' }})</span>
+                            </td>
+                            <td class="px-3 py-2.5 text-center font-medium">{{ grp.totalStock }}</td>
+                            <td class="px-3 py-2.5 text-center">
+                              <span *ngIf="getGrupoReservados(grp) > 0"
+                                class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                {{ getGrupoReservados(grp) }}
+                              </span>
+                              <span *ngIf="getGrupoReservados(grp) === 0" class="text-gray-400">0</span>
+                            </td>
+                            <td class="px-3 py-2.5 text-center">
+                              <span class="px-2 py-0.5 rounded-full text-xs font-semibold"
+                                [class.bg-green-100]="grp.totalDisponible > 0"
+                                [class.text-green-700]="grp.totalDisponible > 0"
+                                [class.bg-gray-100]="grp.totalDisponible === 0"
+                                [class.text-gray-500]="grp.totalDisponible === 0">
+                                {{ grp.totalDisponible }}
+                              </span>
+                            </td>
+                            <td class="px-3 py-2.5 text-center">
+                              <div *ngIf="grp.totalDisponible > 0" class="flex items-center justify-center gap-1">
+                                <input type="checkbox"
+                                  [checked]="isGrupoEquipoSelected(grp.categoria)"
+                                  class="accent-blue-600 cursor-pointer"
+                                  (change)="toggleGrupoEquipo(grp)" />
+                                <div *ngIf="isGrupoEquipoSelected(grp.categoria)" class="flex items-center gap-1 ml-1">
+                                  <button type="button" class="w-6 h-6 rounded bg-blue-100 text-blue-700 font-bold text-xs"
+                                    (click)="setGrupoEquipoCantidad(grp, getGrupoEquipoCantidad(grp.categoria) - 1)">−</button>
+                                  <span class="w-6 text-center text-sm font-semibold">{{ getGrupoEquipoCantidad(grp.categoria) }}</span>
+                                  <button type="button" class="w-6 h-6 rounded bg-blue-100 text-blue-700 font-bold text-xs"
+                                    (click)="setGrupoEquipoCantidad(grp, getGrupoEquipoCantidad(grp.categoria) + 1)">+</button>
+                                </div>
+                              </div>
+                              <span *ngIf="grp.totalDisponible === 0"
+                                class="text-xs text-red-500 font-medium">Ocupado</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Suministros -->
+                  <div class="mb-4">
+                    <h4 class="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <i class="pi pi-th-large text-orange-600"></i> Suministros del laboratorio
+                    </h4>
+                    <div *ngIf="!cargandoInventario && suministrosLab.length === 0"
+                      class="text-xs text-gray-400 italic py-2">Sin suministros registrados en este laboratorio.</div>
+
+                    <div *ngIf="!cargandoInventario && suministrosLab.length > 0" class="overflow-x-auto rounded-lg border border-gray-200">
+                      <table class="w-full text-sm">
+                        <thead>
+                          <tr class="bg-gray-50 text-left">
+                            <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase">Suministro</th>
+                            <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase text-center">Stock</th>
+                            <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase text-center">Reservados</th>
+                            <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase text-center">Disponible</th>
+                            <th class="px-3 py-2 font-semibold text-gray-600 text-xs uppercase text-center">Seleccionar</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let su of suministrosLab"
+                            class="border-t border-gray-100 transition-all"
+                            [class.bg-orange-50]="isSuministroSelected(su)"
+                            [class.opacity-50]="su.cantidadDisponible === 0">
+                            <td class="px-3 py-2.5">
+                              <span class="font-medium">{{ su.suministroAlmacen.nombre || 'Suministro' }}</span>
+                              <span *ngIf="su.consumible" class="ml-1 text-xs text-orange-500">(consumible)</span>
+                            </td>
+                            <td class="px-3 py-2.5 text-center font-medium">{{ getSuministroStock(su) }}</td>
+                            <td class="px-3 py-2.5 text-center">
+                              <span *ngIf="getSuministroReservados(su) > 0"
+                                class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                {{ getSuministroReservados(su) }}
+                              </span>
+                              <span *ngIf="getSuministroReservados(su) === 0" class="text-gray-400">0</span>
+                            </td>
+                            <td class="px-3 py-2.5 text-center">
+                              <span class="px-2 py-0.5 rounded-full text-xs font-semibold"
+                                [class.bg-green-100]="su.cantidadDisponible > 0"
+                                [class.text-green-700]="su.cantidadDisponible > 0"
+                                [class.bg-gray-100]="su.cantidadDisponible === 0"
+                                [class.text-gray-500]="su.cantidadDisponible === 0">
+                                {{ su.cantidadDisponible }}
+                              </span>
+                            </td>
+                            <td class="px-3 py-2.5 text-center">
+                              <div *ngIf="su.cantidadDisponible > 0" class="flex items-center justify-center gap-1">
+                                <input type="checkbox"
+                                  [checked]="isSuministroSelected(su)"
+                                  class="accent-orange-600 cursor-pointer"
+                                  (change)="toggleSuministro(su)" />
+                                <div *ngIf="isSuministroSelected(su)" class="flex items-center gap-1 ml-1">
+                                  <button type="button" class="w-6 h-6 rounded bg-orange-100 text-orange-700 font-bold text-xs"
+                                    (click)="setSuministroCantidad(su, getSuministroCantidad(su) - 1)">−</button>
+                                  <span class="w-6 text-center text-sm font-semibold">{{ getSuministroCantidad(su) }}</span>
+                                  <button type="button" class="w-6 h-6 rounded bg-orange-100 text-orange-700 font-bold text-xs"
+                                    (click)="setSuministroCantidad(su, getSuministroCantidad(su) + 1)">+</button>
+                                </div>
+                              </div>
+                              <span *ngIf="su.cantidadDisponible === 0"
+                                class="text-xs text-red-500 font-medium">Ocupado</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Resumen selección -->
+                  <div
+                    *ngIf="equiposSeleccionados.length > 0 || suministrosSeleccionados.length > 0"
+                    class="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3">
+                    <p class="text-xs font-semibold text-indigo-700 mb-1">Resumen de recursos seleccionados</p>
+                    <ul class="text-xs text-indigo-600 list-disc list-inside">
+                      <li *ngFor="let e of equiposSeleccionados">
+                        {{ e.equipoAula.equipoAlmacen.nombre }} × {{ e.cantidad }}
+                      </li>
+                      <li *ngFor="let s of suministrosSeleccionados">
+                        {{ s.suministroAula.suministroAlmacen.nombre }} × {{ s.cantidad }}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="flex justify-between mt-2">
+                  <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" (onClick)="stepReserva = 1"></p-button>
+                  <p-button
+                    label="Crear Reserva"
+                    icon="pi pi-calendar-plus"
+                    severity="success"
+                    [loading]="cargandoReserva"
+                    [disabled]="conflictoHorario || formReserva.invalid"
+                    (onClick)="crearReserva()">
+                  </p-button>
+                </div>
+
+              </form>
+            </ng-template>
+          </p-step-panel>
+
+        </p-step-panels>
+      </p-stepper>
+    </div>
+
+  </div>
+</div>
+
+<p-toast position="top-right" key="reserva-toast"></p-toast>
