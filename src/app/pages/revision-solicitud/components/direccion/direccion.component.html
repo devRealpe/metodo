@@ -1,0 +1,215 @@
+<!-- ─── Tarjeta del validador ────────────────────────────────────────── -->
+<div class="director-card">
+  <div class="director-card__avatar">
+    <i class="pi pi-user"></i>
+  </div>
+  <div class="director-card__info">
+    <span class="director-card__nombre">{{ usuarioNombre }}</span>
+    <span class="director-card__programa">
+      <i class="pi pi-id-card mr-1"></i>{{ formatearCargo(usuarioCargo) }}
+    </span>
+    <span class="director-card__dep">
+      <i class="pi pi-building mr-1"></i>{{ dependencia.nombre }}
+    </span>
+  </div>
+  <div class="director-card__stat">
+    <span class="director-card__stat-num">{{ totalElementos() }}</span>
+    <span class="director-card__stat-lbl">solicitudes asignadas</span>
+  </div>
+</div>
+
+<!-- ─── Panel de filtros ─────────────────────────────────────────────── -->
+<div class="filter-panel" [formGroup]="filtrosForm">
+  <div class="filter-panel__title">
+    <i class="pi pi-filter mr-2"></i>Filtros
+    @if (hayFiltrosActivos) {
+    <span class="filter-active-badge">Activos</span>
+    }
+  </div>
+  <div class="filter-panel__body">
+    <div class="filter-field">
+      <label class="filter-label">Estado</label>
+      <p-select
+        id="filtroEstado"
+        formControlName="estado"
+        [options]="estadoOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todas"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="filter-field">
+      <label class="filter-label">Año académico</label>
+      <p-select
+        id="filtroAnio"
+        formControlName="anio"
+        [options]="anioOptionsConTodos"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todos los años"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="filter-field">
+      <label class="filter-label">Período</label>
+      <p-select
+        id="filtroPeriodo"
+        formControlName="periodo"
+        [options]="periodoOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todos los períodos"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="filter-actions">
+      <p-button
+        label="Buscar"
+        icon="pi pi-search"
+        (onClick)="aplicarFiltros()"
+        [loading]="cargando()"
+      />
+      <p-button
+        label="Limpiar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="limpiarFiltros()"
+        [disabled]="cargando()"
+      />
+    </div>
+  </div>
+</div>
+
+<!-- ─── Tabla / Skeleton ─────────────────────────────────────────────── -->
+<div class="table-card">
+
+  <!-- Skeleton mientras carga -->
+  @if (cargando()) {
+  <div class="skeleton-table">
+    @for (row of skeletonRows; track $index) {
+    <div class="skeleton-row">
+      <p-skeleton width="4rem" height="1rem" />
+      <p-skeleton width="8rem" height="1rem" />
+      <p-skeleton width="12rem" height="1rem" />
+      <p-skeleton width="6rem" height="1.5rem" borderRadius="1rem" />
+      <p-skeleton width="5rem" height="1rem" />
+      <p-skeleton width="7rem" height="2rem" borderRadius="0.5rem" />
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Tabla con datos -->
+  @if (!cargando()) {
+  @if (solicitudes().length === 0) {
+  <div class="empty-state">
+    <i class="pi pi-inbox empty-state__icon"></i>
+    <h3 class="empty-state__title">Sin solicitudes pendientes</h3>
+    <p class="empty-state__desc">
+      @if (hayFiltrosActivos) {
+      No se encontraron solicitudes con los filtros aplicados.
+      <br />
+      <a class="link" (click)="limpiarFiltros()">Limpiar filtros</a>
+      } @else {
+      No tiene solicitudes asignadas para revisión en este momento.
+      }
+    </p>
+  </div>
+  } @else {
+  <p-table
+    [value]="solicitudes()"
+    [rowHover]="true"
+    styleClass="p-datatable-sm"
+    responsiveLayout="scroll"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="text-align: center">Identificación</th>
+        <th style="text-align: center">Tipo de Solicitud</th>
+        <th style="text-align: center">Programa / Facultad</th>
+        <th style="text-align: center">Estado General</th>
+        <th style="text-align: center">Período</th>
+        <th style="text-align: center">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-solicitud>
+      <tr class="table-row">
+        <td style="text-align: center" class="font-mono">{{ solicitud.cedula }}</td>
+        <td style="text-align: center">{{ solicitud.nombreTipoSolicitud }}</td>
+        <td style="text-align: center">
+          <div class="flex flex-col">
+            <span class="text-sm font-semibold">{{ solicitud.idPrograma || '—' }}</span>
+            <span class="text-xs text-muted">{{ solicitud.idFacultad || '—' }}</span>
+          </div>
+        </td>
+        <td style="text-align: center">
+          <p-tag
+            [value]="getEtiquetaEstado(solicitud.estado)"
+            [severity]="getSeveridadEstado(solicitud.estado)"
+            [icon]="getIconoEstado(solicitud.estado)"
+            styleClass="tag-estado"
+          />
+        </td>
+        <td style="text-align: center">{{ solicitud.anio }}-{{ solicitud.periodo }}</td>
+        <td style="text-align: center">
+          @if (selloOtorgado(solicitud)) {
+            <p-tag
+              icon="pi pi-verified"
+              value="Sello otorgado"
+              severity="success"
+              styleClass="tag-sello-otorgado"
+            />
+          } @else {
+            <p-button
+              icon="pi pi-check-square"
+              label="Revisar"
+              severity="primary"
+              size="small"
+              (onClick)="abrirPanel(solicitud)"
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Paginador -->
+  @if (totalElementos() > tamanioPagina) {
+  <div class="paginator-wrapper">
+    <p-paginator
+      [rows]="tamanioPagina"
+      [totalRecords]="totalElementos()"
+      [first]="paginaActual() * tamanioPagina"
+      (onPageChange)="onPageChange($event)"
+      [showFirstLastIcon]="true"
+      [showPageLinks]="true"
+    />
+  </div>
+  }
+
+  <!-- Contador resumen -->
+  <div class="table-footer-info">
+    Mostrando <strong>{{ solicitudes().length }}</strong> de
+    <strong>{{ totalElementos() }}</strong> solicitudes
+  </div>
+  }
+  }
+</div>
+
+<!-- ─── Modal de Validación ──────────────────────────────────────────── -->
+<app-validacion-requisitos-direccion
+  [(visible)]="panelVisible"
+  [cargandoEstudiante]="cargandoEstudiante()"
+  [estudianteDatos]="estudianteDatos()"
+  [validacion]="validacion()"
+  [puedeOtorgarSello]="puedeOtorgarSello"
+  [aprobando]="aprobando()"
+  (otorgar)="otorgarSello($event)"
+  (cerrar)="cerrarPanel()"
+></app-validacion-requisitos-direccion>

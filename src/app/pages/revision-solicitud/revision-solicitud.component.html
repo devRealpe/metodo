@@ -1,0 +1,114 @@
+<p-toast position="top-right" />
+
+<!-- ─── Encabezado ────────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-header__icon">
+    <i class="pi pi-check-square"></i>
+  </div>
+  <div class="page-header__text">
+    <h2 class="page-header__title">Revisión de Solicitudes</h2>
+    <p class="page-header__subtitle">
+      Gestione y valide las solicitudes asignadas a su dependencia
+    </p>
+  </div>
+</div>
+
+<!-- ─── Skeleton mientras carga el usuario y las dependencias ─── -->
+@if (cargando()) {
+<div class="director-skeleton">
+  <p-skeleton width="3rem" height="3rem" borderRadius="50%" />
+  <div class="flex flex-col gap-2 flex-1">
+    <p-skeleton width="40%" height="1rem" />
+    <p-skeleton width="60%" height="0.875rem" />
+  </div>
+</div>
+}
+
+<!-- ─── Sin acceso a ninguna dependencia ──────────────────────── -->
+@if (!cargando() && !tieneAcceso()) {
+<div class="empty-state empty-state--warn">
+  <i class="pi pi-lock empty-state__icon"></i>
+  <h3 class="empty-state__title">Acceso restringido</h3>
+  <p class="empty-state__desc">
+    No tiene un cargo o identificación con acceso a ninguna dependencia
+    del sistema de paz y salvos.
+  </p>
+</div>
+}
+
+<!-- ─── Selector de dependencias (más de una accesible) ─────── -->
+@if (!cargando() && tieneAcceso() && debeSeleccionar()) {
+<div class="dep-selector">
+  <div class="dep-selector__header">
+    <div class="dep-selector__icon">
+      <i class="pi pi-sitemap"></i>
+    </div>
+    <div>
+      <h3 class="dep-selector__title">Seleccione una dependencia</h3>
+      <p class="dep-selector__subtitle">
+        Tiene acceso a varias dependencias. Elija con cuál desea trabajar.
+      </p>
+    </div>
+  </div>
+
+  <div class="dep-cards">
+    @for (dep of dependenciasAccesibles(); track dep.uuid) {
+    <div
+      class="dep-card"
+      role="button"
+      tabindex="0"
+      [attr.aria-label]="'Seleccionar dependencia ' + dep.nombre"
+      (click)="seleccionarDependencia(dep)"
+      (keydown.enter)="seleccionarDependencia(dep)"
+      (keydown.space)="seleccionarDependencia(dep)"
+    >
+      <div class="dep-card__avatar">
+        <i class="pi pi-building"></i>
+      </div>
+      <div class="dep-card__info">
+        <span class="dep-card__nombre">{{ dep.nombre }}</span>
+        @if (dep.descripcion) {
+        <span class="dep-card__desc">{{ dep.descripcion }}</span>
+        }
+        <span class="dep-card__badge">
+          <i class="pi pi-key"></i>
+          Acceso por {{ dep.tipoAcceso === 'CARGO' ? 'cargo' : 'identificación' }}
+        </span>
+      </div>
+      <i class="pi pi-chevron-right dep-card__arrow"></i>
+    </div>
+    }
+  </div>
+</div>
+}
+
+<!-- ─── Vista de la dependencia seleccionada ─────────────────── -->
+@if (!cargando() && tieneAcceso() && dependenciaSeleccionada()) {
+
+  <!-- Barra de regreso (solo cuando hay varias dependencias) -->
+  @if (dependenciasAccesibles().length > 1) {
+  <div class="back-bar">
+    <button class="back-btn" type="button" (click)="volver()">
+      <i class="pi pi-arrow-left"></i>
+      <span>Cambiar dependencia</span>
+    </button>
+    <div class="back-bar__dep">
+      <i class="pi pi-building"></i>
+      {{ dependenciaSeleccionada()!.nombre }}
+    </div>
+  </div>
+  }
+
+  <!--
+    Componente de la dependencia.
+    Al agregar nuevas dependencias en el futuro, ampliar este bloque
+    con @switch o nuevos @if según la lógica de negocio de cada una.
+  -->
+  <app-direccion
+    [dependencia]="dependenciaSeleccionada()!"
+    [identificacionUsuario]="identificacionUsuario()"
+    [usuarioNombre]="usuarioNombre()"
+    [usuarioCargo]="usuarioCargo()"
+    [usuarioPrograma]="usuarioPrograma()"
+  />
+}

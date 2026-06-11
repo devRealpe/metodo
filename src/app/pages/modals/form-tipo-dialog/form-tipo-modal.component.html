@@ -1,0 +1,87 @@
+<p-dialog
+  [(visible)]="visible"
+  (onHide)="onHide()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '520px', maxWidth: '95vw' }"
+  styleClass="tipo-dialog"
+>
+  <ng-template pTemplate="header">
+    <div class="flex items-center gap-3">
+      <div class="dialog-icon" [class]="modoEdicion ? 'dialog-icon--edit' : 'dialog-icon--add'">
+        <i [class]="modoEdicion ? 'pi pi-pencil' : 'pi pi-plus'"></i>
+      </div>
+      <span class="p-dialog-title font-bold text-xl">
+        {{ modoEdicion ? 'Editar Tipo de Solicitud' : 'Nuevo Tipo de Solicitud' }}
+      </span>
+    </div>
+  </ng-template>
+
+  <form [formGroup]="formTipo" class="tipo-form">
+    <div class="form-field">
+      <label for="tipo-nombre" class="form-label">
+        Nombre <span class="required">*</span>
+      </label>
+      <input
+        pInputText
+        id="tipo-nombre"
+        formControlName="nombre"
+        placeholder="Ej. Paz y Salvo Grados"
+        class="w-full form-input"
+        [class.ng-invalid]="formTipo.get('nombre')?.invalid && formTipo.get('nombre')?.touched"
+      />
+      @if (nombreError) {
+        <small class="form-error"><i class="pi pi-exclamation-circle mr-1"></i>{{ nombreError }}</small>
+      }
+    </div>
+
+    <div class="form-field">
+      <label for="tipo-descripcion" class="form-label">Descripción</label>
+      <textarea
+        pTextarea
+        id="tipo-descripcion"
+        formControlName="descripcion"
+        rows="3"
+        placeholder="Descripción opcional..."
+        class="w-full form-input resize-none"
+      ></textarea>
+    </div>
+
+    @if (modoEdicion) {
+      <div class="form-field mt-2">
+        <label class="form-label mb-2">Estado</label>
+        <div class="estado-toggle p-3 bg-surface-50 border border-surface-200 rounded-lg flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="font-medium text-color">
+              {{ formTipo.get('activo')?.value ? 'Activo' : 'Inactivo' }}
+            </span>
+            <span class="text-xs text-color-secondary">
+              Determina si este tipo puede ser seleccionado al crear solicitudes
+            </span>
+          </div>
+          <p-toggleswitch formControlName="activo" />
+        </div>
+      </div>
+    }
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 pt-3">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        [text]="true"
+        (onClick)="onHide()"
+      />
+      <p-button
+        [label]="modoEdicion ? 'Actualizar' : 'Crear Tipo'"
+        [icon]="modoEdicion ? 'pi pi-check' : 'pi pi-plus'"
+        [loading]="guardando"
+        [disabled]="formTipo.invalid"
+        (onClick)="guardar()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

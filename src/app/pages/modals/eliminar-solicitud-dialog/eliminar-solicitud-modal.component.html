@@ -1,0 +1,7 @@
+<app-confirmation-dialog
+  [visible]="visible"
+  (visibleChange)="visibleChange.emit($event)"
+  [data]="dialogData"
+  (accept)="accept.emit()"
+  (reject)="reject.emit()"
+/>

@@ -1,0 +1,216 @@
+<p-toast position="top-right" />
+
+<!-- ─── Encabezado ────────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-header__icon">
+    <i class="pi pi-file-check"></i>
+  </div>
+  <div class="page-header__text">
+    <h2 class="page-header__title">Mis Solicitudes</h2>
+    <p class="page-header__subtitle">
+      Solicitudes registradas para el programa
+      @if (directorPrograma()) {
+      <strong>{{ directorPrograma() }}</strong>
+      } @else {
+      del director autenticado
+      }
+    </p>
+  </div>
+</div>
+
+<!-- ─── Skeleton director cargando ───────────────────────────── -->
+@if (cargandoDirector()) {
+<div class="director-skeleton">
+  <p-skeleton width="3rem" height="3rem" borderRadius="50%" />
+  <div class="flex flex-col gap-2 flex-1">
+    <p-skeleton width="40%" height="1rem" />
+    <p-skeleton width="60%" height="0.875rem" />
+  </div>
+</div>
+}
+
+<!-- ─── Sin rol de director ───────────────────────────────────── -->
+@if (!cargandoDirector() && !esDirector()) {
+<div class="empty-state empty-state--warn">
+  <i class="pi pi-lock empty-state__icon"></i>
+  <h3 class="empty-state__title">Acceso restringido</h3>
+  <p class="empty-state__desc">
+    Esta sección está disponible solo para directores de programa con rol
+    <code>PLANES_DIRECTOR</code>.
+  </p>
+</div>
+}
+
+<!-- ─── Sin programa configurado ─────────────────────────────── -->
+@if (!cargandoDirector() && esDirector() && !directorPrograma()) {
+<div class="empty-state empty-state--warn">
+  <i class="pi pi-exclamation-triangle empty-state__icon"></i>
+  <h3 class="empty-state__title">Programa no encontrado</h3>
+  <p class="empty-state__desc">
+    No se pudo obtener el programa académico asociado a su cuenta. Contacte al administrador.
+  </p>
+</div>
+}
+
+<!-- ─── Contenido principal ───────────────────────────────────── -->
+@if (!cargandoDirector() && esDirector() && directorPrograma()) {
+
+<!-- Tarjeta de info del director -->
+<div class="director-card">
+  <div class="director-card__avatar">
+    <i class="pi pi-user"></i>
+  </div>
+  <div class="director-card__info">
+    <span class="director-card__nombre">{{ directorNombre() || 'Director de Programa' }}</span>
+    <span class="director-card__programa">
+      <i class="pi pi-book mr-1"></i>{{ directorPrograma() }}
+    </span>
+  </div>
+  <div class="director-card__stat">
+    <span class="director-card__stat-num">{{ totalElementos() }}</span>
+    <span class="director-card__stat-lbl">solicitudes registradas</span>
+  </div>
+</div>
+
+<!-- ─── Panel de filtros ─────────────────────────────────────── -->
+<div class="filter-panel" [formGroup]="filtrosForm">
+  <div class="filter-panel__title">
+    <i class="pi pi-filter mr-2"></i>Filtros
+    @if (hayFiltrosActivos) {
+    <span class="filter-active-badge">Activos</span>
+    }
+  </div>
+  <div class="filter-panel__body">
+    <div class="filter-field">
+      <label class="filter-label">Estado</label>
+      <p-select id="filtroEstado" formControlName="estado" [options]="estadoOptions" optionLabel="label"
+        optionValue="value" placeholder="Todos los estados" styleClass="w-full" />
+    </div>
+
+    <div class="filter-field">
+      <label class="filter-label">Año académico</label>
+      <p-select id="filtroAnio" formControlName="anio" [options]="anioOptionsConTodos" optionLabel="label"
+        optionValue="value" placeholder="Todos los años" styleClass="w-full" />
+    </div>
+
+    <div class="filter-field">
+      <label class="filter-label">Período</label>
+      <p-select id="filtroPeriodo" formControlName="periodo" [options]="periodoOptions" optionLabel="label"
+        optionValue="value" placeholder="Todos los períodos" styleClass="w-full" />
+    </div>
+
+    <div class="filter-actions">
+      <p-button label="Buscar" icon="pi pi-search" (onClick)="aplicarFiltros()" [loading]="cargando()" />
+      <p-button label="Limpiar" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="limpiarFiltros()"
+        [disabled]="cargando()" />
+    </div>
+  </div>
+</div>
+
+<!-- ─── Tabla / Skeleton ─────────────────────────────────────── -->
+<div class="table-card">
+
+  <!-- Skeleton mientras carga -->
+  @if (cargando()) {
+  <div class="skeleton-table">
+    @for (row of skeletonRows; track $index) {
+    <div class="skeleton-row">
+      <p-skeleton width="4rem" height="1rem" />
+      <p-skeleton width="8rem" height="1rem" />
+      <p-skeleton width="12rem" height="1rem" />
+      <p-skeleton width="6rem" height="1.5rem" borderRadius="1rem" />
+      <p-skeleton width="5rem" height="1rem" />
+      <p-skeleton width="5rem" height="1rem" />
+      <p-skeleton width="7rem" height="2rem" borderRadius="0.5rem" />
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Tabla con datos -->
+  @if (!cargando()) {
+  @if (solicitudes().length === 0) {
+  <div class="empty-state">
+    <i class="pi pi-inbox empty-state__icon"></i>
+    <h3 class="empty-state__title">Sin solicitudes</h3>
+    <p class="empty-state__desc">
+      @if (hayFiltrosActivos) {
+      No se encontraron solicitudes con los filtros aplicados.
+      <br />
+      <a class="link" (click)="limpiarFiltros()">Limpiar filtros</a>
+      } @else {
+      Aún no se han registrado solicitudes para el programa <strong>{{ directorPrograma() }}</strong>.
+      }
+    </p>
+  </div>
+  } @else {
+  <p-table [value]="solicitudes()" [rowHover]="true" styleClass="p-datatable-sm" responsiveLayout="scroll">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="text-align: center;">Identificación</th>
+        <th style="text-align: center;">Tipo de Solicitud</th>
+        <th style="text-align: center;">Estado</th>
+        <th style="text-align: center;">Año</th>
+        <th style="text-align: center;">Período</th>
+        <th style="text-align: center;">Fecha Registro</th>
+        <th style="text-align: center;">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-solicitud>
+      <tr class="table-row">
+        <td style="text-align: center;">{{ solicitud.cedula }}</td>
+        <td style="text-align: center;">{{ solicitud.nombreTipoSolicitud }}
+        </td>
+        <td style="text-align: center;">
+          <p-tag [value]="getEtiquetaEstado(solicitud.estado)" [severity]="getSeveridadEstado(solicitud.estado)"
+            [icon]="getIconoEstado(solicitud.estado)" styleClass="tag-estado" />
+        </td>
+        <td style="text-align: center;">{{ solicitud.anio }}</td>
+        <td style="text-align: center;">Período {{ solicitud.periodo }}</td>
+        <td style="text-align: center;">{{ formatearFecha(solicitud.fechaCreacion) }}</td>
+        <td style="text-align: center;">
+          <div class="flex justify-center gap-2">
+            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="Ver detalle"
+              (onClick)="verDetalle(solicitud)" [id]="'btn-detalle-' + solicitud.id" />
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small" pTooltip="Eliminar"
+              (onClick)="confirmarEliminacion(solicitud)" [id]="'btn-eliminar-' + solicitud.id" />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Paginador -->
+  @if (totalElementos() > tamanioPagina) {
+  <div class="paginator-wrapper">
+    <p-paginator [rows]="tamanioPagina" [totalRecords]="totalElementos()" [first]="paginaActual() * tamanioPagina"
+      (onPageChange)="onPageChange($event)" [showFirstLastIcon]="true" [showPageLinks]="true" />
+  </div>
+  }
+
+  <!-- Contador resumen -->
+  <div class="table-footer-info">
+    Mostrando
+    <strong>{{ solicitudes().length }}</strong> de
+    <strong>{{ totalElementos() }}</strong> solicitudes
+  </div>
+  }
+  }
+</div>
+}
+
+<!-- ─── Modal de detalle ──────────────────────────────────────── -->
+<app-detalle-solicitud-modal
+  [(visible)]="detalleVisible"
+  [solicitudDetalle]="solicitudDetalle()"
+  (close)="solicitudDetalle.set(null)">
+</app-detalle-solicitud-modal>
+
+<!-- ─── Modal de Eliminar ──────────────────────────────────────── -->
+<app-eliminar-solicitud-modal
+  [(visible)]="eliminarVisible"
+  [cedula]="solicitudAEliminar()?.cedula || ''"
+  (accept)="onConfirmarEliminacion()">
+</app-eliminar-solicitud-modal>

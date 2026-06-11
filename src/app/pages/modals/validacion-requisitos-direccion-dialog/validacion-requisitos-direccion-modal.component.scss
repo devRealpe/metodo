@@ -1,0 +1,21 @@
+::ng-deep .validacion-dialog {
+  .p-dialog-header {
+    background: var(--p-surface-50);
+    border-bottom: 1px solid var(--p-surface-border);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .p-dialog-content {
+    padding: 0;
+  }
+
+  .p-dialog-footer {
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--p-surface-border);
+    background: var(--p-surface-50);
+  }
+}
+
+.validacion-content {
+  padding: 1.5rem;
+}

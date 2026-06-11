@@ -12,6 +12,7 @@ import com.umariana.paz_salvo.models.enums.EstadoRevisionEnum;
 import com.umariana.paz_salvo.models.enums.EstadoSolicitudEnum;
 import com.umariana.paz_salvo.repositories.*;
 import com.umariana.paz_salvo.services.AuditoriaService;
+import com.umariana.paz_salvo.services.OracleServiceClient;
 import com.umariana.paz_salvo.services.SolicitudService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,11 +34,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SolicitudServiceImpl implements SolicitudService {
 
-        private static final List<EstadoSolicitudEnum> ESTADOS_ACTIVOS = List.of(
-                        EstadoSolicitudEnum.PENDIENTE,
-                        EstadoSolicitudEnum.EN_PROCESO,
-                        EstadoSolicitudEnum.OBSERVACION);
-
         private static final long MAX_FILE_SIZE_BYTES = 2L * 1024 * 1024; // 2 MB
         private static final Set<String> EXTENSIONES_PERMITIDAS = Set.of("txt", "csv");
         private static final String REGEX_CEDULA = "^\\d{7,10}$";
@@ -47,6 +43,7 @@ public class SolicitudServiceImpl implements SolicitudService {
         private final TipoDependenciaRepository tipoDependenciaRepository;
         private final RevisionDependenciaRepository revisionDependenciaRepository;
         private final AuditoriaService auditoriaService;
+        private final OracleServiceClient oracleServiceClient;
         private final TransactionTemplate transactionTemplate;
 
         public SolicitudServiceImpl(
@@ -55,12 +52,14 @@ public class SolicitudServiceImpl implements SolicitudService {
                         TipoDependenciaRepository tipoDependenciaRepository,
                         RevisionDependenciaRepository revisionDependenciaRepository,
                         AuditoriaService auditoriaService,
+                        OracleServiceClient oracleServiceClient,
                         PlatformTransactionManager transactionManager) {
                 this.solicitudRepository = solicitudRepository;
                 this.tipoSolicitudRepository = tipoSolicitudRepository;
                 this.tipoDependenciaRepository = tipoDependenciaRepository;
                 this.revisionDependenciaRepository = revisionDependenciaRepository;
                 this.auditoriaService = auditoriaService;
+                this.oracleServiceClient = oracleServiceClient;
                 this.transactionTemplate = new TransactionTemplate(transactionManager);
         }
 
@@ -73,9 +72,7 @@ public class SolicitudServiceImpl implements SolicitudService {
         public SolicitudResponse crearSolicitudManual(CrearSolicitudManualRequest request) {
                 TipoSolicitud tipoSolicitud = buscarTipoSolicitud(request.getIdTipoSolicitud());
 
-                validarSolicitudDuplicada(
-                                request.getCedula(), tipoSolicitud.getId(),
-                                request.getAnio(), request.getPeriodo());
+                validarEstudianteRegistrable(request.getCedula(), request.getIdPrograma());
 
                 List<TipoDependencia> flujo = tipoDependenciaRepository
                                 .findByTipoSolicitudIdWithDependenciaOrderByOrdenFlujoAsc(tipoSolicitud.getId());
@@ -171,7 +168,7 @@ public class SolicitudServiceImpl implements SolicitudService {
                         Integer periodo) {
                 try {
                         transactionTemplate.execute(status -> {
-                                validarSolicitudDuplicada(cedula, tipoSolicitud.getId(), anio, periodo);
+                                validarEstudianteRegistrable(cedula, idPrograma);
                                 Solicitud solicitud = construirSolicitud(
                                                 cedula, tipoSolicitud, idPrograma, idFacultad, anio, periodo);
                                 solicitud = solicitudRepository.save(solicitud);
@@ -207,13 +204,48 @@ public class SolicitudServiceImpl implements SolicitudService {
                                                 HttpStatus.NOT_FOUND));
         }
 
-        private void validarSolicitudDuplicada(Long cedula, Long idTipoSolicitud, Integer anio, Integer periodo) {
-                if (solicitudRepository.existeSolicitudActiva(cedula, idTipoSolicitud, anio, periodo,
-                                ESTADOS_ACTIVOS)) {
+        private void validarEstudianteRegistrable(Long cedula, String programaDirector) {
+                if (solicitudRepository.existeSolicitudParaEstudiante(cedula)) {
                         throw new BusinessException(String.format(
-                                        "El estudiante con cédula %d ya tiene una solicitud activa para el período %s-%d",
-                                        cedula, periodo, anio));
+                                        "El estudiante con cédula %d ya tiene un paz y salvo registrado",
+                                        cedula));
                 }
+
+                validarProgramaConDirector(cedula, programaDirector);
+        }
+
+        private void validarProgramaConDirector(Long cedula, String programaDirector) {
+                String programaDirectorNormalizado = normalizarTexto(programaDirector);
+                if (programaDirectorNormalizado.isBlank()) {
+                        throw new BusinessException(
+                                        "No se pudo identificar el programa del director que realiza el registro");
+                }
+
+                Map<String, Object> estudiante = oracleServiceClient.buscarEstudiante(String.valueOf(cedula))
+                                .orElseThrow(() -> new BusinessException(String.format(
+                                                "No se encontró el estudiante con cédula %d en el sistema institucional",
+                                                cedula),
+                                                HttpStatus.NOT_FOUND));
+
+                String programaEstudiante = estudiante.get("programa") != null
+                                ? estudiante.get("programa").toString()
+                                : "";
+
+                if (normalizarTexto(programaEstudiante).isBlank()) {
+                        throw new BusinessException(String.format(
+                                        "No se pudo identificar el programa del estudiante con cédula %d",
+                                        cedula));
+                }
+
+                if (!programaDirectorNormalizado.equals(normalizarTexto(programaEstudiante))) {
+                        throw new BusinessException(String.format(
+                                        "El estudiante con cédula %d pertenece al programa \"%s\" y no puede ser registrado por un director del programa \"%s\"",
+                                        cedula, programaEstudiante, programaDirector));
+                }
+        }
+
+        private String normalizarTexto(String valor) {
+                return valor == null ? "" : valor.trim().toLowerCase(Locale.ROOT);
         }
 
         private Solicitud construirSolicitud(

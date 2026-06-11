@@ -1,0 +1,221 @@
+<p-toast position="top-right" />
+
+<!-- ─── Encabezado ────────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-header__icon">
+    <i class="pi pi-tags"></i>
+  </div>
+  <div class="page-header__text">
+    <h2 class="page-header__title">Tipos de Paz y Salvos</h2>
+    <p class="page-header__subtitle">
+      Administre los tipos de solicitudes de paz y salvo y configure el flujo de dependencias para cada uno
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <p-button
+      id="btn-nuevo-tipo"
+      label="Nuevo Tipo"
+      icon="pi pi-plus"
+      (onClick)="abrirModalCrear()"
+    />
+  </div>
+</div>
+
+<!-- ─── Panel de filtros ──────────────────────────────────────── -->
+<div class="filter-panel" [formGroup]="filtrosForm">
+  <div class="filter-panel__title">
+    <i class="pi pi-filter mr-2"></i>Filtros
+    @if (hayFiltrosActivos) {
+    <span class="filter-active-badge">Activos</span>
+    }
+  </div>
+  <div class="filter-panel__body">
+    <div class="filter-field">
+      <label class="filter-label">Estado</label>
+      <p-select
+        id="filtroEstado"
+        formControlName="soloActivas"
+        [options]="estadoOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todos"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="filter-actions">
+      <p-button
+        label="Buscar"
+        icon="pi pi-search"
+        (onClick)="aplicarFiltros()"
+        [loading]="cargando()"
+      />
+      <p-button
+        label="Limpiar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="limpiarFiltros()"
+        [disabled]="cargando()"
+      />
+    </div>
+  </div>
+</div>
+
+<!-- ─── Tabla / Skeleton ──────────────────────────────────────── -->
+<div class="table-card">
+
+  <!-- Skeleton -->
+  @if (cargando()) {
+  <div class="skeleton-table">
+    @for (row of skeletonRows; track $index) {
+    <div class="skeleton-row">
+      <p-skeleton width="14rem" height="1rem" />
+      <p-skeleton width="20rem" height="1rem" />
+      <p-skeleton width="5rem" height="1.5rem" borderRadius="1rem" />
+      <p-skeleton width="9rem" height="2rem" borderRadius="0.5rem" />
+      <p-skeleton width="9rem" height="2rem" borderRadius="0.5rem" />
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Tabla con datos -->
+  @if (!cargando()) {
+  @if (tipos().length === 0) {
+  <div class="empty-state">
+    <i class="pi pi-tags empty-state__icon"></i>
+    <h3 class="empty-state__title">Sin tipos registrados</h3>
+    <p class="empty-state__desc">
+      @if (hayFiltrosActivos) {
+      No se encontraron tipos con los filtros aplicados.
+      <br />
+      <a class="link" (click)="limpiarFiltros()">Limpiar filtros</a>
+      } @else {
+      Cree el primer tipo de solicitud usando el botón <strong>Nuevo Tipo</strong>.
+      }
+    </p>
+  </div>
+  } @else {
+  <p-table
+    [value]="tipos()"
+    [rowHover]="true"
+    styleClass="p-datatable-sm"
+    responsiveLayout="scroll"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th style="text-align: center;">Estado</th>
+        <th style="text-align: center;">Flujo</th>
+        <th style="text-align: center;">Creado</th>
+        <th style="text-align: center;">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-tipo>
+      <tr class="table-row">
+        <td>
+          <span class="tipo-nombre">{{ tipo.nombre }}</span>
+        </td>
+        <td>
+          <span class="text-muted text-sm">{{ tipo.descripcion || '—' }}</span>
+        </td>
+        <td style="text-align: center;">
+          @if (tipo.activo) {
+          <p-tag value="Activo" severity="success" icon="pi pi-check-circle" />
+          } @else {
+          <p-tag value="Inactivo" severity="secondary" icon="pi pi-ban" />
+          }
+        </td>
+        <td style="text-align: center;">
+          <button
+            class="flujo-badge"
+            [class.flujo-badge--empty]="tipo.dependencias.length === 0"
+            (click)="abrirModalFlujo(tipo)"
+            [pTooltip]="'Configurar flujo'"
+            tooltipPosition="top"
+          >
+            <i class="pi pi-sitemap"></i>
+            {{ tipo.dependencias.length }} dependencias
+          </button>
+        </td>
+        <td style="text-align: center;" class="text-muted text-sm">
+          {{ formatearFecha(tipo.createdAt) }}
+        </td>
+        <td style="text-align: center;">
+          <div class="action-buttons">
+            <p-button
+              icon="pi pi-pencil"
+              severity="secondary"
+              size="small"
+              [outlined]="true"
+              pTooltip="Editar"
+              tooltipPosition="top"
+              (onClick)="abrirModalEditar(tipo)"
+            />
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              size="small"
+              [outlined]="true"
+              pTooltip="Eliminar"
+              tooltipPosition="top"
+              (onClick)="confirmarEliminar(tipo)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Paginador -->
+  @if (totalElementos() > tamanioPagina) {
+  <div class="paginator-wrapper">
+    <p-paginator
+      [rows]="tamanioPagina"
+      [totalRecords]="totalElementos()"
+      [first]="paginaActual() * tamanioPagina"
+      (onPageChange)="onPageChange($event)"
+      [showFirstLastIcon]="true"
+      [showPageLinks]="true"
+    />
+  </div>
+  }
+
+  <!-- Contador -->
+  <div class="table-footer-info">
+    Mostrando <strong>{{ tipos().length }}</strong> de
+    <strong>{{ totalElementos() }}</strong> tipos
+  </div>
+  }
+  }
+</div>
+
+<!-- Modales -->
+<app-eliminar-tipo-modal
+  [(visible)]="modalEliminarVisible"
+  [tipoNombre]="tipoParaEliminar?.nombre || ''"
+  (accept)="ejecutarEliminar()"
+  (reject)="modalEliminarVisible = false"
+/>
+
+<app-form-tipo-modal
+  [(visible)]="modalFormVisible"
+  [tipoEditando]="tipoEditando"
+  [guardando]="guardando()"
+  (save)="guardarTipo($event)"
+/>
+
+<app-flujo-dependencias-modal
+  [(visible)]="modalFlujoVisible"
+  [tipoFlujo]="tipoFlujo"
+  [dependenciasActivas]="dependenciasActivas()"
+  [agregandoDependencia]="agregandoDependencia()"
+  [eliminandoDependenciaId]="eliminandoDependenciaId()"
+  [guardandoOrdenId]="guardandoOrdenId()"
+  (addDependencia)="agregarDependenciaAlFlujo($event)"
+  (removeDependencia)="eliminarDependenciaDelFlujo($event)"
+  (reorderDependencia)="guardarOrden($event)"
+/>

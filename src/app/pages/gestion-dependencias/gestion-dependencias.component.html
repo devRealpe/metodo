@@ -1,0 +1,229 @@
+<p-toast position="top-right" />
+<p-confirmDialog />
+
+<!-- ─── Encabezado ────────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-header__icon">
+    <i class="pi pi-building"></i>
+  </div>
+  <div class="page-header__text">
+    <h2 class="page-header__title">Gestión de Dependencias</h2>
+    <p class="page-header__subtitle">
+      Administre las dependencias del flujo de paz y salvos, sus datos y los usuarios con acceso
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <p-button
+      id="btn-nueva-dependencia"
+      label="Nueva Dependencia"
+      icon="pi pi-plus"
+      (onClick)="abrirModalCrear()"
+    />
+  </div>
+</div>
+
+<!-- ─── Panel de filtros ──────────────────────────────────────── -->
+<div class="filter-panel" [formGroup]="filtrosForm">
+  <div class="filter-panel__title">
+    <i class="pi pi-filter mr-2"></i>Filtros
+    @if (hayFiltrosActivos) {
+    <span class="filter-active-badge">Activos</span>
+    }
+  </div>
+  <div class="filter-panel__body">
+    <div class="filter-field">
+      <label class="filter-label">Estado</label>
+      <p-select
+        id="filtroEstado"
+        formControlName="soloActivas"
+        [options]="estadoOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todas"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="filter-actions">
+      <p-button
+        label="Buscar"
+        icon="pi pi-search"
+        (onClick)="aplicarFiltros()"
+        [loading]="cargando()"
+      />
+      <p-button
+        label="Limpiar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="limpiarFiltros()"
+        [disabled]="cargando()"
+      />
+    </div>
+  </div>
+</div>
+
+<!-- ─── Tabla / Skeleton ──────────────────────────────────────── -->
+<div class="table-card">
+
+  <!-- Skeleton -->
+  @if (cargando()) {
+  <div class="skeleton-table">
+    @for (row of skeletonRows; track $index) {
+    <div class="skeleton-row">
+      <p-skeleton width="14rem" height="1rem" />
+      <p-skeleton width="20rem" height="1rem" />
+      <p-skeleton width="5rem" height="1.5rem" borderRadius="1rem" />
+      <p-skeleton width="4rem" height="1rem" />
+      <p-skeleton width="9rem" height="2rem" borderRadius="0.5rem" />
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Tabla con datos -->
+  @if (!cargando()) {
+  @if (dependencias().length === 0) {
+  <div class="empty-state">
+    <i class="pi pi-building empty-state__icon"></i>
+    <h3 class="empty-state__title">Sin dependencias registradas</h3>
+    <p class="empty-state__desc">
+      @if (hayFiltrosActivos) {
+      No se encontraron dependencias con los filtros aplicados.
+      <br />
+      <a class="link" (click)="limpiarFiltros()">Limpiar filtros</a>
+      } @else {
+      Cree la primera dependencia usando el botón <strong>Nueva Dependencia</strong>.
+      }
+    </p>
+  </div>
+  } @else {
+  <p-table
+    [value]="dependencias()"
+    [rowHover]="true"
+    styleClass="p-datatable-sm"
+    responsiveLayout="scroll"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th style="text-align: center;">Estado</th>
+        <th style="text-align: center;">Usuarios con Acceso</th>
+        <th style="text-align: center;">Creada</th>
+        <th style="text-align: center;">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-dep>
+      <tr class="table-row">
+        <td>
+          <span class="dep-nombre">{{ dep.nombre }}</span>
+        </td>
+        <td>
+          <span class="text-muted text-sm">{{ dep.descripcion || '—' }}</span>
+        </td>
+        <td style="text-align: center;">
+          @if (dep.activo) {
+          <p-tag value="Activa" severity="success" icon="pi pi-check-circle" />
+          } @else {
+          <p-tag value="Inactiva" severity="secondary" icon="pi pi-ban" />
+          }
+        </td>
+        <td style="text-align: center;">
+          <button
+            class="acceso-badge"
+            [class.acceso-badge--empty]="(dep.tipoAcceso === 'CARGO' ? dep.cargosAcceso.length : dep.usuariosAcceso.length) === 0"
+            (click)="abrirModalAccesos(dep)"
+            [pTooltip]="'Gestionar accesos'"
+            tooltipPosition="top"
+          >
+            <i [class]="dep.tipoAcceso === 'CARGO' ? 'pi pi-briefcase' : 'pi pi-users'"></i>
+            {{ dep.tipoAcceso === 'CARGO' ? dep.cargosAcceso.length : dep.usuariosAcceso.length }}
+          </button>
+        </td>
+        <td style="text-align: center;" class="text-muted text-sm">
+          {{ formatearFecha(dep.createdAt) }}
+        </td>
+        <td style="text-align: center;">
+          <div class="action-buttons">
+            <p-button
+              icon="pi pi-pencil"
+              severity="secondary"
+              size="small"
+              [outlined]="true"
+              pTooltip="Editar"
+              tooltipPosition="top"
+              (onClick)="abrirModalEditar(dep)"
+            />
+            @if (esEliminable(dep)) {
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              size="small"
+              [outlined]="true"
+              pTooltip="Eliminar"
+              tooltipPosition="top"
+              (onClick)="confirmarEliminar(dep)"
+            />
+            } @else {
+            <p-button
+              icon="pi pi-trash"
+              severity="secondary"
+              size="small"
+              [outlined]="true"
+              pTooltip="Esta dependencia tiene lógica en el código y no se puede eliminar"
+              tooltipPosition="top"
+              [disabled]="true"
+            />
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Paginador -->
+  @if (totalElementos() > tamanioPagina) {
+  <div class="paginator-wrapper">
+    <p-paginator
+      [rows]="tamanioPagina"
+      [totalRecords]="totalElementos()"
+      [first]="paginaActual() * tamanioPagina"
+      (onPageChange)="onPageChange($event)"
+      [showFirstLastIcon]="true"
+      [showPageLinks]="true"
+    />
+  </div>
+  }
+
+  <!-- Contador -->
+  <div class="table-footer-info">
+    Mostrando <strong>{{ dependencias().length }}</strong> de
+    <strong>{{ totalElementos() }}</strong> dependencias
+  </div>
+  }
+  }
+</div>
+
+<!-- ─── Modal Crear / Editar ──────────────────────────────────────────── -->
+<app-form-dependencia-modal
+  [(visible)]="modalFormVisible"
+  [modoEdicion]="modoEdicion"
+  [guardando]="guardando()"
+  [formDependencia]="formDependencia"
+  [nombreError]="nombreError"
+  (hide)="cerrarModalForm()"
+  (save)="guardar()"
+/>
+
+<!-- ─── Modal Gestión de Accesos ─────────────────────────────────────────── -->
+<app-accesos-dependencia-modal
+  [(visible)]="modalAccesosVisible"
+  [dependenciaAccesos]="dependenciaAccesos"
+  [agregandoAcceso]="agregandoAcceso()"
+  [eliminandoAcceso]="eliminandoAcceso()"
+  (hide)="cerrarModalAccesos()"
+  (addAcceso)="nuevoAcceso = $event; agregarAcceso()"
+  (removeAcceso)="eliminarAcceso($event)"
+/>

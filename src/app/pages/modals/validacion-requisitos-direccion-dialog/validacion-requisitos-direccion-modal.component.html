@@ -1,0 +1,176 @@
+<p-dialog
+  [(visible)]="visible"
+  (onHide)="onHide()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '750px', maxWidth: '95vw' }"
+  styleClass="validacion-dialog"
+>
+  <ng-template pTemplate="header">
+    <div class="flex items-center gap-3">
+      <div class="dialog-icon p-2 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center w-10 h-10">
+        <i class="pi pi-verified text-xl"></i>
+      </div>
+      <span class="p-dialog-title text-xl font-bold">Validación de Requisitos</span>
+    </div>
+  </ng-template>
+
+  @if (cargandoEstudiante) {
+  <div class="p-6 flex flex-col items-center justify-center gap-4">
+    <i class="pi pi-spin pi-spinner text-4xl text-primary-500"></i>
+    <p class="text-muted text-center">Consultando datos académicos del estudiante...</p>
+  </div>
+  }
+
+  @if (!cargandoEstudiante && estudianteDatos && validacion) {
+  @let est = estudianteDatos;
+  @let val = validacion;
+
+  <div class="validacion-content">
+    <!-- Info del estudiante -->
+    <div class="estudiante-info flex items-center gap-4 p-4 bg-gray-50 rounded-lg mb-6">
+      <div class="estudiante-info__avatar w-12 h-12 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-xl font-bold uppercase">
+        {{ est.nombre.charAt(0) }}
+      </div>
+      <div class="estudiante-info__data flex-1">
+        <h3 class="estudiante-nombre text-lg font-bold text-gray-800 m-0">{{ est.nombre }}</h3>
+        <p class="estudiante-meta font-mono text-sm text-gray-500 m-0 mt-1">
+          <i class="pi pi-id-card mr-1"></i>{{ est.numeroIdentificacion }} &bull; <i class="pi pi-graduation-cap mr-1 ml-2"></i>{{ est.nomPrograma }}
+        </p>
+      </div>
+    </div>
+
+    <p-divider align="left">
+      <span class="divider-label text-sm font-semibold text-gray-500 uppercase tracking-wider">Requisitos Académicos</span>
+    </p-divider>
+
+    <!-- Indicadores de validación -->
+    <div class="requisitos-grid grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+
+      <!-- 1. Solicitud de Grado -->
+      <div class="requisito-card flex flex-col p-4 border rounded-xl transition-all" [class.border-green-200]="val.tieneSolicitudGrado" [class.bg-green-50]="val.tieneSolicitudGrado" [class.border-red-200]="!val.tieneSolicitudGrado" [class.bg-red-50]="!val.tieneSolicitudGrado">
+        <div class="requisito-card__icon mb-3 flex items-center justify-between">
+          <h4 class="requisito-card__title font-bold text-gray-700 m-0 text-sm">Solicitud de Grado</h4>
+          @if (val.tieneSolicitudGrado) {
+          <i class="pi pi-check-circle text-green-500 text-xl"></i>
+          } @else {
+          <i class="pi pi-times-circle text-red-500 text-xl"></i>
+          }
+        </div>
+        <div class="requisito-card__content flex-1 flex flex-col justify-between">
+          <p class="requisito-card__desc text-sm text-gray-600 mb-3 m-0">
+            Estado actual: <strong>{{ est.estadoSolicitudGrado || 'No registrada' }}</strong>
+          </p>
+          <div>
+            <p-tag
+              [value]="est.estadoSolicitudGrado || 'Pendiente'"
+              [severity]="getSeveridadSolicitudGrado(est.estadoSolicitudGrado)"
+              styleClass="text-xs"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Pensum Completado -->
+      <div class="requisito-card flex flex-col p-4 border rounded-xl transition-all" [class.border-green-200]="val.pensumCompleto" [class.bg-green-50]="val.pensumCompleto" [class.border-red-200]="!val.pensumCompleto" [class.bg-red-50]="!val.pensumCompleto">
+        <div class="requisito-card__icon mb-3 flex items-center justify-between">
+          <h4 class="requisito-card__title font-bold text-gray-700 m-0 text-sm">Pensum</h4>
+          @if (val.pensumCompleto) {
+          <i class="pi pi-check-circle text-green-500 text-xl"></i>
+          } @else {
+          <i class="pi pi-times-circle text-red-500 text-xl"></i>
+          }
+        </div>
+        <div class="requisito-card__content w-full flex-1 flex flex-col justify-between">
+          <div class="mb-2">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs text-gray-600">Completado</span>
+              <span
+                class="font-bold text-sm"
+                [class.text-green-600]="val.pensumCompleto"
+                [class.text-red-600]="!val.pensumCompleto"
+              >
+                {{ est.porcentajePorMaterias | number : '1.0-1' }}%
+              </span>
+            </div>
+            <p-progressBar
+              [value]="est.porcentajePorMaterias"
+              [showValue]="false"
+              [color]="val.pensumCompleto ? 'var(--p-green-500)' : 'var(--p-primary-500)'"
+              styleClass="h-2"
+            />
+          </div>
+          <p class="requisito-card__desc text-xs text-gray-600 mt-2 m-0">
+            Materias: <strong>{{ est.materiasAprobadas }} / {{ est.materiasPrograma }}</strong><br />
+            Créditos: <strong>{{ est.creditosAprobados }} / {{ est.creditosPrograma }}</strong>
+          </p>
+        </div>
+      </div>
+
+      <!-- 3. Nivel de Inglés -->
+      <div class="requisito-card flex flex-col p-4 border rounded-xl transition-all" [class.border-green-200]="val.nivelInglesOk" [class.bg-green-50]="val.nivelInglesOk" [class.border-red-200]="!val.nivelInglesOk" [class.bg-red-50]="!val.nivelInglesOk">
+        <div class="requisito-card__icon mb-3 flex items-center justify-between">
+          <h4 class="requisito-card__title font-bold text-gray-700 m-0 text-sm">Inglés</h4>
+          @if (val.nivelInglesOk) {
+          <i class="pi pi-check-circle text-green-500 text-xl"></i>
+          } @else {
+          <i class="pi pi-times-circle text-red-500 text-xl"></i>
+          }
+        </div>
+        <div class="requisito-card__content flex-1 flex flex-col justify-between">
+          <p class="requisito-card__desc text-sm text-gray-600 m-0">
+            Nivel certificado:<br/>
+            <strong class="text-lg text-gray-800">{{ est.nivelIngles || 'Ninguno' }}</strong>
+          </p>
+          <div class="mt-2">
+            <span class="inline-block px-2 py-1 bg-white rounded text-xs text-gray-500 border">Requerido: B1 o superior</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="observacionForm" class="mt-6">
+      <div class="flex flex-col gap-2">
+        <label for="observacion" class="font-semibold text-sm text-gray-700">Observación (Opcional)</label>
+        <textarea
+          pTextarea
+          id="observacion"
+          formControlName="observacion"
+          rows="3"
+          placeholder="Añada una nota interna sobre esta validación si lo requiere..."
+          class="w-full"
+        ></textarea>
+      </div>
+    </form>
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="flex flex-col gap-3 w-full">
+      @if (validacion && !validacion.todosCumplidos) {
+      <div class="flex items-center justify-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg border border-red-200 mx-4">
+        <i class="pi pi-exclamation-triangle text-lg"></i>
+        <span class="text-sm font-medium">El estudiante debe cumplir los tres requisitos para poder otorgar el sello.</span>
+      </div>
+      }
+      <div class="flex justify-end gap-3 w-full px-4 pb-2">
+        <p-button
+          label="Cancelar"
+          icon="pi pi-times"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="onHide()"
+        />
+        <p-button
+          label="Otorgar Sello"
+          icon="pi pi-verified"
+          [disabled]="!puedeOtorgarSello"
+          [loading]="aprobando"
+          severity="success"
+          (onClick)="onOtorgarSello()"
+        />
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>

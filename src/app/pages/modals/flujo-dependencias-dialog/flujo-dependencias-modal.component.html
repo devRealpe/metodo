@@ -1,0 +1,117 @@
+<p-dialog [(visible)]="visible" (onHide)="onHide()" [modal]="true" [draggable]="false" [resizable]="false"
+  [style]="{ width: '750px', maxWidth: '95vw' }" styleClass="flujo-dialog">
+  <ng-template pTemplate="header">
+    <div class="flex items-center gap-3 w-full">
+      <div class="dialog-icon dialog-icon--flujo">
+        <i class="pi pi-sitemap"></i>
+      </div>
+      <div class="flex flex-col">
+        <span class="p-dialog-title font-bold text-xl text-color">Flujo de Dependencias</span>
+        @if (tipoFlujo) {
+        <span class="text-sm font-medium text-color-secondary px-2 py-1 rounded-md mt-1 inline-block">
+          {{ tipoFlujo.nombre }}
+        </span>
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  @if (tipoFlujo) {
+  <div class="flujo-content">
+    <!-- Agregar nueva dependencia al flujo -->
+    <div class="flujo-add">
+      <div class="flujo-add__header">
+        <i class="pi pi-plus-circle"></i>
+        <h4>Agregar Dependencia</h4>
+      </div>
+      <div class="flujo-add__body">
+        <div class="flujo-add__field flex-1 min-w-[220px]">
+          <label>Dependencia</label>
+          <p-select [options]="dependenciasDisponibles" [(ngModel)]="nuevaDependencia" optionLabel="nombre"
+            placeholder="Seleccionar..." styleClass="w-full" [filter]="true" filterBy="nombre" appendTo="body" />
+        </div>
+        <div class="flujo-add__field w-[24]">
+          <label>Orden</label>
+          <p-inputNumber [(ngModel)]="nuevoOrden" [min]="1" [showButtons]="true" buttonLayout="horizontal"
+            incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" styleClass="w-full orden-input" />
+        </div>
+        <div class="flujo-add__action ml-auto">
+          <p-button label="Añadir" icon="pi pi-plus" [loading]="agregandoDependencia" [disabled]="!nuevaDependencia"
+            (onClick)="onAddDependencia()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de dependencias -->
+    <div class="flujo-lista">
+      <div class="flujo-lista__header">
+        <span class="title">Secuencia de Aprobación</span>
+        <p-tag [value]="tipoFlujo.dependencias.length.toString() + ' pasos'" severity="info" [rounded]="true" />
+      </div>
+
+      @if (tipoFlujo.dependencias.length === 0) {
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <i class="pi pi-sitemap"></i>
+        </div>
+        <p class="empty-state__text">
+          No hay dependencias configuradas en este flujo.
+        </p>
+      </div>
+      } @else {
+      <div class="flujo-items">
+        @for (dep of tipoFlujo.dependencias; track dep.uuid; let i = $index) {
+        <div class="flujo-item">
+          <div class="flujo-item__timeline">
+            <div class="line" [class.invisible]="i === tipoFlujo.dependencias.length - 1"></div>
+
+            @if (editandoOrden === dep.uuid) {
+            <div class="orden-editor">
+              <p-inputNumber [(ngModel)]="ordenTemporal" [min]="1" [style]="{'width': '3.5rem'}"
+                [inputStyle]="{'text-align': 'center'}" />
+              <div class="orden-editor__actions">
+                <button class="action-btn action-btn--save" (click)="guardarOrden(dep)"
+                  [disabled]="guardandoOrdenId === dep.uuid">
+                  <i [class]="guardandoOrdenId === dep.uuid ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
+                </button>
+                <button class="action-btn action-btn--cancel" (click)="cancelarEdicionOrden()">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </div>
+            } @else {
+            <div class="orden-badge" (click)="iniciarEdicionOrden(dep)" pTooltip="Clic para cambiar el orden">
+              {{ dep.ordenFlujo }}
+            </div>
+            }
+          </div>
+
+          <div class="flujo-item__card">
+            <div class="flujo-item__info">
+              <span class="flujo-item__name">{{ dep.nombreDependencia }}</span>
+              @if (dep.flujoParalelo) {
+              <div class="flujo-item__meta meta-paralelo">
+                <i class="pi pi-clone"></i>
+                <span>Ejecución Paralela</span>
+              </div>
+              } @else {
+              <div class="flujo-item__meta meta-secuencial">
+                <i class="pi pi-arrow-right"></i>
+                <span>Ejecución Secuencial</span>
+              </div>
+              }
+            </div>
+            <div class="flujo-item__actions">
+              <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" pTooltip="Remover"
+                tooltipPosition="left" [loading]="eliminandoDependenciaId === dep.uuid"
+                (onClick)="onRemoveDependencia(dep.uuid)" />
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+  }
+</p-dialog>
